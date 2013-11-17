@@ -1,0 +1,21 @@
+0.0 <= x <= 0.1 == '.'
+0.1 <= x <= 0.2 == ','
+0.2 <= x <= 0.3 == ';'
+0.3 <= x <= 0.4 == '!'
+0.4 <= x <= 0.5 == 'v'
+0.5 <= x <= 0.6 == 'l'
+0.6 <= x <= 0.7 == 'L'
+0.7 <= x <= 0.8 == 'F'
+0.8 <= x <= 0.9 == 'E'
+0.9 <= x <= 1.0 == '$'
+
+
+"Standard" character ramp for grey scale pictures, black -> white.
+"$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. "
+
+A more convincing but shorter sequence for representing 10 levels of grey is
+" .:-=+*#%@"
+
+
+
+"@MBHENR#KWXDFPQASUZbdehx*8Gm&04LOVYkpq5Tagns69owz$CIu23Jcfry%1v7l+it[] {}?j|()=~!-/<>\"^_';,:`. "
