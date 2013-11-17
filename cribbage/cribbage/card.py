@@ -5,7 +5,6 @@ class Card(object):
     SUITS = {'S':"S", 'H':"H", 'D':"D", 'C':"C"}
     CARD_ORDER = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
     SUIT_ORDER = ['D', 'C', 'H', 'S']
-    b'\x80abc'
 
     def __init__(self, number, suit):
         self.number = number

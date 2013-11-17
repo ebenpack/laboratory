@@ -3,7 +3,6 @@ import random
 import cribbage.scoring as scoring
 from cribbage.card import Card
 from cribbage.hand import Hand
-from cribbage.player import Player
 from cribbage.event import OfflineEvent
 
 class Cribbage(object):
@@ -125,7 +124,6 @@ class Cribbage(object):
     def can_go(self, current_play):
         return (self.current_player.hand.unplayed and
                 (scoring.play_total(current_play + [min(self.current_player.hand.unplayed)]) <= 31))
-
 
     def peg(self):
         pass

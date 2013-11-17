@@ -1,9 +1,9 @@
 import unittest
-import coverage
 
-cover = True
+cover = False
 
 if cover:
+    import coverage
     cov = coverage.coverage(branch = True, omit = ['tests.py', 'cribbage/__init__.py'])
     cov.start()
 
@@ -11,6 +11,7 @@ import os
 import cribbage.cribbage as cribbage
 import cribbage.scoring as scoring
 from cribbage.event import MockEvent
+from cribbage.player import Player
 import random
 
 HAND1 = cribbage.Hand([ cribbage.Card('3', 'D'), cribbage.Card('4', 'D'),
@@ -150,8 +151,8 @@ class TestHand(unittest.TestCase):
 class TestPlayer(unittest.TestCase):
 
     def setUp(self):
-        self.player1 = cribbage.Player("Alice")
-        self.player2 = cribbage.Player("Bob")
+        self.player1 = Player("Alice")
+        self.player2 = Player("Bob")
 
     def test_player(self):
         self.assertEqual(self.player1.name, "Alice")
@@ -177,8 +178,8 @@ class TestCribbageDealer(unittest.TestCase):
 
     def setUp(self):
         random.seed(23)
-        self.player1 = cribbage.Player("Alice")
-        self.player2 = cribbage.Player("Bob")
+        self.player1 = Player("Alice")
+        self.player2 = Player("Bob")
         self.game = cribbage.Cribbage([self.player1, self.player2], MockEvent)
         self.game.draw()
         self.game.deal()
@@ -226,8 +227,8 @@ class TestCribbageDiscardPlay(unittest.TestCase):
 
     def setUp(self):
         random.seed(23)
-        self.player1 = cribbage.Player("Alice")
-        self.player2 = cribbage.Player("Bob")
+        self.player1 = Player("Alice")
+        self.player2 = Player("Bob")
         self.game = cribbage.Cribbage([self.player1, self.player2], MockEvent)
         self.game.draw()
         self.game.deal()
@@ -297,8 +298,8 @@ class TestCribbageScoring(unittest.TestCase):
 
     def setUp(self):
         random.seed(23)
-        self.player1 = cribbage.Player("Alice")
-        self.player2 = cribbage.Player("Bob")
+        self.player1 = Player("Alice")
+        self.player2 = Player("Bob")
         self.game = cribbage.Cribbage([self.player1, self.player2], MockEvent)
         self.game.draw()
         self.game.deal()

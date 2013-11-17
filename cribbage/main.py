@@ -4,8 +4,8 @@ from cribbage.player import Player
 # TODO: Write all the docstrings!
 
 def main():
-    player1 = Player("Eben")
-    player2 = Player("Julia")
+    player1 = Player("Alice")
+    player2 = Player("Bob")
     game = Cribbage([player1, player2])
     game.start()
 
