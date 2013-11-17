@@ -1,6 +1,6 @@
 import unittest
 
-cover = False
+cover = True
 
 if cover:
     import coverage
@@ -293,16 +293,10 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.assertEqual(self.game.dealer.score, 9)
         self.assertEqual(self.game.non_dealer.score, 1)
 
-
 class TestCribbageScoring(unittest.TestCase):
 
     def setUp(self):
-        random.seed(23)
-        self.player1 = Player("Alice")
-        self.player2 = Player("Bob")
-        self.game = cribbage.Cribbage([self.player1, self.player2], MockEvent)
-        self.game.draw()
-        self.game.deal()
+        pass
 
     def test_fifteen(self):
         score = scoring.score_play([cribbage.Card('8', 'D'), cribbage.Card('7', 'S')])
@@ -386,7 +380,7 @@ class TestCribbageScoring(unittest.TestCase):
                                        cribbage.Card('A', 'D')])
         self.assertEqual(score, 5)
 
-    def test_multiple_scoreg(self):
+    def test_multiple_scoring(self):
         # Five card run, flush, fifteen
         score = scoring.score_play([cribbage.Card('A', 'D'), cribbage.Card('2', 'D'),
                                        cribbage.Card('3', 'D'), cribbage.Card('4', 'D'),
@@ -404,7 +398,20 @@ class TestCribbageScoring(unittest.TestCase):
                                        cribbage.Card('2', 'H'), cribbage.Card('2', 'D')])
         self.assertEqual(score, 14)
 
+class TestCribbagePegging(unittest.TestCase):
+    def setUp(self):
+        random.seed(23)
+        self.player1 = Player("Alice")
+        self.player2 = Player("Bob")
+        self.game = cribbage.Cribbage([self.player1, self.player2], MockEvent)
+        self.game.draw()
+        self.game.deal()
 
+        self.game.peg()
+
+    def test_pegging(self):
+        self.assertEqual(self.game.dealer.score, 2)
+        self.assertEqual(self.game.non_dealer.score, 2)
 
 if __name__ == '__main__':
     try:
