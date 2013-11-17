@@ -18,10 +18,7 @@ class Hand(object):
         self.hand.sort()
 
     def __iter__(self):
-        h = self.hand
-        while i < self.b:
-          yield i
-          i+=1
+        return iter(self.hand)
 
     def __eq__(self, other):
         return all([ x == y for (x,y) in zip(self.hand, other.hand)  ])
