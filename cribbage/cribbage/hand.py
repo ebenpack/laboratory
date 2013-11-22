@@ -4,7 +4,7 @@ class Hand(object):
         self.crib = crib
         self.played = []
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return "Hand: {}, crib: {}".format(self.hand, self.crib)
 
     def __len__(self):
@@ -21,16 +21,18 @@ class Hand(object):
         return iter(self.hand)
 
     def __eq__(self, other):
-        return all([ x == y for (x,y) in zip(self.hand, other.hand)  ])
+        return all([x == y for (x, y) in zip(self.hand, other.hand)])
 
     @property
     def unplayed(self):
         return sorted([card for card in self.hand if card not in self.played])
 
     def discard(self, cards):
-        # Remove cards at indexes from hand, and return removed cards
-        # cards is a list of indexes, which is sorted in reverse order so
-        # we can pop values off without screwing up subsequent pops.
+        """
+        Remove cards at indexes from hand, and return removed cards.
+        Cards is a list of indexes, which is sorted in reverse order so
+        we can pop values off without screwing up subsequent pops.
+        """
         discards = []
         for index in sorted(cards, reverse=True):
             discards.append(self.hand.pop(index))
