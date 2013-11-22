@@ -14,13 +14,13 @@ from cribbage.event import MockEvent
 from cribbage.player import Player
 import random
 
-HAND1 = cribbage.Hand([ cribbage.Card('3', 'D'), cribbage.Card('4', 'D'),
-                          cribbage.Card('5', 'C'), cribbage.Card('6', 'H'),
-                          cribbage.Card('8', 'D'), cribbage.Card('9', 'C')])
+HAND1 = cribbage.Hand([cribbage.Card('3', 'D'), cribbage.Card('4', 'D'),
+                       cribbage.Card('5', 'C'), cribbage.Card('6', 'H'),
+                       cribbage.Card('8', 'D'), cribbage.Card('9', 'C')])
 
-HAND2 = cribbage.Hand([ cribbage.Card('A', 'C'), cribbage.Card('2', 'C'),
-                          cribbage.Card('5', 'S'), cribbage.Card('7', 'D'),
-                           cribbage.Card('7', 'S'), cribbage.Card('10', 'C')])
+HAND2 = cribbage.Hand([cribbage.Card('A', 'C'), cribbage.Card('2', 'C'),
+                       cribbage.Card('5', 'S'), cribbage.Card('7', 'D'),
+                       cribbage.Card('7', 'S'), cribbage.Card('10', 'C')])
 STARTER = cribbage.Card('A', 'D')
 
 class TestCard(unittest.TestCase):
@@ -35,6 +35,9 @@ class TestCard(unittest.TestCase):
         self.ten_of_spades = cribbage.Card('10', 'S')
         self.jack_of_spades = cribbage.Card('J', 'S')
         self.queen_of_spades = cribbage.Card('Q', 'S')
+        self.queen_of_hearts = cribbage.Card('Q', 'H')
+        self.queen_of_clubs = cribbage.Card('Q', 'C')
+        self.queen_of_diamonds = cribbage.Card('Q', 'D')
         self.king_of_spades = cribbage.Card('K', 'S')
 
     def test_card_ordering(self):
@@ -52,9 +55,16 @@ class TestCard(unittest.TestCase):
         self.assertLess(self.five_of_hearts, self.five_of_spades)
 
     def test_face_card_ordering(self):
+        SUIT_ORDER = ['D', 'C', 'H', 'S']
         self.assertLess(self.ten_of_spades, self.jack_of_spades)
         self.assertLess(self.jack_of_spades, self.queen_of_spades)
-        self.assertLess(self.queen_of_spades, self.king_of_spades)
+        self.assertLess(self.queen_of_diamonds, self.king_of_spades)
+        self.assertLess(self.queen_of_diamonds, self.queen_of_spades)
+        self.assertLess(self.queen_of_diamonds, self.queen_of_clubs)
+        self.assertLess(self.queen_of_diamonds, self.queen_of_hearts)
+        self.assertLess(self.queen_of_clubs, self.queen_of_hearts)
+        self.assertLess(self.queen_of_clubs, self.queen_of_spades)
+        self.assertLess(self.queen_of_hearts, self.queen_of_spades)
 
     def test_card_values(self):
         self.assertEqual(self.ace_of_spades.value, 1)
@@ -75,8 +85,8 @@ class TestHand(unittest.TestCase):
                                     cribbage.Card('K', 'S'), cribbage.Card('Q', 'S'), cribbage.Card('J', 'C')])
 
     def test_hand_sorting(self):
-        self.assertEqual(self.hand1.hand, [cribbage.Card('A', 'C'), cribbage.Card('A', 'S'), cribbage.Card('9', 'D'), cribbage.Card('9', 'C') ,
-                                    cribbage.Card('9', 'H'), cribbage.Card('9', 'S'), ])
+        self.assertEqual(self.hand1.hand, [cribbage.Card('A', 'C'), cribbage.Card('A', 'S'), cribbage.Card('9', 'D'),
+                                           cribbage.Card('9', 'C'), cribbage.Card('9', 'H'), cribbage.Card('9', 'S'), ])
         self.assertEqual(self.hand2.hand, [cribbage.Card('9', 'C'), cribbage.Card('10', 'D'), cribbage.Card('J', 'C'),
                                            cribbage.Card('J', 'H'), cribbage.Card('Q', 'S'), cribbage.Card('K', 'S')])
 
@@ -101,15 +111,15 @@ class TestHand(unittest.TestCase):
         self.assertEqual(len(self.hand1), 6)
         discarded1 = self.hand1.discard([0, 2])
         self.assertEqual(self.hand1.hand, [cribbage.Card('A', 'S'), cribbage.Card('9', 'C'), cribbage.Card('9', 'H'),
-                                      cribbage.Card('9', 'S')])
-        self.assertEqual(discarded1, [cribbage.Card('A', 'C'), cribbage.Card('9', 'D') ])
+                                           cribbage.Card('9', 'S')])
+        self.assertEqual(discarded1, [cribbage.Card('A', 'C'), cribbage.Card('9', 'D')])
         self.assertEqual(len(self.hand1), 4)
 
         self.assertEqual(len(self.hand2), 6)
         discarded2 = self.hand2.discard([2, 3])
         self.assertEqual(self.hand2.hand, [cribbage.Card('9', 'C'), cribbage.Card('10', 'D'), cribbage.Card('Q', 'S'),
-                                      cribbage.Card('K', 'S')])
-        self.assertEqual(discarded2, [cribbage.Card('J', 'C'), cribbage.Card('J', 'H') ])
+                                           cribbage.Card('K', 'S')])
+        self.assertEqual(discarded2, [cribbage.Card('J', 'C'), cribbage.Card('J', 'H')])
         self.assertEqual(len(self.hand1), 4)
 
     def test_hand_play(self):
@@ -118,8 +128,9 @@ class TestHand(unittest.TestCase):
 
         self.hand1.play(0)
         self.assertEqual(self.hand1.played, [cribbage.Card('A', 'C')])
-        self.assertEqual(self.hand1.unplayed, [cribbage.Card('A', 'S'), cribbage.Card('9', 'D'), cribbage.Card('9', 'C'),
-                                               cribbage.Card('9', 'H'), cribbage.Card('9', 'S')])
+        self.assertEqual(self.hand1.unplayed, [cribbage.Card('A', 'S'), cribbage.Card('9', 'D'),
+                                               cribbage.Card('9', 'C'), cribbage.Card('9', 'H'),
+                                               cribbage.Card('9', 'S')])
 
         self.hand1.play(4)
         self.assertEqual(self.hand1.played, [cribbage.Card('A', 'C'), cribbage.Card('9', 'S')])
@@ -128,7 +139,8 @@ class TestHand(unittest.TestCase):
 
         self.hand1.play(2)
         self.assertEqual(self.hand1.played, [cribbage.Card('A', 'C'), cribbage.Card('9', 'C'), cribbage.Card('9', 'S')])
-        self.assertEqual(self.hand1.unplayed, [cribbage.Card('A', 'S'), cribbage.Card('9', 'D'), cribbage.Card('9', 'H')])
+        self.assertEqual(self.hand1.unplayed, [cribbage.Card('A', 'S'), cribbage.Card('9', 'D'),
+                                               cribbage.Card('9', 'H')])
 
         self.hand1.play(0)
         self.assertEqual(self.hand1.played, [cribbage.Card('A', 'C'), cribbage.Card('A', 'S'),
@@ -198,12 +210,12 @@ class TestCribbageDealer(unittest.TestCase):
         self.assertEqual(self.game.non_dealer, self.player1)
 
     def test_current_player(self):
-        self.assertEqual(self.game.current_player,self.player1)
+        self.assertEqual(self.game.current_player, self.player1)
 
     def test_switch_current_player(self):
-        self.assertEqual(self.game.current_player,self.player1)
+        self.assertEqual(self.game.current_player, self.player1)
         self.game.switch_current_player()
-        self.assertEqual(self.game.current_player,self.player2)
+        self.assertEqual(self.game.current_player, self.player2)
 
     def test_switch_dealer(self):
         self.assertEqual(self.game.dealer, self.player2)
@@ -233,14 +245,14 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.game.draw()
         self.game.deal()
 
-        self.H1 = cribbage.Hand([ cribbage.Card('5', 'C'), cribbage.Card('6', 'H'),
-                                  cribbage.Card('8', 'D'), cribbage.Card('9', 'C')])
+        self.H1 = cribbage.Hand([cribbage.Card('5', 'C'), cribbage.Card('6', 'H'),
+                                 cribbage.Card('8', 'D'), cribbage.Card('9', 'C')])
 
-        self.H2 = cribbage.Hand([  cribbage.Card('5', 'S'), cribbage.Card('7', 'D'),
-                                   cribbage.Card('7', 'S'), cribbage.Card('10', 'C')])
+        self.H2 = cribbage.Hand([cribbage.Card('5', 'S'), cribbage.Card('7', 'D'),
+                                 cribbage.Card('7', 'S'), cribbage.Card('10', 'C')])
 
-        self.crib = cribbage.Hand([cribbage.Card('A','C'), cribbage.Card('2','C'),
-                                   cribbage.Card('3','D'), cribbage.Card('4','D')])
+        self.crib = cribbage.Hand([cribbage.Card('A', 'C'), cribbage.Card('2', 'C'),
+                                   cribbage.Card('3', 'D'), cribbage.Card('4', 'D')])
 
     def test_discard(self):
         self.assertEqual(self.game.crib, [])
@@ -270,7 +282,7 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.game.dealer.hand = cribbage.Hand([cribbage.Card('A', 'C'), cribbage.Card('A', 'S'),
                                                cribbage.Card('A', 'D'), cribbage.Card('A', 'H')])
         self.game.non_dealer.hand = cribbage.Hand([cribbage.Card('K', 'C'), cribbage.Card('Q', 'C'),
-                                               cribbage.Card('J', 'D'), cribbage.Card('10', 'D')])
+                                                   cribbage.Card('J', 'D'), cribbage.Card('10', 'D')])
         self.game.play()
         self.assertEqual(self.game.dealer.score, 9)
         self.assertEqual(self.game.non_dealer.score, 1)
@@ -279,7 +291,7 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.game.dealer.hand = cribbage.Hand([cribbage.Card('5', 'C'), cribbage.Card('5', 'S'),
                                                cribbage.Card('10', 'C'), cribbage.Card('10', 'S')])
         self.game.non_dealer.hand = cribbage.Hand([cribbage.Card('5', 'H'), cribbage.Card('5', 'D'),
-                                               cribbage.Card('10', 'H'), cribbage.Card('10', 'D')])
+                                                   cribbage.Card('10', 'H'), cribbage.Card('10', 'D')])
         self.game.play()
         self.assertEqual(self.game.dealer.score, 21)
         self.assertEqual(self.game.non_dealer.score, 11)
@@ -298,105 +310,135 @@ class TestCribbageScoring(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_fifteen(self):
-        score = scoring.score_play([cribbage.Card('8', 'D'), cribbage.Card('7', 'S')])
+    def test_fifteens1(self):
+        score = scoring.score_fifteens([cribbage.Card('8', 'D'), cribbage.Card('7', 'S')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('A', 'D'), cribbage.Card('4', 'S'), cribbage.Card('K', 'S')])
+        score = scoring.score_fifteens([cribbage.Card('A', 'D'), cribbage.Card('4', 'S'), cribbage.Card('K', 'S')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('A', 'D')])
+        score = scoring.score_fifteens([cribbage.Card('A', 'D')])
         self.assertEqual(score, 0)
 
+    def test_fifteens2(self):
+        score = scoring.score_fifteens([cribbage.Card('A', 'D'), cribbage.Card('A', 'S'), cribbage.Card('A', 'C'),
+                                        cribbage.Card('2', 'D'), cribbage.Card('9', 'C')])
+        self.assertEqual(score, 0)
+
+        score = scoring.score_fifteens([cribbage.Card('A', 'D'), cribbage.Card('A', 'S'), cribbage.Card('A', 'C'),
+                                        cribbage.Card('2', 'D'), cribbage.Card('J', 'C')])
+        self.assertEqual(score, 2)
+
+        score = scoring.score_fifteens([cribbage.Card('2', 'D'), cribbage.Card('2', 'S'), cribbage.Card('8', 'C'),
+                                        cribbage.Card('3', 'D'), cribbage.Card('K', 'C')])
+        self.assertEqual(score, 6)
+
+        score = scoring.score_fifteens([cribbage.Card('4', 'D'), cribbage.Card('4', 'S'), cribbage.Card('5', 'C'),
+                                        cribbage.Card('6', 'D'), cribbage.Card('6', 'C')])
+        self.assertEqual(score, 8)
+
+        score = scoring.score_fifteens([cribbage.Card('3', 'D'), cribbage.Card('3', 'S'), cribbage.Card('3', 'C'),
+                                        cribbage.Card('9', 'D'), cribbage.Card('10', 'C')])
+        self.assertEqual(score, 6)
+
+        score = scoring.score_fifteens([cribbage.Card('8', 'D'), cribbage.Card('8', 'S'), cribbage.Card('8', 'C'),
+                                        cribbage.Card('7', 'H'), cribbage.Card('7', 'D')])
+        self.assertEqual(score, 12)
+
+        score = scoring.score_fifteens([cribbage.Card('5', 'D'), cribbage.Card('5', 'S'), cribbage.Card('5', 'C'),
+                                        cribbage.Card('5', 'H'), cribbage.Card('J', 'D')])
+        self.assertEqual(score, 16)
+
     def test_pair(self):
-        score = scoring.score_play([cribbage.Card('8', 'D'), cribbage.Card('8', 'S')])
+        score = scoring.play_pairs([cribbage.Card('8', 'D'), cribbage.Card('8', 'S')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('A', 'C'), cribbage.Card('A', 'D')])
+        score = scoring.play_pairs([cribbage.Card('A', 'C'), cribbage.Card('A', 'D')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('K', 'D'), cribbage.Card('K', 'S')])
+        score = scoring.play_pairs([cribbage.Card('K', 'D'), cribbage.Card('K', 'S')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('J', 'D'), cribbage.Card('J', 'S')])
+        score = scoring.play_pairs([cribbage.Card('J', 'D'), cribbage.Card('J', 'S')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('J', 'D'), cribbage.Card('10', 'S')])
+        score = scoring.play_pairs([cribbage.Card('J', 'D'), cribbage.Card('10', 'S')])
         self.assertEqual(score, 0)
-        score = scoring.score_play([cribbage.Card('Q', 'C'), cribbage.Card('K', 'S')])
+        score = scoring.play_pairs([cribbage.Card('Q', 'C'), cribbage.Card('K', 'S')])
         self.assertEqual(score, 0)
-        score = scoring.score_play([cribbage.Card('4', 'D'), cribbage.Card('4', 'S'), cribbage.Card('3', 'C')])
+        score = scoring.play_pairs([cribbage.Card('4', 'D'), cribbage.Card('4', 'S'), cribbage.Card('3', 'C')])
         self.assertEqual(score, 0)
 
     def test_triple(self):
-        score = scoring.score_play([cribbage.Card('3', 'D'), cribbage.Card('3', 'S'), cribbage.Card('3', 'C')])
+        score = scoring.play_pairs([cribbage.Card('3', 'D'), cribbage.Card('3', 'S'), cribbage.Card('3', 'C')])
         self.assertEqual(score, 6)
-        score = scoring.score_play([cribbage.Card('K', 'D'), cribbage.Card('K', 'S'), cribbage.Card('K', 'C')])
+        score = scoring.play_pairs([cribbage.Card('K', 'D'), cribbage.Card('K', 'S'), cribbage.Card('K', 'C')])
         self.assertEqual(score, 6)
-        score = scoring.score_play([cribbage.Card('4', 'D'), cribbage.Card('3', 'S'), cribbage.Card('3', 'C')])
+        score = scoring.play_pairs([cribbage.Card('4', 'D'), cribbage.Card('3', 'S'), cribbage.Card('3', 'C')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('4', 'D'), cribbage.Card('3', 'S'), cribbage.Card('4', 'C')])
+        score = scoring.play_pairs([cribbage.Card('4', 'D'), cribbage.Card('3', 'S'), cribbage.Card('4', 'C')])
         self.assertEqual(score, 0)
 
     def test_double_pair(self):
-        score = scoring.score_play([cribbage.Card('3', 'D'), cribbage.Card('3', 'S'),
-                                       cribbage.Card('3', 'C'), cribbage.Card('3', 'H')])
+        score = scoring.play_pairs([cribbage.Card('3', 'D'), cribbage.Card('3', 'S'),
+                                    cribbage.Card('3', 'C'), cribbage.Card('3', 'H')])
         self.assertEqual(score, 12)
-        score = scoring.score_play([cribbage.Card('2', 'D'), cribbage.Card('3', 'S'),
-                                       cribbage.Card('3', 'C'), cribbage.Card('3', 'H')])
+        score = scoring.play_pairs([cribbage.Card('2', 'D'), cribbage.Card('3', 'S'),
+                                    cribbage.Card('3', 'C'), cribbage.Card('3', 'H')])
         self.assertEqual(score, 6)
-        score = scoring.score_play([cribbage.Card('3', 'D'), cribbage.Card('2', 'S'),
-                                       cribbage.Card('3', 'C'), cribbage.Card('3', 'H')])
+        score = scoring.play_pairs([cribbage.Card('3', 'D'), cribbage.Card('2', 'S'),
+                                    cribbage.Card('3', 'C'), cribbage.Card('3', 'H')])
         self.assertEqual(score, 2)
-        score = scoring.score_play([cribbage.Card('3', 'D'), cribbage.Card('3', 'S'),
-                                       cribbage.Card('3', 'C'), cribbage.Card('2', 'H')])
+        score = scoring.play_pairs([cribbage.Card('3', 'D'), cribbage.Card('3', 'S'),
+                                    cribbage.Card('3', 'C'), cribbage.Card('2', 'H')])
         self.assertEqual(score, 0)
 
     def test_runs(self):
-        score = scoring.score_play([cribbage.Card('A', 'D'), cribbage.Card('2', 'S'),
-                                       cribbage.Card('3', 'C'), cribbage.Card('4', 'H')])
+        score = scoring.play_runs([cribbage.Card('A', 'D'), cribbage.Card('2', 'S'),
+                                   cribbage.Card('3', 'C'), cribbage.Card('4', 'H')])
         self.assertEqual(score, 4)
-        score = scoring.score_play([cribbage.Card('2', 'D'), cribbage.Card('3', 'S'),
-                                       cribbage.Card('4', 'C'), cribbage.Card('5', 'H'),
-                                       cribbage.Card('6', 'H'),])
+        score = scoring.play_runs([cribbage.Card('2', 'D'), cribbage.Card('3', 'S'),
+                                   cribbage.Card('4', 'C'), cribbage.Card('5', 'H'),
+                                   cribbage.Card('6', 'H')])
         self.assertEqual(score, 5)
-        score = scoring.score_play([cribbage.Card('2', 'D'), cribbage.Card('Q', 'S'),
-                                       cribbage.Card('4', 'C'), cribbage.Card('5', 'H'),
-                                       cribbage.Card('6', 'H'),])
+        score = scoring.play_runs([cribbage.Card('2', 'D'), cribbage.Card('Q', 'S'),
+                                   cribbage.Card('4', 'C'), cribbage.Card('5', 'H'),
+                                   cribbage.Card('6', 'H')])
         self.assertEqual(score, 3)
-        score = scoring.score_play([cribbage.Card('2', 'D'), cribbage.Card('Q', 'S'),
-                                       cribbage.Card('5', 'C'), cribbage.Card('7', 'H'),
-                                       cribbage.Card('6', 'H'),])
+        score = scoring.play_runs([cribbage.Card('2', 'D'), cribbage.Card('Q', 'S'),
+                                   cribbage.Card('5', 'C'), cribbage.Card('7', 'H'),
+                                   cribbage.Card('6', 'H')])
         self.assertEqual(score, 3)
-        score = scoring.score_play([cribbage.Card('2', 'D'), cribbage.Card('5', 'S'),
-                                       cribbage.Card('7', 'C'), cribbage.Card('7', 'H'),
-                                       cribbage.Card('6', 'H'),])
+        score = scoring.play_runs([cribbage.Card('2', 'D'), cribbage.Card('5', 'S'),
+                                   cribbage.Card('7', 'C'), cribbage.Card('7', 'H'),
+                                   cribbage.Card('6', 'H')])
         self.assertEqual(score, 0)
 
     def test_flush(self):
-        score = scoring.score_play([cribbage.Card('A', 'H'), cribbage.Card('2', 'D'),
-                                      cribbage.Card('3', 'D'), cribbage.Card('5', 'D'),
-                                      cribbage.Card('6', 'D')])
+        score = scoring.play_flush([cribbage.Card('A', 'H'), cribbage.Card('2', 'D'),
+                                    cribbage.Card('3', 'D'), cribbage.Card('5', 'D'),
+                                    cribbage.Card('6', 'D')])
         self.assertEqual(score, 4)
-        score = scoring.score_play([cribbage.Card('2', 'D'), cribbage.Card('3', 'D'),
-                                       cribbage.Card('5', 'D'), cribbage.Card('6', 'C')])
+        score = scoring.play_flush([cribbage.Card('2', 'D'), cribbage.Card('3', 'D'),
+                                    cribbage.Card('5', 'D'), cribbage.Card('6', 'C')])
         self.assertEqual(score, 0)
-        score = scoring.score_play([cribbage.Card('2', 'D'), cribbage.Card('3', 'D'),
-                                       cribbage.Card('5', 'D'), cribbage.Card('6', 'D'),
-                                       cribbage.Card('A', 'D')])
+        score = scoring.play_flush([cribbage.Card('2', 'D'), cribbage.Card('3', 'D'),
+                                    cribbage.Card('5', 'D'), cribbage.Card('6', 'D'),
+                                    cribbage.Card('A', 'D')])
         self.assertEqual(score, 5)
 
     def test_multiple_scoring(self):
         # Five card run, flush, fifteen
         score = scoring.score_play([cribbage.Card('A', 'D'), cribbage.Card('2', 'D'),
-                                       cribbage.Card('3', 'D'), cribbage.Card('4', 'D'),
-                                       cribbage.Card('5', 'D')])
+                                    cribbage.Card('3', 'D'), cribbage.Card('4', 'D'),
+                                    cribbage.Card('5', 'D')])
         self.assertEqual(score, 12)
 
         # Five card run, fifteen
         score = scoring.score_play([cribbage.Card('A', 'D'), cribbage.Card('2', 'D'),
-                                       cribbage.Card('3', 'C'), cribbage.Card('4', 'D'),
-                                       cribbage.Card('5', 'D')])
+                                    cribbage.Card('3', 'C'), cribbage.Card('4', 'D'),
+                                    cribbage.Card('5', 'D')])
         self.assertEqual(score, 7)
 
         # Fifteen, double-pair
         score = scoring.score_play([cribbage.Card('7', 'S'), cribbage.Card('2', 'S'), cribbage.Card('2', 'C'),
-                                       cribbage.Card('2', 'H'), cribbage.Card('2', 'D')])
+                                    cribbage.Card('2', 'H'), cribbage.Card('2', 'D')])
         self.assertEqual(score, 14)
+
 
 class TestCribbagePegging(unittest.TestCase):
     def setUp(self):
@@ -406,12 +448,131 @@ class TestCribbagePegging(unittest.TestCase):
         self.game = cribbage.Cribbage([self.player1, self.player2], MockEvent)
         self.game.draw()
         self.game.deal()
+        #self.game.play_peg()
 
-        self.game.peg()
+    def test_pegging_runs(self):
+        # Scoring pegging runs is different than scoring play runs, so we'll thoroughly test it separately.
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('2', 'H'),
+                                  cribbage.Card('A', 'D'), cribbage.Card('3', 'S')])
+        self.assertEqual(score, 12)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('3', 'H'),
+                                  cribbage.Card('4', 'D'), cribbage.Card('A', 'S')])
+        self.assertEqual(score, 8)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('3', 'H'),
+                                  cribbage.Card('5', 'D'), cribbage.Card('6', 'S')])
+        self.assertEqual(score, 3)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('3', 'H'),
+                                  cribbage.Card('4', 'D'), cribbage.Card('5', 'S')])
+        self.assertEqual(score, 5)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('3', 'H'),
+                                  cribbage.Card('4', 'D'), cribbage.Card('6', 'S')])
+        self.assertEqual(score, 4)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('3', 'H'),
+                                  cribbage.Card('2', 'D'), cribbage.Card('5', 'S')])
+        self.assertEqual(score, 6)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('3', 'H'),
+                                  cribbage.Card('4', 'D'), cribbage.Card('2', 'S')])
+        self.assertEqual(score, 8)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('2', 'H'),
+                                  cribbage.Card('2', 'D'), cribbage.Card('3', 'S')])
+        self.assertEqual(score, 9)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('A', 'C'), cribbage.Card('3', 'H'),
+                                  cribbage.Card('4', 'D'), cribbage.Card('5', 'S')])
+        self.assertEqual(score, 3)
+        score = scoring.peg_runs([cribbage.Card('A', 'S'), cribbage.Card('2', 'C'), cribbage.Card('4', 'H'),
+                                  cribbage.Card('5', 'D'), cribbage.Card('7', 'S')])
+        self.assertEqual(score, 0)
+        score = scoring.peg_runs([cribbage.Card('10', 'S'), cribbage.Card('J', 'C'), cribbage.Card('Q', 'H'),
+                                  cribbage.Card('K', 'D'), cribbage.Card('A', 'S')])
+        self.assertEqual(score, 4)
+        score = scoring.peg_runs([cribbage.Card('10', 'S'), cribbage.Card('J', 'C'), cribbage.Card('Q', 'H'),
+                                  cribbage.Card('K', 'D'), cribbage.Card('Q', 'S')])
+        self.assertEqual(score, 8)
+        score = scoring.peg_runs([cribbage.Card('10', 'S'), cribbage.Card('J', 'C'), cribbage.Card('Q', 'H'),
+                                  cribbage.Card('K', 'D'), cribbage.Card('9', 'S')])
+        self.assertEqual(score, 5)
 
-    def test_pegging(self):
-        self.assertEqual(self.game.dealer.score, 2)
-        self.assertEqual(self.game.non_dealer.score, 2)
+    def test_pegging_flush(self):
+        score = scoring.peg_flush(cribbage.Hand([cribbage.Card('6', 'C'), cribbage.Card('10', 'C'),
+                                                 cribbage.Card('5', 'C'), cribbage.Card('4', 'C')]),
+                                  cribbage.Card('9', 'D'))
+        self.assertEqual(score, 4)
+        score = scoring.peg_flush(cribbage.Hand([cribbage.Card('6', 'C'), cribbage.Card('10', 'C'),
+                                                 cribbage.Card('5', 'C'), cribbage.Card('4', 'C')]),
+                                  cribbage.Card('9', 'C'))
+        self.assertEqual(score, 5)
+        score = scoring.peg_flush(cribbage.Hand([cribbage.Card('6', 'C'), cribbage.Card('10', 'C'),
+                                                 cribbage.Card('5', 'C'), cribbage.Card('4', 'C')]),
+                                  cribbage.Card('9', 'D'), crib=True)
+        self.assertEqual(score, 0)
+        score = scoring.peg_flush(cribbage.Hand([cribbage.Card('6', 'C'), cribbage.Card('10', 'C'),
+                                                 cribbage.Card('5', 'C'), cribbage.Card('4', 'C')]),
+                                  cribbage.Card('9', 'C'), crib=True)
+        self.assertEqual(score, 5)
+
+    def test_peg_scoring(self):
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('6', 'C'), cribbage.Card('10', 'D'),
+                                                 cribbage.Card('5', 'H'), cribbage.Card('4', 'S')]),
+                                  cribbage.Card('5', 'D'))
+        self.assertEqual(score, 16)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('3', 'D'), cribbage.Card('4', 'D'),
+                                                 cribbage.Card('7', 'D'), cribbage.Card('8', 'D')]),
+                                  cribbage.Card('J', 'C'))
+        self.assertEqual(score, 8)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('5', 'D'), cribbage.Card('5', 'H'),
+                                                 cribbage.Card('5', 'C'), cribbage.Card('J', 'S')]),
+                                  cribbage.Card('5', 'S'))
+        self.assertEqual(score, 29)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('5', 'D'), cribbage.Card('5', 'H'),
+                                                 cribbage.Card('5', 'C'), cribbage.Card('J', 'C')]),
+                                  cribbage.Card('5', 'S'))
+        self.assertEqual(score, 28)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('7', 'D'), cribbage.Card('7', 'H'),
+                                                 cribbage.Card('8', 'S'), cribbage.Card('8', 'C')]),
+                                  cribbage.Card('9', 'S'))
+        self.assertEqual(score, 24)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('4', 'D'), cribbage.Card('4', 'H'),
+                                                 cribbage.Card('5', 'S'), cribbage.Card('6', 'C')]),
+                                  cribbage.Card('6', 'S'))
+        self.assertEqual(score, 24)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('10', 'D'), cribbage.Card('Q', 'H'),
+                                                 cribbage.Card('9', 'S'), cribbage.Card('K', 'C')]),
+                                  cribbage.Card('4', 'S'))
+        self.assertEqual(score, 0)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('3', 'D'), cribbage.Card('3', 'H'),
+                                                 cribbage.Card('3', 'S'), cribbage.Card('9', 'C')]),
+                                  cribbage.Card('6', 'S'))
+        self.assertEqual(score, 16)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('A', 'D'), cribbage.Card('2', 'H'),
+                                                 cribbage.Card('3', 'S'), cribbage.Card('4', 'C')]),
+                                  cribbage.Card('5', 'S'))
+        self.assertEqual(score, 7)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('2', 'D'), cribbage.Card('3', 'H'),
+                                                 cribbage.Card('4', 'S'), cribbage.Card('4', 'C')]),
+                                  cribbage.Card('4', 'H'))
+        self.assertEqual(score, 17)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('6', 'D'), cribbage.Card('3', 'H'),
+                                                 cribbage.Card('3', 'S'), cribbage.Card('3', 'C')]),
+                                  cribbage.Card('6', 'H'))
+        self.assertEqual(score, 18)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('5', 'D'), cribbage.Card('4', 'H'),
+                                                 cribbage.Card('4', 'S'), cribbage.Card('4', 'C')]),
+                                  cribbage.Card('6', 'H'))
+        self.assertEqual(score, 21)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('5', 'D'), cribbage.Card('5', 'H'),
+                                                 cribbage.Card('5', 'S'), cribbage.Card('J', 'D')]),
+                                  cribbage.Card('J', 'S'))
+        self.assertEqual(score, 22)
+        score = scoring.score_peg(cribbage.Hand([cribbage.Card('5', 'D'), cribbage.Card('5', 'H'),
+                                                 cribbage.Card('5', 'S'), cribbage.Card('4', 'S')]),
+                                  cribbage.Card('6', 'S'))
+        self.assertEqual(score, 23)
+
+
+    #def test_pegging(self):
+    #    # TODO: Work out mock event for pegging
+    #    self.assertEqual(self.game.dealer.score, 2)
+    #    self.assertEqual(self.game.non_dealer.score, 2)
 
 if __name__ == '__main__':
     try:
@@ -426,5 +587,5 @@ if __name__ == '__main__':
         print ("\n\nCoverage Report:\n")
         cov.report()
         print ("HTML version: " + os.path.join(tmp_path, "tmp/coverage/index.html"))
-        cov.html_report(directory = 'tmp/coverage')
+        cov.html_report(directory='tmp/coverage')
         cov.erase()
