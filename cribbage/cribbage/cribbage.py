@@ -5,21 +5,23 @@ from cribbage.card import Card
 from cribbage.hand import Hand
 from cribbage.event import OfflineEvent
 
+
 class Cribbage(object):
 
-    DECK = tuple( (Card(n, s) for n,s in itertools.product(Card.CARD_ORDER, Card.SUIT_ORDER) ))
+    DECK = tuple((Card(n, s) for n, s in itertools.product(Card.CARD_ORDER, Card.SUIT_ORDER)))
 
-    def __init__(self, players, EventHandler=OfflineEvent):
+    def __init__(self, players, event_handler=OfflineEvent):
         # _dealer and _current_player are integer indexes of the players list
         self.players = players
         self.number_of_players = len(players)
         self.previous_loser = None
-        self.event_dispatch = EventHandler()
+        self.event_dispatch = event_handler()
         self.crib = []
         self._dealer = None
         self._current_player = None
+        self.starter = None
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return "Players: {}, Dealer: {}".format(self.players, self.dealer)
 
     @property
@@ -51,7 +53,7 @@ class Cribbage(object):
     def deal_pool(self):
         # Returns a pool of unique cards sufficient for a single hand consisting of n players
         # ( ((n*6)+1), each player getting six cards, plus the starter card )
-        return random.sample(Cribbage.DECK, ((self.number_of_players*6)+1) )
+        return random.sample(Cribbage.DECK, ((self.number_of_players*6)+1))
 
     def draw(self):
         # TODO: If player won previous game, they get to deal next
@@ -65,10 +67,6 @@ class Cribbage(object):
         for i, player in enumerate(self.players):
             player.hand = Hand(cards[i*6:((i+1)*6)])
         self.starter = cards[-1]
-
-    def play_crib(self):
-        #???
-        pass
 
     def go(self, current_play):
         # TODO: Player will get 3 points if 31 (GO plus 31). Is this correct? Or only 2 points?
@@ -86,7 +84,7 @@ class Cribbage(object):
         crib = []
         for player in self.players:
             discarded = self.event_dispatch.discard(player)
-            crib.extend(player.hand.discard( discarded ))
+            crib.extend(player.hand.discard(discarded))
         self.crib = Hand(sorted(crib), crib=True)
 
     def play(self):
@@ -103,6 +101,7 @@ class Cribbage(object):
                 self.switch_current_player()
 
             # If the current player cannot play a card that is less than 31
+            # I.e. GO
             if not self.can_go(current_play):
                 self.switch_current_player()
                 self.go(current_play)
@@ -125,8 +124,26 @@ class Cribbage(object):
         return (self.current_player.hand.unplayed and
                 (scoring.play_total(current_play + [min(self.current_player.hand.unplayed)]) <= 31))
 
-    def peg(self):
-        pass
+    def peg(self, player, hand):
+        player_counted_score = self.event_dispatch.peg(player)
+        actual_score = scoring.score_peg(hand, self.starter)
+
+        muggins = self.event_dispatch.muggins()
+        if not muggins and player_counted_score == actual_score:
+            player.add_score(actual_score)
+        else:
+            # TODO: What happens if muggins falsely declared?
+            # TODO: What happens if player counts score too high?
+            pass
+
+    def play_peg(self):
+        players = [self.non_dealer, self.dealer]
+        for player in players:
+            self.peg(player, player.hand)
+        self.peg(self.dealer, self.crib)
+
+    def play_crib(self):
+        self.peg(self.dealer, self.crib)
 
     def reveal_starter(self):
         # TODO: FILL THIS OUT
@@ -140,7 +157,7 @@ class Cribbage(object):
         self.discard()
         self.reveal_starter()
         self.play()
-        self.peg()
+        self.play_peg()
         self.switch_dealer()
 
         #pre_game()
@@ -155,6 +172,7 @@ class Cribbage(object):
         self.draw()
         while max([p.score for p in self.players]) < 121:
             self.play_round()
+        # TODO: Post-game
 
 
 # https://en.wikipedia.org/wiki/Rules_of_cribbage
