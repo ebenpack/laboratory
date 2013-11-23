@@ -48,13 +48,25 @@ class TestHand(unittest.TestCase):
         self.hand1 = Hand([D['9C'], D['9D'], D['9H'], D['AS'], D['9S'], D['AC']])
         self.hand2 = Hand([D['10D'], D['JH'], D['9C'], D['KS'], D['QS'], D['JC']])
 
-    def test_hand_sorting(self):
+    def test_simple_hand_sorting(self):
         self.assertEqual(self.hand1.hand, [D['AC'], D['AS'], D['9D'], D['9C'], D['9H'], D['9S']])
         self.assertEqual(self.hand2.hand, [D['9C'], D['10D'], D['JC'], D['JH'], D['QS'], D['KS']])
 
-    def test_hand_length(self):
+    def test_hand_sorting(self):
+        for i in range(5000):
+            hand = Hand(random.sample(cribbage.Cribbage.DECK, 6))
+            for i, card1 in enumerate(hand.hand):
+                for card2 in hand.hand[i+1:]:
+                    self.assertLess(card1, card2)
+
+    def test_simple_hand_length(self):
         self.assertEqual(len(self.hand1), 6)
         self.assertEqual(len(self.hand2), 6)
+
+    def test_hand_length(self):
+        for i in range(20):
+            hand = Hand(random.sample(cribbage.Cribbage.DECK, i))
+            self.assertEqual(len(hand), i)
 
     def test_hand_getitem(self):
         self.assertEqual(self.hand1[0], D['AC'])
@@ -69,7 +81,7 @@ class TestHand(unittest.TestCase):
         self.assertEqual(self.hand1[5], D['9H'])
         self.assertEqual(self.hand1[2], D['3S'])
 
-    def test_hand_discard(self):
+    def test_simple_hand_discard(self):
         self.assertEqual(len(self.hand1), 6)
         discarded1 = self.hand1.discard([0, 2])
         self.assertEqual(self.hand1.hand, [D['AS'], D['9C'], D['9H'], D['9S']])
@@ -81,6 +93,12 @@ class TestHand(unittest.TestCase):
         self.assertEqual(self.hand2.hand, [D['9C'], D['10D'], D['QS'], D['KS']])
         self.assertEqual(discarded2, [D['JC'], D['JH']])
         self.assertEqual(len(self.hand1), 4)
+
+    def test_hand_discard(self):
+        hand = Hand(cribbage.Cribbage.DECK)
+        for i in range(len(hand)):
+            discarded = hand.discard([0])
+            self.assertEqual(discarded[0], cribbage.Cribbage.DECK[i])
 
     def test_hand_play(self):
         self.assertEqual(self.hand1.played, [])
@@ -127,18 +145,14 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual(self.player2.score, 0)
 
     def test_add_score(self):
-        self.player1.add_score(10)
-        self.assertEqual(self.player1.score, 10)
-        self.player1.add_score(10)
-        self.assertEqual(self.player1.score, 20)
-        self.player1.add_score(10)
-        self.assertEqual(self.player1.score, 30)
-        self.player2.add_score(40)
-        self.assertEqual(self.player2.score, 40)
-        self.player1.add_score(50)
-        self.assertEqual(self.player1.score, 80)
-        self.player2.add_score(40)
-        self.assertEqual(self.player2.score, 80)
+        total = 0
+        for i in range(100):
+            total += 1
+            self.player1.add_score(1)
+            self.assertEqual(self.player1.score, total)
+            self.player2.add_score(1)
+            self.assertEqual(self.player2.score, total)
+
 
 
 class TestCribbageDealer(unittest.TestCase):
@@ -149,7 +163,6 @@ class TestCribbageDealer(unittest.TestCase):
         self.game = cribbage.Cribbage([self.player1, self.player2], MockEvent)
         self.game.draw()
         self.game.deal()
-
         self.game.set_current_player(self.game._non_dealer)
 
     def test_dealer(self):
@@ -166,19 +179,47 @@ class TestCribbageDealer(unittest.TestCase):
     def test_current_player(self):
         self.assertEqual(self.game.current_player, self.player1)
 
-    def test_switch_current_player(self):
+    def test_simple_switch_current_player(self):
         self.assertEqual(self.game.current_player, self.player1)
         self.game.switch_current_player()
         self.assertEqual(self.game.current_player, self.player2)
 
-    def test_switch_dealer(self):
+    def test_switch_current_player(self):
+        for i in range(5000):
+            if i % 2 == 0:
+                self.assertEqual(self.game.current_player, self.player1)
+            else:
+                self.assertEqual(self.game.current_player, self.player2)
+            self.game.switch_current_player()
+            if i % 2 == 0:
+                self.assertEqual(self.game.current_player, self.player2)
+            else:
+                self.assertEqual(self.game.current_player, self.player1)
+
+    def test_simple_switch_dealer(self):
         self.assertEqual(self.game.dealer, self.player2)
         self.assertEqual(self.game.non_dealer, self.player1)
         self.game.switch_dealer()
         self.assertEqual(self.game.dealer, self.player1)
         self.assertEqual(self.game.non_dealer, self.player2)
 
-    def test_deal(self):
+    def test_switch_dealer(self):
+        for i in range(5000):
+            if i % 2 == 0:
+                self.assertEqual(self.game.dealer, self.player2)
+                self.assertEqual(self.game.non_dealer, self.player1)
+            else:
+                self.assertEqual(self.game.dealer, self.player1)
+                self.assertEqual(self.game.non_dealer, self.player2)
+            self.game.switch_dealer()
+            if i % 2 == 0:
+                self.assertEqual(self.game.dealer, self.player1)
+                self.assertEqual(self.game.non_dealer, self.player2)
+            else:
+                self.assertEqual(self.game.dealer, self.player2)
+                self.assertEqual(self.game.non_dealer, self.player1)
+
+    def test_simple_deal(self):
         self.assertEqual(len(self.game.dealer.hand), 6)
         self.assertIsInstance(self.game.dealer.hand, Hand)
         self.assertEqual(len(self.game.non_dealer.hand), 6)
@@ -188,6 +229,19 @@ class TestCribbageDealer(unittest.TestCase):
         self.assertEqual(self.game.dealer.hand, Hand([D['3D'], D['4D'], D['5C'], D['6H'], D['8D'], D['9C']]))
         self.assertEqual(self.game.non_dealer.hand, Hand([D['AC'], D['2C'], D['5S'], D['7D'], D['7S'], D['10C']]))
         self.assertEqual(self.game.starter, D['AD'])
+
+    def test_simple_deal(self):
+        for i in range(1000):
+            self.game.deal()
+            self.assertEqual(len(self.game.dealer.hand), 6)
+            self.assertIsInstance(self.game.dealer.hand, Hand)
+            self.assertEqual(len(self.game.non_dealer.hand), 6)
+            self.assertIsInstance(self.game.non_dealer.hand, Hand)
+            self.assertIsInstance(self.game.starter, cribbage.Card)
+            self.assertEqual(self.game.dealer.hand.hand, self.game.dealer.hand.unplayed)
+            self.assertEqual(self.game.non_dealer.hand.hand, self.game.non_dealer.hand.unplayed)
+            self.assertEqual(self.game.dealer.hand.played, [])
+            self.assertEqual(self.game.non_dealer.hand.played, [])
 
 
 class TestCribbageDiscardPlay(unittest.TestCase):
@@ -200,9 +254,7 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.game.deal()
 
         self.h1 = Hand([D['5C'], D['6H'], D['8D'], D['9C']])
-
         self.h2 = Hand([D['5S'], D['7D'], D['7S'], D['10C']])
-
         self.crib = Hand([D['AC'], D['2C'], D['3D'], D['4D']])
 
     def test_discard(self):
@@ -213,7 +265,7 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.assertEqual(self.game.non_dealer.hand, self.h2)
         self.assertEqual(self.game.crib, self.crib)
 
-    def test_his_heels(self):
+    def test_simple_his_heels(self):
         self.game.starter = D['10S']
         self.game.reveal_starter()
         self.assertEqual(self.game.dealer.score, 0)
@@ -221,6 +273,17 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.game.starter = D['JS']
         self.game.reveal_starter()
         self.assertEqual(self.game.dealer.score, 2)
+
+    def test_his_heels(self):
+        for _ in range(5000):
+            self.game.dealer.score = 0
+            self.game.starter = random.choice(cribbage.Cribbage.DECK)
+            self.game.reveal_starter()
+            if self.game.starter.number == 'J':
+                self.assertEqual(self.game.dealer.score, 2)
+            else:
+                self.assertEqual(self.game.dealer.score, 0)
+            self.assertEqual(self.game.non_dealer.score, 0)
 
     def test_play(self):
         self.game.discard()
@@ -250,7 +313,7 @@ class TestCribbageDiscardPlay(unittest.TestCase):
         self.assertEqual(self.game.non_dealer.score, 1)
 
 
-class TestCribbageScoring(unittest.TestCase):
+class TestCribbagePlayScoring(unittest.TestCase):
     def setUp(self):
         pass
 
@@ -365,7 +428,8 @@ class TestCribbagePegging(unittest.TestCase):
         #self.game.play_peg()
 
     def test_pegging_runs(self):
-        # Scoring pegging runs is different than scoring play runs, so we'll thoroughly test it separately.
+        # Scoring pegging runs is different than scoring play runs, so we'll test it here separately (same w/
+        # flushes below).
         score = scoring.peg_runs([D['AS'], D['2C'], D['2H'], D['AD'], D['3S']])
         self.assertEqual(score, 12)
         score = scoring.peg_runs([D['AS'], D['2C'], D['3H'], D['4D'], D['AS']])
