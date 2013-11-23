@@ -11,10 +11,10 @@ class Card(object):
         self.suit = suit
         self.value = Card.NUMBERS[number]
 
-    def __str__(self): # pragma: no cover
+    def __str__(self):
         return "{}{}".format(self.number, Card.SUITS[self.suit])
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):
         return "{}{}".format(self.number, Card.SUITS[self.suit])
 
     def __eq__(self, other):

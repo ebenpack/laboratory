@@ -4,7 +4,7 @@ class Hand(object):
         self.crib = crib
         self.played = []
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):
         return "Hand: {}, crib: {}".format(self.hand, self.crib)
 
     def __len__(self):
