@@ -21,7 +21,7 @@ class Cribbage(object):
         self._current_player = None
         self.starter = None
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):
         return "Players: {}, Dealer: {}".format(self.players, self.dealer)
 
     @property
@@ -81,10 +81,7 @@ class Cribbage(object):
         self.current_player.add_score(score)
 
     def discard(self):
-        crib = []
-        for player in self.players:
-            discarded = self.event_dispatch.discard(player)
-            crib.extend(player.hand.discard(discarded))
+        crib = self.event_dispatch.discard(self.players)
         self.crib = Hand(sorted(crib), crib=True)
 
     def play(self):
@@ -160,22 +157,8 @@ class Cribbage(object):
         self.play_peg()
         self.switch_dealer()
 
-        #pre_game()
-        #round_deal()
-        #round_cut()
-        #round_pegging()
-        #round_show()
-        #round_crib()
-        #round_end()
-
     def start(self):
         self.draw()
         while max([p.score for p in self.players]) < 121:
             self.play_round()
         # TODO: Post-game
-
-
-# https://en.wikipedia.org/wiki/Rules_of_cribbage
-# http://www.bicyclecards.com/card-games/rule/cribbage
-# http://www.pagat.com/adders/crib6.html
-#
