@@ -15,13 +15,16 @@ class Event(object):
 
 
 class OfflineEvent(Event):
-    def discard(self, player):
-        print("Your cards: {}".format(player.hand))
-        discarded = []
-        for _ in range(2):
-            print("Player {}, Select a card (by index) to discard.".format(player.name))
-            discarded.append(int(input()))
-        return discarded
+    def discard(self, players):
+        crib = []
+        for player in players:
+            discarded = []
+            print("Your cards: {}".format(player.hand.unplayed))
+            for _ in range(2):
+                print("Player {}, Select a card (by index) to discard.".format(player.name))
+                discarded.append(int(input()))
+            crib.extend(player.hand.discard(discarded))
+        return crib
 
     def play(self, player):
         print("Your cards: {}".format(player.hand.unplayed))
@@ -43,9 +46,12 @@ class OfflineEvent(Event):
 
 
 class MockEvent(Event):
-    def discard(self, player):
-        discarded = [0, 1]
-        return discarded
+    def discard(self, players):
+        crib = []
+        for player in players:
+            discarded = [0, 1]
+            crib.extend(player.hand.discard(discarded))
+        return crib
 
     def play(self, player):
         played = 0
