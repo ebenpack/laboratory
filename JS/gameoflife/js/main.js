@@ -1,7 +1,7 @@
 function gameoflife(id, speed) {
     var canvas = document.getElementById(id);
     var board = [];
-    var block_size = 10;
+    var block_size = 15;
     var debug = true;
     var play = false;
     var intervalID;
@@ -45,7 +45,7 @@ function gameoflife(id, speed) {
             for (var y = 0; y < board_height; y++) {
                 var old_cell = board[x][y];
                 var neighbours = 0;
-                // Look at neighbours
+                // Count neighbours
                 for (var i = -1; i <= 1; i++) {
                     for (var j = -1; j <= 1; j++) {
                         var newx = x + i;
@@ -65,10 +65,7 @@ function gameoflife(id, speed) {
                         }
                     }
                 }
-                // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-                // Any live cell with two or three live neighbours lives on to the next generation.
-                // Any live cell with more than three live neighbours dies, as if by overcrowding.
-                // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+                // Apply rules for life and death.
                 if (old_cell.alive === 1) {
                     if (neighbours === 2 || neighbours === 3) {
                         new_board[x][y] = new Cell(old_cell.x, old_cell.y, 1);
@@ -117,8 +114,19 @@ function gameoflife(id, speed) {
             var row_length = board.length;
             var col_length = board[0].length;
             ctx.lineWidth = 2;
+            ctx.strokeStyle = "grey";
+            ctx.lineWidth = 0.4;
             ctx.fillStyle = "black";
             for (var i = 0; i < row_length; i++) {
+                // Draw grid lines
+                ctx.beginPath();
+                ctx.moveTo(0, i * block_size);
+                ctx.lineTo(canvas.width, i * block_size);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(i * block_size, 0);
+                ctx.lineTo(i * block_size, canvas.height);
+                ctx.stroke();
                 for (var j = 0; j < col_length; j++) {
                     var cell = board[i][j];
                     // Draw if alive
