@@ -4,7 +4,8 @@ cover = False
 
 if cover:
     import coverage
-    cov = coverage.coverage(branch = True, omit = ['tests.py', 'cribbage/__init__.py'])
+    cov = coverage.coverage(branch=True,
+                            omit=['tests.py', 'cribbage/__init__.py'])
     cov.exclude('def __repr__')
     cov.exclude('def __str__')
     cov.start()
@@ -506,8 +507,8 @@ class TestCribbagePegging(unittest.TestCase):
 if __name__ == '__main__':
     try:
         unittest.main()
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
     if cover:
         tmp_path = os.path.dirname(os.path.realpath(__file__))
