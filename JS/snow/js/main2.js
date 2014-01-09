@@ -1,5 +1,3 @@
-// TODO: Scroll through time...
-
 function snow(density, speed, id) {
     var canvas = document.getElementById(id);
     var allsnow = [];
@@ -7,7 +5,7 @@ function snow(density, speed, id) {
     var debug = true;
     
 
-    function Snow(y, x, z, sinus) {
+    function JuliaSnow(y, x, z, sinus) {
         // Single paprticle of snow. z represents z-index, or how close snow is to foreground.
         // Sinus is in charge of drifting snow back and forth (sinusoidally)
         this.y = y;
@@ -15,12 +13,25 @@ function snow(density, speed, id) {
         this.z = z;
         this.sinus = sinus;
         this.rand = randomrange(0.3, 1); // Extra randomness, unrelated to z-pos
+        this.update = 0;
+        this.tendency = false;
         this.move = function() {
+            this.update = (this.update + 1) % 20;
+            if (this.update === 0) {
+                if (Math.random() <= 0.5) {
+                    this.tendency = false;
+                } else {
+                    this.tendency = true;
+                }
+            }
             // Move up/down. Closer snow moves faster.
             this.y += (this.z * this.rand * 2);
             // Move left/right. Update sinus. 
-            this.sinus += (0.3 * this.z) % Math.floor(this.z * (1 / this.rand));
-            this.x += (Math.sin(this.sinus) * this.rand);
+            if (this.tendency) {
+                this.x += (0.25 * this.z);
+            } else {
+                this.x -= (0.25 * this.z);
+            }
         };
     }
 
@@ -33,7 +44,7 @@ function snow(density, speed, id) {
         var y = Math.floor(canvas.height / block_size);
         for (var i = 0; i < x; i++) {
             for (var j = 0; j < y; j++) {
-                var newsnow = new Snow(
+                var newsnow = new JuliaSnow(
                     j * block_size, // y-pos
                     i * block_size, // x-pos
                     1, // z-pos
@@ -49,7 +60,7 @@ function snow(density, speed, id) {
             var ctx = canvas.getContext('2d');
 
             if (Math.random() < (density/100)) {
-                var newsnow = new Snow(
+                var newsnow = new JuliaSnow(
                     -10, // y-pos
                     (Math.random() * canvas.width), // x-pos
                     Math.random(), // z-pos

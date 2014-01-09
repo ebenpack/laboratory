@@ -5,6 +5,7 @@ function gameoflife(id, speed) {
     var debug = true;
     var play = false;
     var intervalID;
+    var mouse = {'x':0,'y':0}
 
     function Cell(x,y, alive) {
         // A single cell on the board.
@@ -82,7 +83,6 @@ function gameoflife(id, speed) {
             }
         }
         board = new_board;
-        draw_board();
     }
 
     function reset_board() {
@@ -116,7 +116,6 @@ function gameoflife(id, speed) {
             ctx.lineWidth = 2;
             ctx.strokeStyle = "grey";
             ctx.lineWidth = 0.4;
-            ctx.fillStyle = "black";
             for (var i = 0; i < row_length; i++) {
                 // Draw grid lines
                 ctx.beginPath();
@@ -131,8 +130,15 @@ function gameoflife(id, speed) {
                     var cell = board[i][j];
                     // Draw if alive
                     if (cell.alive === 1) {
+                        ctx.fillStyle = "black";
                         ctx.beginPath();
                         ctx.rect(cell.x,cell.y,block_size,block_size);
+                        ctx.fill();
+                        ctx.closePath();
+                    } else if (!play && mouse.x === cell.x && mouse.y === cell.y) {
+                        ctx.fillStyle = "grey";
+                        ctx.beginPath();
+                        ctx.rect(mouse.x,mouse.y,block_size,block_size);
                         ctx.fill();
                         ctx.closePath();
                     }
@@ -141,33 +147,34 @@ function gameoflife(id, speed) {
         }
     }
 
-    var button_handlers = function () {
-        var start = document.getElementById("start");
-        start.addEventListener("click", run_game, false);
+    var button_handlers = function() {
+        document.getElementById("start").addEventListener("click", run_game, false);
 
-        var reset = document.getElementById("reset");
-        reset.addEventListener("click", reset_board, false);
+        document.getElementById("reset").addEventListener("click", reset_board, false);
 
+        //document.getElementById("wrap").addEventListener('click', wraparound, false);
     }();
 
+    var slider_handler = function() {
+        function update_speed(e) {
+            clearInterval(intervalID);
+            intervalID = window.setInterval(function(){update_board();}, (1000 - speed * 8.5));
+            speed = parseInt(this.value, 10);
+        }
+        var speed_slider = document.getElementById('speed');
+        speed_slider.addEventListener("input", update_speed);
+        speed_slider.addEventListener("input", update_speed);
+    }();
+
+
+
     var mouse_handler = function() {
-        var mousedownListener = function(event) {
+
+        var mousedownListener = function(e) {
             var board_width = board.length;
             var board_height = board[0].length;
-            // var xpos = event.clientX;
-            // var ypos = event.clientY;
-            var xpos;
-            var ypos;
-            if (event.pageX || event.pageY) {
-              xpos = event.pageX;
-              ypos = event.pageY;
-            }
-            else {
-              xpos = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-              ypos = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-            }
-            xpos -= canvas.offsetLeft;
-            ypos -= canvas.offsetTop;
+            var xpos = e.pageX - this.offsetLeft;
+            var ypos = e.pageY - this.offsetTop;
 
             var board_x = Math.round(xpos / block_size);
             var board_y = Math.round(ypos / block_size);
@@ -190,15 +197,29 @@ function gameoflife(id, speed) {
                 draw_board();
             }
         };
+        var moveListener = function(e) {
+            if (!play) {
+                var board_width = board.length;
+                var board_height = board[0].length;
+                var xpos = e.pageX - this.offsetLeft;
+                var ypos = e.pageY - this.offsetTop;
+                var board_x = Math.round(xpos / block_size) * block_size;
+                var board_y = Math.round(ypos / block_size) * block_size;
+                mouse.x = board_x;
+                mouse.y = board_y;
+            }
+        };
         canvas.addEventListener('mousedown', mousedownListener);
+        canvas.addEventListener('mousemove', moveListener);
     }();
     
     init_board();
+    window.setInterval(function(){draw_board();}, 100);
 }
 
 var init = function() {
     var id = 'gol';
     window.onload = function(){
-        gameoflife(id, 1);
+        gameoflife(id, 10);
     };
 }();
