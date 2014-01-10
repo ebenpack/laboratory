@@ -2,6 +2,7 @@ function wind(id, speed) {
     var canvas = document.getElementById(id);
     var lattice = [];
     var block_size = 6;
+    var viscosity = 0.7;
     var node_directions = {
         // Particles passing to other nodes can move in the four cardinal
         // directions (1,2,3,4), the four ordinal directions (5,6,7,8), 
@@ -24,6 +25,17 @@ function wind(id, speed) {
         7: {'x':-1, 'y':1},
         8: {'x':1, 'y':1}
     };
+    var reflection = {
+        0: 0,
+        1: 3,
+        2: 4,
+        3: 1,
+        4: 2,
+        5: 6,
+        6: 5,
+        7: 8,
+        8: 7
+    };
     var debug = true;
 
     function LatticeNode(x,y) {
@@ -35,61 +47,31 @@ function wind(id, speed) {
         this.y = y; // Y coordinate on canvas
         // Each node contains individual distributions of particles that are travelling in
         // one of eight directions (as well as particles at rest).
-        this.particles = {
-            0: {'mass':0, 'velocity':0},
-            1: {'mass':0, 'velocity':0},
-            2: {'mass':0, 'velocity':0},
-            3: {'mass':0, 'velocity':0},
-            4: {'mass':0, 'velocity':0},
-            5: {'mass':0, 'velocity':0},
-            6: {'mass':0, 'velocity':0},
-            7: {'mass':0, 'velocity':0},
-            8: {'mass':0, 'velocity':0}
-        };
+        this.particles = [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ];
         this.barrier = false;
         // Keep track of overall node density and velocity. It would be easier to compute
         // these on the fly as needed, but it proved too computationally expensive.
-        this.density = 0;
-        this.velocity = 0;
+        this.density = 0; // Rho
+        this.velocity = {'x':0,'y':0}; // U
         // previous_state is a canvas optimization, to avoid redrawing the entire canvas 
         // at every frame. A value of 0 represents a previous state of 'off', a value of 
         // 1 represents a previous state of 'on'. This value is checked, and if it appears
         // as if the current state differs from the previous state, the node is redrawn and
         // previous_state is updated.
         this.previous_state = 0;
-        this.update_particle = function(direction, mass, velocity) {
-            var particle = this.particles[direction];
-            // Remove mass and velocity of old particle
-            this.density -= particle.mass;
-            this.velocity -= particle.velocity;
-
-            // Add mass and velocity of new particle
-            this.density += mass;
-            this.velocity += velocity;
-
-            // Update particle values
-            particle.mass = mass;
-            particle.velocity = velocity;
-        };
-        this.add_particle = function(direction, mass, velocity) {
-            var particle = this.particles[direction];
-            // Add mass and velocity of new particle
-            this.density += mass;
-            this.velocity += velocity;
-
-            // Update particle values
-            particle.mass += mass;
-            particle.velocity += velocity;
-        };
-        this.remove_particle = function(direction) {
-            var particle = this.particles[direction];
-            // Remove mass and velocity of old particle.
-            this.density -= particle.mass;
-            this.velocity -= particle.velocity;
-
-            // Reset particle.
-            particle.mass = 0;
-            particle.velocity = 0;
+        this.update_particle = function(direction, mass) {
+            // Update the distribution of a direction distribution
+                this.particles[direction] = mass;
         };
     }
 
@@ -109,8 +91,10 @@ function wind(id, speed) {
                     );
                 // If we're at the edge, set the LatticeNode barrier
                 // boolean to true.
-                if (i === 0 || i === x_size - 1 ||
-                    j === 0 || j === y_size - 1) {
+                if ((i === 0 || i === x_size - 1 ||
+                    j === 0 || j === y_size - 1) ||
+                    ((i > 45 && i < 55) &&
+                    (j > 12 && j < 18))) {
                     new_lattice_node.barrier = true;
                 }
                 new_lattice[i][j] = new_lattice_node;
@@ -124,7 +108,7 @@ function wind(id, speed) {
         // collision phase.
         var new_lattice = init_lattice();
         stream(new_lattice);
-        //collide(new_lattice);
+        collide(new_lattice);
         lattice = new_lattice;
     }
     
@@ -139,14 +123,19 @@ function wind(id, speed) {
                 var new_node = lat[x][y];
                 new_node.barrier = old_node.barrier;
                 new_node.previous_state = old_node.previous_state;
-                for (var p in old_node.particles) {
-                    var particle = old_node.particles[p];
-                    if (particle.mass > 0){
-                        var move_to = node_directions[p];
-                        var newx = x + move_to.x;
-                        var newy = y + move_to.y;
-                        if (newx > 0 && newy > 0 && newx < row_size && newy < col_size) {
-                           lat[newx][newy].add_particle(p, particle.mass, particle.velocity);
+                for (var d = 0; d < old_node.particles.length; d++) {
+                    var particle = old_node.particles[d];
+                    var move_to = node_directions[d];
+                    var newx = x + move_to.x;
+                    var newy = y + move_to.y;
+                    if (newx >= 0 && newy >= 0 && newx < row_size && newy < col_size) {
+                        // Diminish each particle a little each time it propagates
+                        var multiplier = 0.4;
+                        // Bounce-back
+                        if (lat[newx][newy].barrier) {
+                            lat[x][y].update_particle(reflection[d], (particle * multiplier));
+                        } else {
+                            lat[newx][newy].update_particle(d, (particle * multiplier));
                         }
                     }
                 }
@@ -155,28 +144,48 @@ function wind(id, speed) {
     }
 
     function collide(lat) {
+        // Apply BGK collision operator to all nodes in lattice.
+        // -(1/tau)*(current_dist - equilibrium_function)
+        function mv(ux, uy, vx, vy) {
+            // Multiply vectors
+            var p = (ux * vy) - (uy * vx);
+            return p;
+        }
+        var nw = {0:4/9, 1:1/9, 2:1/9, 3:1/9, 4:1/9,
+            5:1/36, 6:1/36, 7:1/36, 8:1/36}; // Node weights
         var row_size = lat.length;
         var col_size = lat[0].length;
         for (var x = 0; x < row_size; x++) {
             for (var y = 0; y < col_size; y++) {
                 var node = lat[x][y];
-                equilibrium(node);
+                var p = node.particles;
+                var rho = 0;
+                for (var i = 0; i < p.length; i++) {
+                    rho += p[i];
+                }
+                node.density = rho;
+                var ux = 0;
+                var uy = 0;
+                if (rho !== 0) {
+                    ux = ((p[1] + p[5] + p[8])-(p[3] + p[6] + p[7]) ) / rho;
+                    uy = ((p[2] + p[5] + p[6])-(p[4] + p[7] + p[8]) ) / rho;
+                }
+                var u2 = mv(ux, uy, ux, uy);
+                node.velocity['x'] = ux;
+                node.velocity['y'] = uy;
+                for (var j = 0; j < p.length; j++) {
+                    // Equilibrium
+                    var ei = node_directions[j];
+                    var product = mv(ei.x, ei.y, ux, uy);
+                    var eq = rho * nw[j] * (1 + 3*(product) + 4.5*(Math.pow(product,2)) - 1.5*(Math.abs(u2)));
+                    p[j] = p[j] + viscosity * (eq - p[j]);
+                }
             }
         }
     }
 
-    function equilibrium(node) {
-        var node_weight = {0:4/9, 1:1/9, 2:1/9, 3:1/9, 4:1/9,
-            5:1/36, 6:1/36, 7:1/36, 8:1/36};
-        for (var p in node.particles) {
-            var d = node.density;
-            if (d !== 0) {
-                var particle = node.particles[p];
-                var part_v = particle.velocity;
-                var node_v = node.velocity;
-                particle['mass'] = node_weight[p] * d * (1 + 3 * (part_v * node_v) + Math.pow((9/2)*(part_v * node_v), 2) - (3/2)*node_v*node_v);
-            }
-        }
+    function boundary(node) {
+
     }
 
     function draw_particles() {
@@ -186,23 +195,43 @@ function wind(id, speed) {
             var ctx = canvas.getContext('2d');
             var row_length = lattice.length;
             var col_length = lattice[0].length;
+            var vector = true;
+            if (vector) {canvas.width = canvas.width;}
             ctx.lineWidth = 2;
+            //ctx.strokeStyle = "rgb(0, 204, 0)";
+            ctx.strokeStyle = "red";
+            ctx.fillStyle = "blue";
             for (var i = 0; i < row_length; i++) {
                 for (var j = 0; j < col_length; j++) {
                     // Draw
                     var node = lattice[i][j];
-                    var density = node.density;
-                    if (node.previous_state === 0 && node.density > 0.01) {
+                    var velocity = node.velocity;
+                    var multip = 10;
+                    var vx = Math.abs(velocity.x) * multip;
+                    var vy = Math.abs(velocity.y) * multip;
+                    v = vx + vy;
+                    if (vector && (v > 0.01) ) {
+                        // if (node.barrier) {
+                        //     ctx.beginPath();
+                        //     ctx.rect(node.x,node.y,block_size,block_size);
+                        //     ctx.fill();
+                        //     ctx.closePath();
+                        // } else {
+                            ctx.beginPath();
+                            ctx.moveTo(node.x,node.y);
+                            ctx.lineTo(node.x + (velocity.x * multip), node.y + (-velocity.y * multip));
+                            ctx.stroke();
+                            ctx.closePath();
+                        //}
+                    } else if (node.previous_state === 0 && (v > 0.01)) {
                         // Draw node if it has not been drawn already.
-                        ctx.strokeStyle = "rgb(0, 204, 0)";
                         ctx.beginPath();
                         ctx.arc(node.x,node.y,0.3,0,2*Math.PI);
                         ctx.stroke();
                         ctx.closePath();
                         node.previous_state = 1;
-                    } else if (node.previous_state === 1 && node.density <= 0.01) {
+                    } else if (node.previous_state === 1 && v < 0.01) {
                         // Erase node if it has not been erased already.
-                        ctx.fillStyle = "black";
                         ctx.beginPath();
                         ctx.arc(node.x,node.y,block_size/2,0,2*Math.PI);
                         ctx.fill();
@@ -262,14 +291,24 @@ function wind(id, speed) {
         }
 
         var mousedownListener = function(e) {
-            // Subtract 1 from time  to try to avoid t === 0 in moveListener, and 
-            // thus divide by zero in dist function.
-            var time = Date.now() - 1;
+            var time = Date.now();
             var last_x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
             var last_y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
 
             var moveListener = function(evt) {
                 var t = Date.now() - time;
+                // If t === 0, set t to 1, to prevent divide by zero.\
+                function inbounds(x,y) {
+                    if (x < lattice.length && x >= 0 &&
+                        y < lattice[0].length && y >= 0 &&
+                        !lattice[x][y].barrier) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                }
+                t = t === 0 ? 1: t;
                 var c = 1; // Arbitrary multiplier
                 var radius = 10;
                 var xpos = evt.hasOwnProperty('offsetX') ? evt.offsetX : evt.layerX;
@@ -288,20 +327,10 @@ function wind(id, speed) {
                             // Add particle to node. Don't add particles to edge (barrier) nodes.
                             var lattice_x = Math.round(newx / block_size);
                             var lattice_y = Math.round(newy / block_size);
-                            if (lattice_x >= lattice.length - 1) {
-                                lattice_x = lattice.length - 2;
+                            if (inbounds(lattice_x, lattice_y)) {
+                                var direction = radian_to_direction(ang);
+                                lattice[lattice_x][lattice_y].update_particle(direction, v);
                             }
-                            if (lattice_x < 1) {
-                                lattice_x = 1;
-                            }
-                            if (lattice_y >= lattice[0].length - 1) {
-                                lattice_y = lattice[0].length - 2;
-                            }
-                            if (lattice_y < 1) {
-                                lattice_y = 1;
-                            }
-                            var direction = radian_to_direction(ang);
-                            lattice[lattice_x][lattice_y].add_particle(direction, 0.5, v);
                         }
                     }
                 }
