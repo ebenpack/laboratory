@@ -1,11 +1,12 @@
 function mouse_handler (canvas, lattice, queue, block_size) {
-
+    var x_size = Math.floor(canvas.width / block_size);
+    var y_size = Math.floor(canvas.height / block_size);
     function inbounds(x,y) {
         // Returns true if x,y coordinates satisfy in-bounds conditions
         // (inside lattice, not barrier, etc.), otherwise returns false.
-        return (   x < lattice.length && x >= 0 &&
-                        y < lattice[0].length && y >= 0 &&
-                        !lattice[x][y].barrier);
+        return (x < lattice.length && x >= 0 &&
+                y < lattice[0].length && y >= 0 &&
+                !lattice[x][y].barrier);
     }
 
         var node_directions = {
@@ -34,7 +35,7 @@ function mouse_handler (canvas, lattice, queue, block_size) {
             var newX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
             var newY = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
             var ang = angle(oldX, oldY, newX, newY);
-            var quad = node_directions[radian_to_direction(angle)];
+            var quad = node_directions[radian_to_direction(ang)];
             var latX = Math.round(newX / block_size); // X position on the lattice
             var latY = Math.round(newY / block_size); // Y position on the lattice
 

@@ -47,3 +47,33 @@ function dot_product(ux, uy, vx, vy) {
     // Return dot product of two vectors
     return (ux * vx) + (uy * vy);
 }
+
+function magnitude(vx, vy) {
+    // Returns the magnitude of the given vector. Pop pop!
+    return Math.sqrt((vx * vx) + (vy * vy));
+}
+
+var node_directions = {
+        // Particles passing to other nodes can move in the four cardinal
+        // directions (1,2,3,4), the four ordinal directions (5,6,7,8), 
+        // or they can remain where they are (0). These directions are arranged as follows.
+        // 
+        //      6    2    5
+        // 
+        //      3    0    1
+        // 
+        //      7    4    8
+        // 
+        // N.b. The lattice origin is in the upper left of the canvas, so a move 'Southeaste'
+        // would correspond to an increase in X and Y.
+
+        0: {'x':0, 'y':0},
+        1: {'x':1, 'y':0},
+        2: {'x':0, 'y':-1},
+        3: {'x':-1, 'y':0},
+        4: {'x':0, 'y':1},
+        5: {'x':1, 'y':-1},
+        6: {'x':-1, 'y':-1},
+        7: {'x':-1, 'y':1},
+        8: {'x':1, 'y':1}
+    };
