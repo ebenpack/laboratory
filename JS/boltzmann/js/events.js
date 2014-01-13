@@ -66,8 +66,17 @@ function mouse_handler (canvasid) {
         viscosity = new_viscosity;
         omega = 1 / (3 * viscosity + 0.5);
     }
+	function toggle_vecotrs(e){
+        if (this.value === "on") {
+			draw_flow_vectors = true;
+		} else {
+			draw_flow_vectors = false;
+		}
+    }
     var options = document.getElementById("drawmode");
     options.addEventListener('change', update_draw_mode);
     var slider = document.getElementById("viscosity");
     slider.addEventListener('input', update_viscosity);
+	var flowvector = document.getElementById("flowvectors");
+    flowvector.addEventListener('click', toggle_vecotrs);
 })();

@@ -5,9 +5,19 @@ function draw_lattice(canvasid, drawmode) {
     var lattice_width = lattice.length;
     var lattice_height = lattice[0].length;
     var canvas = document.getElementById(canvasid);
+	var vectorcanvas = document.getElementById("vectorcanvas");
     var px_per_node = Math.floor(canvas.width / lattice_width);
     if (canvas.getContext){
         var ctx = canvas.getContext('2d');
+		var vectorctx = vectorcanvas.getContext('2d');
+		
+		if (draw_flow_vectors) {
+			// Clear the canvas if we're drawing flow vectors.
+			vectorcanvas.width = vectorcanvas.width;
+			vectorctx.strokeStyle = "red";
+			vectorctx.fillStyle = "red";
+		}
+		
         var image = ctx.createImageData(canvas.width, canvas.height);
         for (var x = 0; x < lattice_width; x++) {
             for (var y = 0; y < lattice_height; y++) {
@@ -18,15 +28,17 @@ function draw_lattice(canvasid, drawmode) {
                     var g = 0;
                     var b = 0;
                     var a = 255;
+					var ux = lattice[x][y].ux;
+					var uy = lattice[x][y].uy;
                     if (draw_mode === 0) {
                         // Speed
-                        g = Math.sqrt(Math.pow(lattice[x][y].ux, 2) + Math.pow(lattice[x][y].uy, 2)) * 2000;
+                        g = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2)) * 2000;
                     } else if (draw_mode == 1) {
                         // X velocity
-                        g = Math.abs(lattice[x][y].ux * 2000);
+                        g = Math.abs(ux * 2000);
                     } else if (draw_mode == 2) {
                         // Y Velocity
-                        g = Math.abs(lattice[x][y].uy * 2000);
+                        g = Math.abs(uy * 2000);
                     } else if (draw_mode == 3) {
                         // Density
                         g = 255 - (255 / Math.abs(lattice[x][y].density));
@@ -36,6 +48,10 @@ function draw_lattice(canvasid, drawmode) {
                     if (g > 255) {g = 255;}
                     if (g < 0) {g = 0;}
                     draw_square(x, y, r, g, b, a);
+					if (draw_flow_vectors && x % 10 === 0 && y % 10 ===0) {
+						// Draw flow vectors every tenth node.
+						draw_flow_vector(x, y, ux, uy)
+					}
                 }
             }
         }
@@ -56,6 +72,18 @@ function draw_lattice(canvasid, drawmode) {
             }
         }
     }
+	function draw_flow_vector(x,y,ux,uy) {
+		// Translate y
+		var scale = 100;
+		y = lattice_height - y - 1;
+		vectorctx.beginPath();
+        vectorctx.moveTo(x * px_per_node, y * px_per_node);
+        vectorctx.lineTo((x * px_per_node) + Math.round(ux * px_per_node * scale), (y * px_per_node) + Math.round(uy * px_per_node * scale));
+        vectorctx.stroke();
+		vectorctx.beginPath();
+		vectorctx.arc(x * px_per_node, y * px_per_node, 1, 0, 2 * Math.PI, false);
+		vectorctx.fill();
+	}
 }
 
 function angle(x1, y1, x2, y2) {
