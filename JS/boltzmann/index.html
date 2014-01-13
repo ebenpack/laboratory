@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Lattice Boltzmann</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+    <body>
+        <div class="">
+            <canvas id="boltzmann" style="background-color: black;" width='600' height='240'></canvas>
+             <div id="controls" class="controls">   
+                <select id="drawmode">
+                    <option value="speed">Speed</option>
+                    <option value="xvelocity">X Velocity</option>
+                    <option value="yvelocity">Y Velocity</option>
+                    <option value="density">Density</option>
+                </select>
+                <label><input id="viscosity" type="range" name="viscosity" min="2" max="30"> Viscosity</label>
+            </div>
+        </div>
+        <script src="js/globals.js"></script>
+        <script src="js/draw.js"></script>
+        <script src="js/events.js"></script>
+        <script src="js/main.js"></script>
+    </body>
+</html>
