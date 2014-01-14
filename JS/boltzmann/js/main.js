@@ -127,6 +127,8 @@ function boltzmann(id, lattice_width, lattice_height) {
                             // node in opposite direction. lattice barrier is checked as 
                             // the barrier flag for new_lattice may not yet have been set for
                             // destination node.
+							// TODO: Look more closely into boundary conditions. Simple reflection might be
+							// a bit simplistic.
                             if (lattice[newx][newy].barrier) {
                                 new_lattice[x][y].distribution[reflection[d]] = old_node.distribution[d];
                             } else {
