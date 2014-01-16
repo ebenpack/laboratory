@@ -1,5 +1,5 @@
-function mouse_handler (canvasid) {
-    var canvas = document.getElementById(canvasid);
+function mouse_handler () {
+    
     var lattice_width = lattice.length;
     var lattice_height = lattice[0].length;
     var canvas_width = canvas.width;
@@ -24,9 +24,8 @@ function mouse_handler (canvasid) {
                 dy = 0.1 * Math.abs(dy) / dy;
             }
             // Scale from canvas coordinates to lattice coordinates
-            // Invert y, as canvas origin is at top
             var lattice_x = Math.floor(newX / px_per_node);
-            var lattice_y = lattice_height - Math.floor(newY / px_per_node);
+            var lattice_y = Math.floor(newY / px_per_node);
             for (var x = -radius; x <= radius; x++) {
                 for (var y = -radius; y <= radius; y++) {
                     // Push in circle around cursor. Make sure coordinates are in bounds.
@@ -66,17 +65,18 @@ function mouse_handler (canvasid) {
         viscosity = new_viscosity;
         omega = 1 / (3 * viscosity + 0.5);
     }
-	function toggle_vecotrs(e){
-        if (this.value === "on") {
-			draw_flow_vectors = true;
-		} else {
-			draw_flow_vectors = false;
-		}
+    function toggle_vectors(e){
+        if (this.checked) {
+            draw_flow_vectors = true;
+        } else {
+            draw_flow_vectors = false;
+            vectorcanvas.width = vectorcanvas.width;
+        }
     }
     var options = document.getElementById("drawmode");
     options.addEventListener('change', update_draw_mode);
     var slider = document.getElementById("viscosity");
     slider.addEventListener('input', update_viscosity);
-	var flowvector = document.getElementById("flowvectors");
-    flowvector.addEventListener('click', toggle_vecotrs);
+    var flowvector = document.getElementById("flowvectors");
+    flowvector.addEventListener('click', toggle_vectors);
 })();

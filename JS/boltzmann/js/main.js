@@ -43,6 +43,7 @@ function boltzmann(id, lattice_width, lattice_height) {
         this.ux = 0; // X component of macroscopic velocity of a node.
         this.uy = 0; // Y component of macroscopic velocity of a node.
         this.barrier = false; // Boolean indicating if node is a barrier.
+        this.curl = 0; // Curl of node.
     }
 
     function make_lattice(lattice_width, lattice_height) {
@@ -116,6 +117,11 @@ function boltzmann(id, lattice_width, lattice_height) {
                 var new_node = new_lattice[x][y];
                 // Copy barrier data
                 new_node.barrier = old_node.barrier;
+                // Compute curl. 
+                if (x > 0 && x < lattice_width - 1 &&
+                    y > 0 && y < lattice_height - 1) {
+                    new_node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
+                }
                 if (!new_node.barrier) {
                     for (var d = 0; d < old_node.distribution.length; d++) {
                         var move = node_directions[d];
@@ -127,8 +133,8 @@ function boltzmann(id, lattice_width, lattice_height) {
                             // node in opposite direction. lattice barrier is checked as 
                             // the barrier flag for new_lattice may not yet have been set for
                             // destination node.
-							// TODO: Look more closely into boundary conditions. Simple reflection might be
-							// a bit simplistic.
+                            // TODO: Look more closely into boundary conditions. Simple reflection might be
+                            // a bit simplistic.
                             if (lattice[newx][newy].barrier) {
                                 new_lattice[x][y].distribution[reflection[d]] = old_node.distribution[d];
                             } else {
@@ -176,7 +182,7 @@ function boltzmann(id, lattice_width, lattice_height) {
     lattice = make_lattice(lattice_width, lattice_height);
     init_barrier();
     init_flow(0, 0, 1); // Initialize all lattice nodes with zero velocity, and density of 1
-    mouse_handler(id);
+    mouse_handler();
 
     window.requestAnimFrame = (function(){
         return  window.requestAnimationFrame ||
@@ -200,9 +206,9 @@ function boltzmann(id, lattice_width, lattice_height) {
             var uy = q[3];
             node.distribution = equilibrium(node, ux, uy, node.density);
         }
-        draw_lattice(id);
-        // requestAnimFrame(updater);
-        window.setTimeout(updater, 20);
+        draw_lattice();
+        requestAnimFrame(updater);
+        // window.setTimeout(updater, 20);
     })();
 
 }

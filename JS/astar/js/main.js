@@ -272,9 +272,6 @@ function move_goal(e) {
     update_paths();
 }
 
-var step = document.getElementById("step");
-step.addEventListener('click', update);
-
 canvas.addEventListener('click', move_goal);
 
 
