@@ -5,7 +5,7 @@ var ctx = canvas.getContext('2d');
 var mouse = {'x':10, 'y':4};
 var map_width = 60;
 var block_size = Math.floor(canvas.width / map_width);
-var height = Math.floor(canvas.height / block_size);
+var map_height = Math.floor(canvas.height / block_size);
 var map = [];
 var particles = [];
 var particle_size = 2;
@@ -175,7 +175,7 @@ function neighbors(x,y) {
     return neighbor_list;
 }
 
-function init_map(width) {
+function init_map(width, height) {
     for(var x = 0; x < width; x++){
         map[x] = [];
         for(var y = 0; y < height; y++) {
@@ -223,7 +223,7 @@ function init_particles(n) {
     }
 }
 
-init_map(map_width);
+init_map(map_width, map_height);
 init_particles(20);
 
 function update_paths() {
