@@ -50,7 +50,9 @@ function draw_lattice(canvasid, drawmode) {
                     draw_square(x, y, r, g, b, a);
 					if (draw_flow_vectors && x % 10 === 0 && y % 10 ===0) {
 						// Draw flow vectors every tenth node.
-						draw_flow_vector(x, y, ux, uy)
+                        // TODO: Some flow vectors appear to be going in the wrong direction.
+                        // Look into this.
+						draw_flow_vector(x, y, ux, uy);
 					}
                 }
             }
