@@ -3,13 +3,14 @@ var canvas = document.getElementById("particles");
 var mapctx = mapcanvas.getContext('2d');
 var ctx = canvas.getContext('2d');
 var mouse = {'x':10, 'y':4};
-map_width = 60;
-block_size = Math.floor(canvas.width / map_width);
-height = Math.floor(canvas.height / block_size);
-
-map = [];
-particles = [];
+var map_width = 60;
+var block_size = Math.floor(canvas.width / map_width);
+var height = Math.floor(canvas.height / block_size);
+var map = [];
+var particles = [];
 var particle_size = 2;
+var queue = []; // Used to queue particles for path updating. Prevents momentary freeze 
+                        // that occurs if all particles update path on same frame.
 
 function random_range(min, max) {
     return Math.random() * (max - min) + min;
@@ -227,8 +228,7 @@ init_particles(20);
 
 function update_paths() {
     for (var i = 0; i < particles.length; i++) {
-        var p = particles[i];
-        p.set_path();
+        queue.push(particles[i]);
     }
 }
 
@@ -241,6 +241,12 @@ function update() {
         p.move();
         draw_particle(p.x, p.y, 0, 255, 0, 100);
     }
+    if (queue.length > 1) {
+            var q = queue.shift();
+            q.set_path();
+            // TODO: Save path, scan queue, remove all particles in queu
+            // in same starting square and set path to saved path.
+        }
 
     ctx.putImageData(image, 0, 0);
 
