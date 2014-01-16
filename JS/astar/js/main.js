@@ -2,7 +2,7 @@ var mapcanvas = document.getElementById("map");
 var canvas = document.getElementById("particles");
 var mapctx = mapcanvas.getContext('2d');
 var ctx = canvas.getContext('2d');
-var goal = {'x':10, 'y':4};
+var mouse = {'x':10, 'y':4};
 map_width = 60;
 block_size = Math.floor(canvas.width / map_width);
 height = Math.floor(canvas.height / block_size);
@@ -13,6 +13,14 @@ var particle_size = 2;
 
 function random_range(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+function isEmpty(obj) {
+    for(var key in obj) {
+        if(obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
 }
 
 function angle(x1, y1, x2, y2) {
@@ -30,34 +38,37 @@ function angle(x1, y1, x2, y2) {
 }
 
 function Particle(x,y) {
-    this.x = x;
-    this.y = y;
+    this.x = x; // X position on canvas
+    this.y = y; // Y position on canvas
     this.vel = {'x':0, 'y':0};
-    this.ang = 0;
-    this.speed = 1;
+    this.ang = 0; // Angle the particle is travelling in
+    this.speed = random_range(1,2);
     this.path = [];
+    this.destination = {'x':0, 'y':0}; // The current destination
+    this.inertia = random_range(0.05, 0.1);
+    this.update = function() {
+        // A particle's velocity doesn't change instantaneously. The angle
+        // of its movement is nudges towards the angle towards its goal,
+        // and then the goal angle is updated for its new position.
+        
+        // If particle has reached a node along its path, remove the next
+        // node in the path, and set the 
+        var map_loc = map_location(this.x, this.y);
+        if (map_loc.x === this.destination.x && map_loc.y === this.destination.y) {
+            if (this.path.length > 0) {
+                this.destination = this.path.pop();
+            }
+        }
+        // Calculate angle to goal for current position.
+        this.ang = angle(this.x, this.y, (this.destination.x * block_size) + (block_size / 2), (this.destination.y * block_size) + (block_size / 2));
+        // Update particle velocity using new angle value
+        var velx = this.speed * Math.cos(this.ang);
+        var vely = this.speed * Math.sin(this.ang);
+        this.vel.x = this.vel.x + (velx - this.vel.x) * this.inertia;
+        this.vel.y = this.vel.y + (vely - this.vel.y) * this.inertia;
+    };
     this.move = function() {
-        // Update velocity. When the angle the particle is moving in changes we don't
-        // want the velocity to change instantly, so just nudge it towards where it belongs.
-        // This is meant to be a very crude implementation of inertia.
-        var inertia = 0.05;
-        var dx = this.speed * Math.cos(this.ang);
-        var dy = this.speed * Math.sin(this.ang);
-        if (this.vel.x < dx) {
-            this.vel.x += inertia;
-        } else {
-            this.vel.x -= inertia;
-        }
-        if (this.vel.y < dy) {
-            this.vel.y += inertia;
-        } else {
-            this.vel.y -= inertia;
-        }
-        // Randomness
-        this.vel.x += random_range(-inertia, inertia);
-        this.vel.y += random_range(-inertia, inertia);
-
-
+        // Get integer values for next position
         var newx = Math.round(this.vel.x + this.x);
         var newy = Math.round(this.vel.y + this.y );
         // Move if path unobstructed
@@ -69,15 +80,105 @@ function Particle(x,y) {
         }
     };
     this.set_path = function() {
-        this.ang = angle(this.x, this.y, goal.x, goal.y);
+        // Find and set the path to the goal, using A*
+        // This would 
+        // F = G + H
+        var start = map_location(this.x, this.y);
+        var goal = map_location(mouse.x, mouse.y);
+        start.parent = null;
+        start.g = 0;
+        start.h = 0; // do this
+        start.f = start.g + start.h;
+        var to_visit  = {};
+        to_visit[to_str(start)] = start;
+        var visited = {};
+        while (!isEmpty(to_visit)) {
+            var idx = -1;
+            var smallest_f = Infinity;
+            // Find smalled F value
+            for (var i in to_visit) {
+                if (to_visit[i].f < smallest_f) {
+                    idx = i;
+                    smallest_f = to_visit[i].f;
+                }
+            }
+            // Remove node with smallest F value from to_visit, add to visited
+            var current = to_visit[idx];
+            delete to_visit[idx];
+            visited[idx] = current;
+            // Calculate properties for neighbors and add to to_visit
+            var neighbor_list = neighbors(current.x, current.y);
+            for (var j = 0; j < neighbor_list.length; j++) {
+                // diag 14, cardinal 10
+                var nbr = neighbor_list[j];
+                nbr.parent = current;
+                if (nbr.x !== nbr.parent.x && nbr.y !== nbr.parent.y) {
+                    // Diagonal movement costs more than horizontal or vertical movement
+                    nbr.g = nbr.parent.g + 14;
+                } else {
+                    nbr.g = nbr.parent.g + 10;
+                }
+                nbr.h = calc_h(nbr, goal);
+                nbr.f = nbr.g + nbr.h;
+
+                var key = to_str(nbr);
+                // Check if already visited, if so, check if F value here is better.
+                if (key in to_visit && !(key in visited)) {
+                    if (nbr.g < to_visit[key].g) {
+                        to_visit[key] = nbr;
+                    }
+                } else if (!(key in visited)) {
+                    to_visit[key] = nbr;
+                }
+                // Stop if we've reached our goal
+                if (nbr.x === goal.x && nbr.y === goal.y) {
+                    visited[to_str(nbr)] = nbr;
+                    // Work backwards from goal, adding parents to list, until we reach start
+                    var path = [];
+                    var curr = visited[to_str(goal)];
+                    while (curr !== null) {
+                        path.push({'x':curr.x, 'y':curr.y});
+                        curr = curr.parent;
+                    }
+                    this.destination = {'x':path[path.length-1].x, 'y':path[path.length-1].y};
+                    this.path = path;
+                    return;
+                }
+            }
+        }
+        if (isEmpty(to_visit)) {
+            this.path = [];
+        }
+        function to_str(node) {
+                return node.x + '' + node.y;
+            }
+        function calc_h(p0, p1){
+            var d1 = Math.abs (p1.x - p0.x);
+            var d2 = Math.abs (p1.y - p0.y);
+            return d1 + d2;
+        }
     };
+}
+
+function neighbors(x,y) {
+    // Only return neighbors in cardinal directions
+    // Particles can't navigate through barriers diagonally
+    var neighbor_list = [];
+    for (var i = -1; i <= 1; i++) {
+        for (var j = -1; j <= 1; j++) {
+            if (!(i===j && i===0) && map[x+i] !== undefined && map[x+i][y+j] !== undefined && !map[x+i][y+j].barrier && (Math.abs(i) + Math.abs(j) < 2)) {
+                neighbor_list.push({'x': x+i, 'y':y+j, 'parent': {'x':x, 'y':y}});
+             }
+        }
+    }
+    return neighbor_list;
 }
 
 function init_map(width) {
     for(var x = 0; x < width; x++){
         map[x] = [];
         for(var y = 0; y < height; y++) {
-            if(Math.random() * 10 > 8){
+            if(Math.random() * 10 > 7){
                 map[x][y] = {'x' : x, 'y' : y, 'barrier' : true};
                 mapctx.fillStyle = 'red';
             } else{
@@ -136,6 +237,7 @@ function update() {
 
     for (var i = 0; i < particles.length; i++) {
         var p = particles[i];
+        p.update();
         p.move();
         draw_particle(p.x, p.y, 0, 255, 0, 100);
     }
@@ -157,8 +259,8 @@ function update() {
 }
 
 function move_goal(e) {
-    goal.x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
-    goal.y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
+    mouse.x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
+    mouse.y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
     // Clear old marker,
     // draw new marker
     update_paths();
