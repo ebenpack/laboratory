@@ -1,6 +1,5 @@
 function draw_lattice() {
     // TODO: Change color handling
-    // Implement curl
     var lattice_width = lattice.length;
     var lattice_height = lattice[0].length;
     var px_per_node = Math.floor(canvas.width / lattice_width);
@@ -32,10 +31,20 @@ function draw_lattice() {
                         g = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2)) * 2000;
                     } else if (draw_mode == 1) {
                         // X velocity
-                        g = Math.abs(ux * 2000);
+                        var xvel = ux * 3000;
+                        if (xvel < 0) {
+                            g = Math.abs(xvel);
+                        } else {
+                            r = Math.abs(xvel);
+                        }
                     } else if (draw_mode == 2) {
                         // Y Velocity
-                        g = Math.abs(uy * 2000);
+                        var yvel = uy * 3000;
+                        if (yvel < 0) {
+                            g = Math.abs(yvel);
+                        } else {
+                            r = Math.abs(yvel);
+                        }
                     } else if (draw_mode == 3) {
                         // Density
                         g = 255 - (255 / Math.abs(lattice[x][y].density));
@@ -69,8 +78,6 @@ function draw_lattice() {
     function draw_square(x, y, r, g, b, a) {
         // Draw a square region on the canvas image corresponding to a
         // lattice node at (x,y).
-        // Lattice origin is at bottom, but canvas origin is at top.
-        // y = lattice_height - y - 1;
         for (var ypx = y * px_per_node; ypx < (y+1) * px_per_node; ypx++) {
             for (var xpx = x * px_per_node; xpx < (x + 1) * px_per_node; xpx++) {
                 var index = (xpx + ypx * image.width) * 4;
@@ -84,7 +91,6 @@ function draw_lattice() {
     function draw_flow_vector(x,y,ux,uy) {
         // Translate y
         var scale = 100;
-        // y = lattice_height - y - 1;
         vectorctx.beginPath();
         vectorctx.moveTo(x * px_per_node, y * px_per_node);
         vectorctx.lineTo((x * px_per_node) + Math.round(ux * px_per_node * scale), (y * px_per_node) + Math.round(uy * px_per_node * scale));

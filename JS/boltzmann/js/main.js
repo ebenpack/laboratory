@@ -1,4 +1,5 @@
 function boltzmann(id, lattice_width, lattice_height) {
+    // TODO: 
     var four9ths = 4/9;
     var one9th = 1/9;
     var one36th = 1/36;
@@ -87,7 +88,9 @@ function boltzmann(id, lattice_width, lattice_height) {
         for (var x = 0; x < lattice_width; x++) {
             for (var y = 0; y < lattice_height; y++) {
                 if (x === 0 || x === lattice_width - 1 ||
-                    y === 0 || y === lattice_height - 1) {
+                    y === 0 || y === lattice_height - 1 ||
+                    (x > 80 && x < 120 &&
+                    y > 30 && y < 50)) {
                     lattice[x][y].barrier = true;
                 }
             }
@@ -208,7 +211,6 @@ function boltzmann(id, lattice_width, lattice_height) {
         }
         draw_lattice();
         requestAnimFrame(updater);
-        // window.setTimeout(updater, 20);
     })();
 
 }
