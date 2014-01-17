@@ -1,0 +1,3 @@
+# Snow #
+
+Small xmas project to start learning about canvas. In the course of trying to implement a convincing wind system, I started to look into fluid dynamics, which led to researching Navier-Stokes equations, which led to reasearching lattice gas automata, which led to researching lattice Boltzmann methods, which led to the creation of another project. However, lattice Boltzmann is almost certainly too computationally expensive to be reasonably considered for such a task, especially when such a high degree of verisimilitude in physically modelling the wind is not required. Basically, lattice Boltzmann would be mega-overkill, and probably wouldn't even look that much more real than some approximation.
