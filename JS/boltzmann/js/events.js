@@ -2,8 +2,6 @@ function mouse_handler () {
     
     var lattice_width = lattice.length;
     var lattice_height = lattice[0].length;
-    var canvas_width = canvas.width;
-    var canvas_height = canvas.height;
     var px_per_node = Math.floor(canvas.width / lattice_width);
     var mousedownListener = function(e) {
 
@@ -39,20 +37,20 @@ function mouse_handler () {
             }
         };
         var mouseupListener = function(e) {
-            canvas.removeEventListener('mousemove', moveListener);
-            canvas.removeEventListener('mouseup', mouseupListener);
+            canvas.removeEventListener('mousemove', moveListener, false);
+            canvas.removeEventListener('mouseup', mouseupListener, false);
 
-            canvas.removeEventListener('touchmove', moveListener);
-            document.body.removeEventListener('touchend', mouseupListener);
+            canvas.removeEventListener('touchmove', moveListener, false);
+            document.body.removeEventListener('touchend', mouseupListener, false);
         };
-        canvas.addEventListener('mousemove', moveListener);
-        canvas.addEventListener('mouseup', mouseupListener);
+        canvas.addEventListener('mousemove', moveListener, false);
+        canvas.addEventListener('mouseup', mouseupListener, false);
 
-        canvas.addEventListener('touchmove', moveListener);
-        document.body.addEventListener('touchend', mouseupListener);
+        canvas.addEventListener('touchmove', moveListener, false);
+        document.body.addEventListener('touchend', mouseupListener, false);
     };
-    canvas.addEventListener('mousedown', mousedownListener);
-    canvas.addEventListener('touchstart', mousedownListener);
+    canvas.addEventListener('mousedown', mousedownListener, false);
+    canvas.addEventListener('touchstart', mousedownListener, false);
 }
 
 (function settingsHandler(){
@@ -74,9 +72,9 @@ function mouse_handler () {
         }
     }
     var options = document.getElementById("drawmode");
-    options.addEventListener('change', update_draw_mode);
+    options.addEventListener('change', update_draw_mode, false);
     var slider = document.getElementById("viscosity");
-    slider.addEventListener('input', update_viscosity);
+    slider.addEventListener('input', update_viscosity, false);
     var flowvector = document.getElementById("flowvectors");
-    flowvector.addEventListener('click', toggle_vectors);
+    flowvector.addEventListener('click', toggle_vectors, false);
 })();

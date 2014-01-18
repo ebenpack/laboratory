@@ -1,4 +1,4 @@
-function boltzmann(id, lattice_width, lattice_height) {
+function boltzmann(lattice_width, lattice_height) {
     // TODO: 
     var four9ths = 4/9;
     var one9th = 1/9;
@@ -6,13 +6,13 @@ function boltzmann(id, lattice_width, lattice_height) {
     var node_directions = {
         0: {'x':0, 'y':0},
         1: {'x':1, 'y':0},
-        2: {'x':0, 'y':1},
+        2: {'x':0, 'y':-1},
         3: {'x':-1, 'y':0},
-        4: {'x':0, 'y':-1},
-        5: {'x':1, 'y':1},
-        6: {'x':-1, 'y':1},
-        7: {'x':-1, 'y':-1},
-        8: {'x':1, 'y':-1}
+        4: {'x':0, 'y':1},
+        5: {'x':1, 'y':-1},
+        6: {'x':-1, 'y':-1},
+        7: {'x':-1, 'y':1},
+        8: {'x':1, 'y':1}
     };
     var node_weight = {
         0: four9ths,
@@ -74,7 +74,7 @@ function boltzmann(id, lattice_width, lattice_height) {
         }
     }
 
-    function init_barrier(barrier_array) {
+    function init_barrier() {
         // Barrier is an array of arrays. The inner arrays consist of [x,y]
         // coordinates for barrier in the lattice.
         // for (var i = 0; i < barrier_array.length; i++ ) {
@@ -159,7 +159,7 @@ function boltzmann(id, lattice_width, lattice_height) {
                     var d = node.distribution;
                     var rho = d[0] + d[1] + d[2] + d[3] + d[4] + d[5] + d[6] + d[7] + d[8];
                     var ux = (d[1] + d[5] + d[8] - d[3] - d[6] - d[7]) / rho;
-                    var uy = (d[2] + d[5] + d[6] - d[4] - d[7] - d[8]) / rho;
+                    var uy = (d[4] + d[7] + d[8] - d[2] - d[5] - d[6]) / rho;
                     // Update values stored in node.
                     node.density = rho;
                     node.ux = ux;
@@ -215,9 +215,8 @@ function boltzmann(id, lattice_width, lattice_height) {
 
 }
 
-var init = function() {
-    var id = 'boltzmann';
+(function() {
     window.onload = function(){
-        boltzmann(id, 200, 80);
+        boltzmann(200, 80);
     };
-}();
+}());
