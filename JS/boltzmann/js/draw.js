@@ -97,11 +97,9 @@ function draw_lattice() {
             val = min;
         }
         if (val >= mid) {
-            color.r = 185;
-            color.g = 128;
+            color.r = 255;
             color.a = Math.abs(val) * (1/range) * 255;
         } else {
-            color.r = 0;
             color.g = 255;
             color.a = Math.abs(val) * (1/range) * 255;
         }
