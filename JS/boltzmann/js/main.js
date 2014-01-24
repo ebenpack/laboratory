@@ -1,5 +1,9 @@
 function boltzmann(lattice_width, lattice_height) {
-    // TODO: 
+    // TODO: Optimize. Running several update_lattice lattice
+    // cycles for each frame will give the effect of increasing the
+    // speed at which the simulation is running. Currently, however
+    // the simulation does not run nearly fast enough for for the
+    // animation to run smoothly at higher speeds.
     var four9ths = 4/9;
     var one9th = 1/9;
     var one36th = 1/36;
@@ -40,20 +44,20 @@ function boltzmann(lattice_width, lattice_height) {
     function LatticeNode() {
         this.distribution = [0,0,0,0,0,0,0,0,0]; // Individual density distributions for 
         // each of the nine possible discrete velocities of a node.
-        this.density = 0; // Macroscopic density of a node.
-        this.ux = 0; // X component of macroscopic velocity of a node.
-        this.uy = 0; // Y component of macroscopic velocity of a node.
-        this.barrier = false; // Boolean indicating if node is a barrier.
-        this.curl = 0; // Curl of node.
     }
+    LatticeNode.prototype.density = 0; // Macroscopic density of a node.
+    LatticeNode.prototype.ux = 0; // X component of macroscopic velocity of a node.
+    LatticeNode.prototype.uy = 0; // Y component of macroscopic velocity of a node.
+    LatticeNode.prototype.barrier = false; // Boolean indicating if node is a barrier.
+    LatticeNode.prototype.curl = 0; // Curl of node.
 
     function make_lattice(lattice_width, lattice_height) {
         // Make a new lattice 
-        var new_lattice = [];
+        var new_lattice = new Array(lattice_width);
         for (var i = 0; i < lattice_width; i++) {
-            new_lattice.push([]);
+            new_lattice[i] = new Array(lattice_height);
             for (var j = 0; j < lattice_height; j++) {
-                new_lattice[i].push(new LatticeNode());
+                new_lattice[i][j] = new LatticeNode();
             }
         }
         return new_lattice;
@@ -101,7 +105,7 @@ function boltzmann(lattice_width, lattice_height) {
         // Calculate equilibrium densities of a node
         var eq = []; // Equilibrium values for all velocities in a node.
         var u2 = (ux * ux) + (uy * uy); // Magnitude of macroscopic velocity
-        for (var d = 0; d < node.distribution.length; d++) {
+        for (var d = 0, l = node.distribution.length; d < l; d++) {
             // Calculate equilibrium value
             var velocity = node_directions[d]; // Node direction vector
             var eu = (velocity.x * ux) + (velocity.y * uy); // Macro velocity multiplied by distribution velocity
@@ -126,7 +130,7 @@ function boltzmann(lattice_width, lattice_height) {
                     new_node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
                 }
                 if (!new_node.barrier) {
-                    for (var d = 0; d < old_node.distribution.length; d++) {
+                    for (var d = 0, l = old_node.distribution.length; d < l; d++) {
                         var move = node_directions[d];
                         var newx = move.x + x;
                         var newy = move.y + y;
@@ -166,7 +170,7 @@ function boltzmann(lattice_width, lattice_height) {
                     node.uy = uy;
                     // Set node equilibrium for each velocity
                     var eq = equilibrium(node, ux, uy, rho);
-                    for (var i = 0; i < eq.length; i++) {
+                    for (var i = 0, l = eq.length; i < l; i++) {
                         var old_value = d[i];
                         node.distribution[i] = old_value + omega*(eq[i] - old_value);
                     }

@@ -1,5 +1,4 @@
 function mouse_handler () {
-    
     var lattice_width = lattice.length;
     var lattice_height = lattice[0].length;
     var px_per_node = Math.floor(canvas.width / lattice_width);

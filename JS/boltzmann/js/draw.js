@@ -26,7 +26,6 @@ function draw_lattice() {
                     if (draw_mode === 0) {
                         // Speed
                         var speed = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2));
-                        color = get_color(speed, 0, 0.4);
                         color = {'r': 0, 'g': (speed*3000), 'b': 0, 'a': 255};
                         if (color.g > 255) {color.g = 255;}
                         if (color.g < 0) {color.g = 0;}
