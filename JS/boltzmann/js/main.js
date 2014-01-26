@@ -44,18 +44,19 @@ function boltzmann(lattice_width, lattice_height) {
     function LatticeNode() {
         this.distribution = [0,0,0,0,0,0,0,0,0]; // Individual density distributions for 
         // each of the nine possible discrete velocities of a node.
-    }
-    LatticeNode.prototype.density = 0; // Macroscopic density of a node.
-    LatticeNode.prototype.ux = 0; // X component of macroscopic velocity of a node.
-    LatticeNode.prototype.uy = 0; // Y component of macroscopic velocity of a node.
-    LatticeNode.prototype.barrier = false; // Boolean indicating if node is a barrier.
-    LatticeNode.prototype.curl = 0; // Curl of node.
+        this.stream = [0,0,0,0,0,0,0,0,0]; // Used to temporarily hold streamed values
+        this.density = 0; // Macroscopic density of a node.
+        this.ux = 0; // X component of macroscopic velocity of a node.
+        this.uy = 0; // Y component of macroscopic velocity of a node.
+        this.barrier = false; // Boolean indicating if node is a barrier.
+        this.curl = 0; // Curl of node.
 
+    }
     function make_lattice(lattice_width, lattice_height) {
         // Make a new lattice 
-        var new_lattice = new Array(lattice_width);
+        var new_lattice = [];
         for (var i = 0; i < lattice_width; i++) {
-            new_lattice[i] = new Array(lattice_height);
+            new_lattice[i] = [];
             for (var j = 0; j < lattice_height; j++) {
                 new_lattice[i][j] = new LatticeNode();
             }
@@ -72,7 +73,7 @@ function boltzmann(lattice_width, lattice_height) {
                     node.density = rho;
                     node.ux = ux;
                     node.uy = uy;
-                    node.distribution = equilibrium(lattice[x][y], ux, uy, rho);
+                    node.distribution = equilibrium(ux, uy, rho);
                 }
             }
         }
@@ -101,51 +102,55 @@ function boltzmann(lattice_width, lattice_height) {
         }
     }
 
-    function equilibrium(node, ux, uy, rho) {
+    function equilibrium(ux, uy, rho) {
         // Calculate equilibrium densities of a node
         var eq = []; // Equilibrium values for all velocities in a node.
-        var u2 = (ux * ux) + (uy * uy); // Magnitude of macroscopic velocity
-        for (var d = 0, l = node.distribution.length; d < l; d++) {
-            // Calculate equilibrium value
-            var velocity = node_directions[d]; // Node direction vector
-            var eu = (velocity.x * ux) + (velocity.y * uy); // Macro velocity multiplied by distribution velocity
-            eq.push(node_weight[d] * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*u2)); // Equilibrium equation
-        }
+        var ux3 = 3 * ux;
+        var uy3 = 3 * uy;
+        var ux2 = ux * ux;
+        var uy2 = uy * uy;
+        var uxuy2 = 2 * ux * uy;
+        var u2 = ux2 + uy2;
+        var u215 = 1.5 * u2;
+        eq[0] = four9ths * rho * (1 - u215);
+        eq[1] = one9th * rho * (1 + ux3 + 4.5*ux2 - u215);
+        eq[2] = one9th * rho * (1 - uy3 + 4.5*uy2 - u215);
+        eq[3] = one9th * rho * (1 - ux3 + 4.5*ux2 - u215);
+        eq[4] = one9th * rho * (1 + uy3 + 4.5*uy2 - u215);
+        eq[5] = one36th * rho * (1 + ux3 - uy3 + 4.5*(u2+uxuy2) - u215);
+        eq[6] = one36th * rho * (1 - ux3 - uy3 + 4.5*(u2-uxuy2) - u215);
+        eq[7] = one36th * rho * (1 - ux3 + uy3 + 4.5*(u2+uxuy2) - u215);
+        eq[8] = one36th * rho * (1 + ux3 + uy3 + 4.5*(u2-uxuy2) - u215);
         return eq;
     }
 
-    function stream(new_lattice) {
+    function stream() {
         // Stream distributions from old lattice to new lattice. Boundary conditions are
         // considered at this stage, and distributions are bounced back to originating node
         // if a boundary is encountered.
         for (var x = 0; x < lattice_width; x++) {
             for (var y = 0; y < lattice_height; y++) {
-                var old_node = lattice[x][y];
-                var new_node = new_lattice[x][y];
-                // Copy barrier data
-                new_node.barrier = old_node.barrier;
-                // Compute curl. 
+                var node = lattice[x][y];
+                // Compute curl. Non-edge nodes only.
                 if (x > 0 && x < lattice_width - 1 &&
                     y > 0 && y < lattice_height - 1) {
-                    new_node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
+                    node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
                 }
-                if (!new_node.barrier) {
-                    for (var d = 0, l = old_node.distribution.length; d < l; d++) {
+                if (!node.barrier) {
+                    for (var d = 0; d < 9; d++) {
                         var move = node_directions[d];
                         var newx = move.x + x;
                         var newy = move.y + y;
                         // Check if new node is in the lattice
                         if (newx >= 0 && newx < lattice_width && newy >= 0 && newy < lattice_height) {
-                            // If destination node is barrier, bounce distribution back to originating
-                            // node in opposite direction. lattice barrier is checked as 
-                            // the barrier flag for new_lattice may not yet have been set for
-                            // destination node.
-                            // TODO: Look more closely into boundary conditions. Simple reflection might be
-                            // a bit simplistic.
+                            // If destination node is barrier, bounce distribution back to 
+                            // originating node in opposite direction.
+                            // TODO: Look more closely into boundary conditions. 
+                            // Simple reflection might be a bit simplistic.
                             if (lattice[newx][newy].barrier) {
-                                new_lattice[x][y].distribution[reflection[d]] = old_node.distribution[d];
+                                lattice[x][y].stream[reflection[d]] = node.distribution[d];
                             } else {
-                                new_lattice[newx][newy].distribution[d] = old_node.distribution[d];
+                                lattice[newx][newy].stream[d] = node.distribution[d];
                             }
                         }
                     }
@@ -159,6 +164,15 @@ function boltzmann(lattice_width, lattice_height) {
             for (var y = 0; y < lattice_height; y++) {
                 var node = lattice[x][y];
                 if (!node.barrier) {
+                    for (var p = 0; p < 9; p++) {
+                        // Copy over values from streaming phase.
+                        // While cloning with slice() would be simpler here, it
+                        // seems to impose a bit of a performance penalty.
+                        // This step would also be more naturally performed within 
+                        // stream(), but that would require an extraneous full loop
+                        // through the lattice array.
+                        node.distribution[p] = node.stream[p];
+                    }
                     // Calculate macroscopic density (rho) and velocity (ux, uy)
                     var d = node.distribution;
                     var rho = d[0] + d[1] + d[2] + d[3] + d[4] + d[5] + d[6] + d[7] + d[8];
@@ -169,8 +183,8 @@ function boltzmann(lattice_width, lattice_height) {
                     node.ux = ux;
                     node.uy = uy;
                     // Set node equilibrium for each velocity
-                    var eq = equilibrium(node, ux, uy, rho);
-                    for (var i = 0, l = eq.length; i < l; i++) {
+                    var eq = equilibrium(ux, uy, rho);
+                    for (var i = 0; i < 9; i++) {
                         var old_value = d[i];
                         node.distribution[i] = old_value + omega*(eq[i] - old_value);
                     }
@@ -180,9 +194,7 @@ function boltzmann(lattice_width, lattice_height) {
     }
 
     function update_lattice() {
-        var new_lattice = make_lattice(lattice_width, lattice_height);
-        stream(new_lattice);
-        lattice = new_lattice;
+        stream();
         collide();
     }
 
@@ -194,14 +206,14 @@ function boltzmann(lattice_width, lattice_height) {
     window.requestAnimFrame = (function(){
         return  window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame    ||
+        window.mozRequestAnimationFrame ||
         function( callback ){
-        window.setTimeout(callback, 1000 / 60);
+            window.setTimeout(callback, 1000 / 60);
         };
     })();
 
     (function updater(){
-        var steps = 1;
+        var steps = 10;
         for (var i = 0; i < steps; i++) {
             update_lattice();
         }
@@ -211,7 +223,7 @@ function boltzmann(lattice_width, lattice_height) {
             var node = lattice[q[0]][q[1]];
             var ux = q[2];
             var uy = q[3];
-            node.distribution = equilibrium(node, ux, uy, node.density);
+            node.distribution = equilibrium(ux, uy, node.density);
         }
         draw_lattice();
         requestAnimFrame(updater);

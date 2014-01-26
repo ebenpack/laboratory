@@ -26,33 +26,33 @@ function draw_lattice() {
                     if (draw_mode === 0) {
                         // Speed
                         var speed = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2));
-                        color = {'r': 0, 'g': (speed*3000), 'b': 0, 'a': 255};
+                        color = {'r': 0, 'g': Math.floor(speed*4000), 'b': 0, 'a': 255};
                         if (color.g > 255) {color.g = 255;}
                         if (color.g < 0) {color.g = 0;}
                     } else if (draw_mode == 1) {
                         // X velocity
                         var xvel = ux;
-                        color = get_color(xvel, -0.1, 0.1);
+                        color = get_color(xvel, -0.04, 0.04);
                     } else if (draw_mode == 2) {
                         // Y Velocity
                         var yvel = uy;
-                        color = get_color(yvel, -0.1, 0.1);
+                        color = get_color(yvel, -0.04, 0.04);
                     } else if (draw_mode == 3) {
                         // Density
                         var dens = lattice[x][y].density;
-                        color = {'r': 0, 'g': ((255 - (255 / Math.abs(dens)))*10), 'b': 0, 'a': 255};
+                        color = {'r': 0, 'g': Math.floor((255 - (255 / Math.abs(dens)))*20), 'b': 0, 'a': 255};
                         if (color.g > 255) {color.g = 255;}
                         if (color.g < 0) {color.g = 0;}
                     } else if (draw_mode == 4) {
                         // Curl
                         var curl = lattice[x][y].curl;
-                        color = get_color(curl, -0.2, 0.2);
+                        color = get_color(curl, -0.1, 0.1);
                     }
                     draw_square(x, y, color);
                     if (draw_flow_vectors && x % 10 === 0 && y % 10 ===0) {
                         // Draw flow vectors every tenth node.
                         // TODO: Some flow vectors appear to be going in the wrong direction.
-                        // Look into this.
+                        // Maybe this is just how fluid works, though. Look into this.
                         draw_flow_vector(x, y, ux, uy);
                     }
                 }
@@ -74,7 +74,7 @@ function draw_lattice() {
         }
     }
     function draw_flow_vector(x,y,ux,uy) {
-        var scale = 100;
+        var scale = 200;
         vectorctx.beginPath();
         vectorctx.moveTo(x * px_per_node, y * px_per_node);
         vectorctx.lineTo((x * px_per_node) + Math.round(ux * px_per_node * scale), (y * px_per_node) + Math.round(uy * px_per_node * scale));
@@ -97,10 +97,10 @@ function draw_lattice() {
         }
         if (val >= mid) {
             color.r = 255;
-            color.a = Math.abs(val) * (1/range) * 255;
+            color.a = Math.floor(Math.abs(val) * (1/range) * 255);
         } else {
             color.g = 255;
-            color.a = Math.abs(val) * (1/range) * 255;
+            color.a = Math.floor(Math.abs(val) * (1/range) * 255);
         }
         return color;
     }
