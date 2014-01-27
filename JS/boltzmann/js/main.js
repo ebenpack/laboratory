@@ -96,14 +96,16 @@ function boltzmann(lattice_width, lattice_height) {
         // Initialize barrier nodes. At some point this may be
         // used to set different barrier configurations, but for now
         // it just initializes the outer edges, and a rectangle in the middle.
-        // for (var x = 0; x < lattice_width; x++) {
-        //     for (var y = 0; y < lattice_height; y++) {
-        //         if (x === 0 || x === lattice_width - 1 ||
-        //             y === 0 || y === lattice_height - 1) {
-        //             lattice[x][y].barrier = true;
-        //         }
-        //     }
-        // }
+        for (var x = 0; x < lattice_width; x++) {
+            for (var y = 0; y < lattice_height; y++) {
+                if (x === 0 || x === lattice_width - 1 ||
+                    y === 0 || y === lattice_height - 1 ||
+                    (Math.abs((lattice_width/2)-x) < 10 &&
+                        Math.abs((lattice_height/2)-y) < 10)) {
+                    lattice[x][y].barrier = true;
+                }
+            }
+        }
     }
 
     function equilibrium(ux, uy, rho) {
@@ -137,25 +139,27 @@ function boltzmann(lattice_width, lattice_height) {
         for (var x = 0; x < lattice_width; x++) {
             for (var y = 0; y < lattice_height; y++) {
                 var node = lattice[x][y];
-                // Compute curl. Non-edge nodes only.
-                if (x > 0 && x < lattice_width - 1 &&
-                    y > 0 && y < lattice_height - 1) {
-                    node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
-                }
-                for (var d = 0; d < 9; d++) {
-                    var move = node_directions[d];
-                    var newx = move.x + x;
-                    var newy = move.y + y;
-                    // Check if new node is in the lattice
-                    if (newx >= 0 && newx < lattice_width && newy >= 0 && newy < lattice_height) {
-                        // If destination node is barrier, bounce distribution back to 
-                        // originating node in opposite direction.
-                        // TODO: Look more closely into boundary conditions. 
-                        // Simple reflection might be a bit simplistic.
-                        if (lattice[newx][newy].barrier) {
-                            lattice[x][y].stream[reflection[d]] = node.distribution[d];
-                        } else {
-                            lattice[newx][newy].stream[d] = node.distribution[d];
+                if (!node.barrier) {
+                    // Compute curl. Non-edge nodes only.
+                    if (x > 0 && x < lattice_width - 1 &&
+                        y > 0 && y < lattice_height - 1) {
+                        node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
+                    }
+                    for (var d = 0; d < 9; d++) {
+                        var move = node_directions[d];
+                        var newx = move.x + x;
+                        var newy = move.y + y;
+                        // Check if new node is in the lattice
+                        if (newx >= 0 && newx < lattice_width && newy >= 0 && newy < lattice_height) {
+                            // If destination node is barrier, bounce distribution back to 
+                            // originating node in opposite direction.
+                            // TODO: Look more closely into boundary conditions. 
+                            // Simple reflection might be a bit simplistic.
+                            if (lattice[newx][newy].barrier) {
+                                lattice[x][y].stream[reflection[d]] = node.distribution[d];
+                            } else {
+                                lattice[newx][newy].stream[d] = node.distribution[d];
+                            }
                         }
                     }
                 }
