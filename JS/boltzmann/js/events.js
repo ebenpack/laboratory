@@ -58,8 +58,11 @@ function mouse_handler () {
     function update_draw_mode(e){
         draw_mode = this.selectedIndex;
     }
+    function update_speed(e){
+        steps_per_frame = parseInt(this.value, 10);
+    }
     function update_viscosity(e){
-        viscosity = parseInt(this.value, 10) / 100;
+        steps_per_frame = parseInt(this.value, 10) / 100;
         omega = 1 / (3 * viscosity + 0.5);
     }
     function toggle_vectors(e){
@@ -83,6 +86,8 @@ function mouse_handler () {
     options.addEventListener('change', update_draw_mode, false);
     var slider = document.getElementById("viscosity");
     slider.addEventListener('input', update_viscosity, false);
+    var speedslider = document.getElementById("speed");
+    speedslider.addEventListener('input', update_speed, false);
     var flowvector = document.getElementById("flowvectors");
     flowvector.addEventListener('click', toggle_vectors, false);
     var flowparticle = document.getElementById("flowparticles");
