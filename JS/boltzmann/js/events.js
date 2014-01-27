@@ -2,8 +2,10 @@ function mouse_handler () {
     var lattice_width = lattice.length;
     var lattice_height = lattice[0].length;
     var px_per_node = Math.floor(canvas.width / lattice_width);
-    var mousedownListener = function(e) {
 
+    var mousedownListener = function(e) {
+        var button = e.which || e.button;
+        if (button !== 1) {return} // Only capture left click
         var oldX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
         var oldY = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
 
@@ -52,6 +54,44 @@ function mouse_handler () {
     };
     canvas.addEventListener('mousedown', mousedownListener, false);
     canvas.addEventListener('touchstart', mousedownListener, false);
+
+
+    var place_barrier = function(e) {
+        e.preventDefault();
+        var mouse_x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
+        var mouse_y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
+        var lattice_x = Math.floor(mouse_x / px_per_node);
+        var lattice_y = Math.floor(mouse_y / px_per_node);
+        var draw = true; // Drawing, or erasing?
+        if (lattice[lattice_x][lattice_y].barrier) {
+            draw = false;
+        }
+        lattice[lattice_x][lattice_y].barrier = draw;
+        var moveListener = function(e) {
+            mouse_x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
+            mouse_y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
+            // Scale from canvas coordinates to lattice coordinates
+            lattice_x = Math.floor(mouse_x / px_per_node);
+            lattice_y = Math.floor(mouse_y / px_per_node);
+            // Draw/erase barrier
+            lattice[lattice_x][lattice_y].barrier = draw;
+            new_barrier = true;
+        };
+        var mouseupListener = function(e) {
+            canvas.removeEventListener('mousemove', moveListener, false);
+            canvas.removeEventListener('mouseup', mouseupListener, false);
+
+            canvas.removeEventListener('touchmove', moveListener, false);
+            document.body.removeEventListener('touchend', mouseupListener, false);
+        };
+        canvas.addEventListener('mousemove', moveListener, false);
+        canvas.addEventListener('mouseup', mouseupListener, false);
+
+        canvas.addEventListener('touchmove', moveListener, false);
+        document.body.addEventListener('touchend', mouseupListener, false);
+    }
+    // Right click 
+    canvas.addEventListener('contextmenu', place_barrier, false);
 }
 
 (function settingsHandler(){
