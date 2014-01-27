@@ -74,6 +74,23 @@ function boltzmann(lattice_width, lattice_height) {
             }
         }
     }
+    function move_particles() {
+        for (var x = 0, l1=particles.length; x < l1; x++) {
+            for (var y = 0, l2=particles[0].length; y < l2; y++) {
+                var loc = particles[x][y];
+                var lx = Math.floor(loc.x);
+                var ly = Math.floor(loc.y);
+                if (lx >=0 && lx < lattice_width &&
+                    ly >=0 && ly < lattice_height) {
+                    var node = lattice[lx][ly];
+                    var ux = node.ux;
+                    var uy = node.uy;
+                    loc.x += ux;
+                    loc.y += uy;
+                }
+            }
+        }
+    }
 
     function init_barrier() {
         // Initialize barrier nodes. At some point this may be
@@ -196,9 +213,12 @@ function boltzmann(lattice_width, lattice_height) {
 
     (function updater(){
         var steps = steps_per_frame;
-        for (var i = 0; i < steps; i++) {;
+        for (var i = 0; i < steps; i++) {
             stream();
             collide();
+            if (draw_flow_particles) {
+                move_particles();
+            }
         }
         var q;
         while (queue.length > 0) {

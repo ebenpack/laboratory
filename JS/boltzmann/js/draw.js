@@ -2,16 +2,29 @@ function draw_lattice() {
     // TODO: Change color handling
     var lattice_width = lattice.length;
     var lattice_height = lattice[0].length;
-    var px_per_node = Math.floor(canvas.width / lattice_width);
+    px_per_node = Math.floor(canvas.width / lattice_width);
     if (canvas.getContext) {
         var ctx = canvas.getContext('2d');
         var vectorctx = vectorcanvas.getContext('2d');
+        var particlectx = particlecanvas.getContext('2d');
 
         if (draw_flow_vectors) {
             // Clear the canvas if we're drawing flow vectors.
             vectorcanvas.width = vectorcanvas.width;
             vectorctx.strokeStyle = "red";
             vectorctx.fillStyle = "red";
+        }
+
+        if (draw_flow_particles) {
+            // Clear the canvas if we're drawing particles.
+            particlecanvas.width = particlecanvas.width;
+            particlectx.strokeStyle = "green";
+            particlectx.fillStyle = "green";
+            for (var x = 0, l1=particles.length; x < l1; x++) {
+                for (var y = 0, l2=particles[0].length; y < l2; y++) {
+                    draw_flow_particle(particles[x][y].x, particles[x][y].y);
+                }
+            }
         }
 
         var image = ctx.createImageData(canvas.width, canvas.height);
@@ -82,6 +95,11 @@ function draw_lattice() {
         vectorctx.beginPath();
         vectorctx.arc(x * px_per_node, y * px_per_node, 1, 0, 2 * Math.PI, false);
         vectorctx.fill();
+    }
+    function draw_flow_particle(x,y) {
+        particlectx.beginPath();
+        particlectx.arc(x * px_per_node, y * px_per_node, 1, 0, 2 * Math.PI, false);
+        particlectx.fill();
     }
     function get_color(val, min, max) {
         // Returns a color for a given value in a range between min and max.

@@ -70,10 +70,21 @@ function mouse_handler () {
             vectorcanvas.width = vectorcanvas.width; // Clear vector canvas
         }
     }
+    function toggle_particles(e){
+        if (this.checked) {
+            init_flow_particles();
+            draw_flow_particles = true;
+        } else {
+            draw_flow_particles = false;
+            particlecanvas.width = particlecanvas.width; // Clear vector canvas
+        }
+    }
     var options = document.getElementById("drawmode");
     options.addEventListener('change', update_draw_mode, false);
     var slider = document.getElementById("viscosity");
     slider.addEventListener('input', update_viscosity, false);
     var flowvector = document.getElementById("flowvectors");
     flowvector.addEventListener('click', toggle_vectors, false);
+    var flowparticle = document.getElementById("flowparticles");
+    flowparticle.addEventListener('click', toggle_particles, false);
 })();
