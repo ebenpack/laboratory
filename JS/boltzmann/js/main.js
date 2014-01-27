@@ -1,9 +1,4 @@
 function boltzmann(lattice_width, lattice_height) {
-    // TODO: Optimize. Running several update_lattice lattice
-    // cycles for each frame will give the effect of increasing the
-    // speed at which the simulation is running. Currently, however
-    // the simulation does not run nearly fast enough for for the
-    // animation to run smoothly at higher speeds.
     var four9ths = 4/9;
     var one9th = 1/9;
     var one36th = 1/36;
@@ -50,7 +45,6 @@ function boltzmann(lattice_width, lattice_height) {
         this.uy = 0; // Y component of macroscopic velocity of a node.
         this.barrier = false; // Boolean indicating if node is a barrier.
         this.curl = 0; // Curl of node.
-
     }
     function make_lattice(lattice_width, lattice_height) {
         // Make a new lattice 
@@ -65,7 +59,7 @@ function boltzmann(lattice_width, lattice_height) {
     }
 
     function init_flow(ux, uy, rho) {
-        // Initialize all nodes in lattice to flow with velocity (ux, uy)
+        // Initialize all nodes in lattice to flow with velocity (ux, uy) and density rho
         for (var x = 0; x < lattice_width; x++) {
             for (var y = 0; y < lattice_height; y++) {
                 var node = lattice[x][y];
@@ -73,37 +67,32 @@ function boltzmann(lattice_width, lattice_height) {
                     node.density = rho;
                     node.ux = ux;
                     node.uy = uy;
-                    node.distribution = equilibrium(ux, uy, rho);
+                    var eq = equilibrium(ux, uy, rho);
+                    node.distribution = eq.slice(0);
+                    node.stream = eq.slice(0);
                 }
             }
         }
     }
 
     function init_barrier() {
-        // Barrier is an array of arrays. The inner arrays consist of [x,y]
-        // coordinates for barrier in the lattice.
-        // for (var i = 0; i < barrier_array.length; i++ ) {
-        //     var x = barrier_array[i][0];
-        //     var y = barrier_array[i][1];
-        //     lattice[x][y].barrier = true;
+        // Initialize barrier nodes. At some point this may be
+        // used to set different barrier configurations, but for now
+        // it just initializes the outer edges, and a rectangle in the middle.
+        // for (var x = 0; x < lattice_width; x++) {
+        //     for (var y = 0; y < lattice_height; y++) {
+        //         if (x === 0 || x === lattice_width - 1 ||
+        //             y === 0 || y === lattice_height - 1) {
+        //             lattice[x][y].barrier = true;
+        //         }
+        //     }
         // }
-        // For now, I'm going to hard-code the outer edges as barriers.
-        // I suspect there's some additional logic I would need to implement for
-        // streaming nodes at edges.
-        for (var x = 0; x < lattice_width; x++) {
-            for (var y = 0; y < lattice_height; y++) {
-                if (x === 0 || x === lattice_width - 1 ||
-                    y === 0 || y === lattice_height - 1 ||
-                    (x > 80 && x < 120 &&
-                    y > 30 && y < 50)) {
-                    lattice[x][y].barrier = true;
-                }
-            }
-        }
     }
 
     function equilibrium(ux, uy, rho) {
         // Calculate equilibrium densities of a node
+        // This is no longer performed in a loop, as that required
+        // too many redundant calculations and was a performance drag.
         var eq = []; // Equilibrium values for all velocities in a node.
         var ux3 = 3 * ux;
         var uy3 = 3 * uy;
@@ -117,10 +106,10 @@ function boltzmann(lattice_width, lattice_height) {
         eq[2] = one9th * rho * (1 - uy3 + 4.5*uy2 - u215);
         eq[3] = one9th * rho * (1 - ux3 + 4.5*ux2 - u215);
         eq[4] = one9th * rho * (1 + uy3 + 4.5*uy2 - u215);
-        eq[5] = one36th * rho * (1 + ux3 - uy3 + 4.5*(u2+uxuy2) - u215);
-        eq[6] = one36th * rho * (1 - ux3 - uy3 + 4.5*(u2-uxuy2) - u215);
-        eq[7] = one36th * rho * (1 - ux3 + uy3 + 4.5*(u2+uxuy2) - u215);
-        eq[8] = one36th * rho * (1 + ux3 + uy3 + 4.5*(u2-uxuy2) - u215);
+        eq[5] = one36th * rho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215);
+        eq[6] = one36th * rho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215);
+        eq[7] = one36th * rho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215);
+        eq[8] = one36th * rho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215);
         return eq;
     }
 
@@ -136,22 +125,20 @@ function boltzmann(lattice_width, lattice_height) {
                     y > 0 && y < lattice_height - 1) {
                     node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
                 }
-                if (!node.barrier) {
-                    for (var d = 0; d < 9; d++) {
-                        var move = node_directions[d];
-                        var newx = move.x + x;
-                        var newy = move.y + y;
-                        // Check if new node is in the lattice
-                        if (newx >= 0 && newx < lattice_width && newy >= 0 && newy < lattice_height) {
-                            // If destination node is barrier, bounce distribution back to 
-                            // originating node in opposite direction.
-                            // TODO: Look more closely into boundary conditions. 
-                            // Simple reflection might be a bit simplistic.
-                            if (lattice[newx][newy].barrier) {
-                                lattice[x][y].stream[reflection[d]] = node.distribution[d];
-                            } else {
-                                lattice[newx][newy].stream[d] = node.distribution[d];
-                            }
+                for (var d = 0; d < 9; d++) {
+                    var move = node_directions[d];
+                    var newx = move.x + x;
+                    var newy = move.y + y;
+                    // Check if new node is in the lattice
+                    if (newx >= 0 && newx < lattice_width && newy >= 0 && newy < lattice_height) {
+                        // If destination node is barrier, bounce distribution back to 
+                        // originating node in opposite direction.
+                        // TODO: Look more closely into boundary conditions. 
+                        // Simple reflection might be a bit simplistic.
+                        if (lattice[newx][newy].barrier) {
+                            lattice[x][y].stream[reflection[d]] = node.distribution[d];
+                        } else {
+                            lattice[newx][newy].stream[d] = node.distribution[d];
                         }
                     }
                 }
@@ -186,16 +173,11 @@ function boltzmann(lattice_width, lattice_height) {
                     var eq = equilibrium(ux, uy, rho);
                     for (var i = 0; i < 9; i++) {
                         var old_value = d[i];
-                        node.distribution[i] = old_value + omega*(eq[i] - old_value);
+                        node.distribution[i] = old_value + (omega * (eq[i] - old_value));
                     }
                 }
             }
         }
-    }
-
-    function update_lattice() {
-        stream();
-        collide();
     }
 
     lattice = make_lattice(lattice_width, lattice_height);
@@ -213,9 +195,10 @@ function boltzmann(lattice_width, lattice_height) {
     })();
 
     (function updater(){
-        var steps = 10;
-        for (var i = 0; i < steps; i++) {
-            update_lattice();
+        var steps = steps_per_frame;
+        for (var i = 0; i < steps; i++) {;
+            stream();
+            collide();
         }
         var q;
         while (queue.length > 0) {
