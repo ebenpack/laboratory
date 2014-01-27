@@ -26,7 +26,7 @@ function draw_lattice() {
                     if (draw_mode === 0) {
                         // Speed
                         var speed = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2));
-                        color = {'r': 0, 'g': Math.floor(speed*4000), 'b': 0, 'a': 255};
+                        color = {'r': 0, 'a': Math.floor(speed*4000), 'b': 0, 'g': 255};
                         if (color.g > 255) {color.g = 255;}
                         if (color.g < 0) {color.g = 0;}
                     } else if (draw_mode == 1) {
@@ -40,7 +40,7 @@ function draw_lattice() {
                     } else if (draw_mode == 3) {
                         // Density
                         var dens = lattice[x][y].density;
-                        color = {'r': 0, 'g': Math.floor((255 - (255 / Math.abs(dens)))*20), 'b': 0, 'a': 255};
+                        color = {'r': 0, 'a': Math.floor((255 - (255 / Math.abs(dens)))*20), 'b': 0, 'g': 255};
                         if (color.g > 255) {color.g = 255;}
                         if (color.g < 0) {color.g = 0;}
                     } else if (draw_mode == 4) {

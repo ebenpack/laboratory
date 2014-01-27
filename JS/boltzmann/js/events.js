@@ -11,13 +11,13 @@ function mouse_handler () {
             var radius = 5;
             var newX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
             var newY = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
-            var dx = (newX - oldX) / px_per_node;
-            var dy = (newY - oldY) / px_per_node;
+            var dx = (newX - oldX) / px_per_node / steps_per_frame;
+            var dy = (newY - oldY) / px_per_node / steps_per_frame;
             // Ensure that push isn't too big
-            if (Math.abs(dx) > 0.5) {
+            if (Math.abs(dx) > 0.1) {
                 dx = 0.1 * Math.abs(dx) / dx;
             }
-            if (Math.abs(dy) > 0.5) {
+            if (Math.abs(dy) > 0.1) {
                 dy = 0.1 * Math.abs(dy) / dy;
             }
             // Scale from canvas coordinates to lattice coordinates
@@ -29,11 +29,13 @@ function mouse_handler () {
                     if (lattice_x + x >= 0 && lattice_x + x < lattice_width &&
                         lattice_y + y >= 0 && lattice_y + y < lattice_height &&
                         !lattice[lattice_x + x][lattice_y + y].barrier &&
-                        Math.sqrt((x * x) + (y * y) < radius)) {
+                        Math.sqrt((x * x) + (y * y)) < radius) {
                         queue.push([lattice_x + x, lattice_y + y, dx, dy]);
                     }
                 }
             }
+        oldX = newX;
+        oldY = newY;
         };
         var mouseupListener = function(e) {
             canvas.removeEventListener('mousemove', moveListener, false);
@@ -54,12 +56,10 @@ function mouse_handler () {
 
 (function settingsHandler(){
     function update_draw_mode(e){
-        var new_draw_mode = this.selectedIndex;
-        draw_mode = new_draw_mode;
+        draw_mode = this.selectedIndex;
     }
     function update_viscosity(e){
-        var new_viscosity = parseInt(this.value, 10) / 100;
-        viscosity = new_viscosity;
+        viscosity = parseInt(this.value, 10) / 100;
         omega = 1 / (3 * viscosity + 0.5);
     }
     function toggle_vectors(e){
@@ -67,7 +67,7 @@ function mouse_handler () {
             draw_flow_vectors = true;
         } else {
             draw_flow_vectors = false;
-            vectorcanvas.width = vectorcanvas.width;
+            vectorcanvas.width = vectorcanvas.width; // Clear vector canvas
         }
     }
     var options = document.getElementById("drawmode");

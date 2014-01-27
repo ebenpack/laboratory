@@ -6,3 +6,4 @@ var draw_mode = 0;
 var draw_flow_vectors = false;
 var canvas = document.getElementById("boltzmann");
 var vectorcanvas = document.getElementById("vectorcanvas");
+var steps_per_frame = 10;
