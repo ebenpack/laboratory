@@ -7,6 +7,7 @@ function draw_lattice() {
         var ctx = canvas.getContext('2d');
         var vectorctx = vectorcanvas.getContext('2d');
         var particlectx = particlecanvas.getContext('2d');
+        var barrierctx = barriercanvas.getContext('2d');
 
         if (draw_flow_vectors) {
             // Clear the canvas if we're drawing flow vectors.
@@ -20,11 +21,15 @@ function draw_lattice() {
             particlecanvas.width = particlecanvas.width;
             particlectx.strokeStyle = "green";
             particlectx.fillStyle = "green";
-            for (var x = 0, l1=particles.length; x < l1; x++) {
-                for (var y = 0, l2=particles[0].length; y < l2; y++) {
-                    draw_flow_particle(particles[x][y].x, particles[x][y].y);
-                }
+            for (var x = 0, l=particles.length; x < l; x++) {
+                draw_flow_particle(particles[x].x, particles[x].y);
             }
+        }
+        if (new_barrier) {
+            barriercanvas.width = barriercanvas.width;
+            barrierctx.fillStyle = "yellow";
+            draw_barriers();
+            new_barrier = false;
         }
 
         var image = ctx.createImageData(canvas.width, canvas.height);
@@ -95,11 +100,25 @@ function draw_lattice() {
         vectorctx.beginPath();
         vectorctx.arc(x * px_per_node, y * px_per_node, 1, 0, 2 * Math.PI, false);
         vectorctx.fill();
+        vectorctx.closePath();
     }
     function draw_flow_particle(x,y) {
         particlectx.beginPath();
         particlectx.arc(x * px_per_node, y * px_per_node, 1, 0, 2 * Math.PI, false);
         particlectx.fill();
+        particlectx.closePath();
+    }
+    function draw_barriers() {
+        for (var x = 0; x < lattice_width; x++) {
+            for (var y = 0; y < lattice_height; y++) {
+                if (lattice[x][y].barrier) {
+                    barrierctx.beginPath();
+                    barrierctx.rect(x*px_per_node, y*px_per_node, px_per_node,px_per_node);
+                    barrierctx.fill();
+                    barrierctx.closePath();
+                }
+            }
+        }
     }
     function get_color(val, min, max) {
         // Returns a color for a given value in a range between min and max.

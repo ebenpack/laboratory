@@ -1,4 +1,5 @@
 function boltzmann(lattice_width, lattice_height) {
+    // TODO: Draw stream generators/force emitters.
     var four9ths = 4/9;
     var one9th = 1/9;
     var one36th = 1/36;
@@ -75,19 +76,17 @@ function boltzmann(lattice_width, lattice_height) {
         }
     }
     function move_particles() {
-        for (var x = 0, l1=particles.length; x < l1; x++) {
-            for (var y = 0, l2=particles[0].length; y < l2; y++) {
-                var loc = particles[x][y];
-                var lx = Math.floor(loc.x);
-                var ly = Math.floor(loc.y);
-                if (lx >=0 && lx < lattice_width &&
-                    ly >=0 && ly < lattice_height) {
-                    var node = lattice[lx][ly];
-                    var ux = node.ux;
-                    var uy = node.uy;
-                    loc.x += ux;
-                    loc.y += uy;
-                }
+        for (var x = 0, l=particles.length; x < l; x++) {
+            var p = particles[x];
+            var lx = Math.floor(p.x);
+            var ly = Math.floor(p.y);
+            if (lx >=0 && lx < lattice_width &&
+                ly >=0 && ly < lattice_height) {
+                var node = lattice[lx][ly];
+                var ux = node.ux;
+                var uy = node.uy;
+                p.x += ux;
+                p.y += uy;
             }
         }
     }
