@@ -41,6 +41,12 @@ function draw_lattice() {
                     var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
                     var ux = lattice[x][y].ux;
                     var uy = lattice[x][y].uy;
+                    if (draw_flow_vectors && x % 10 === 0 && y % 10 ===0) {
+                        // Draw flow vectors every tenth node.
+                        // TODO: Some flow vectors appear to be going in the wrong direction.
+                        // Maybe this is just how fluid works, though. Look into this.
+                        draw_flow_vector(x, y, ux, uy);
+                    }
                     if (draw_mode === 0) {
                         // Speed
                         var speed = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2));
@@ -65,14 +71,11 @@ function draw_lattice() {
                         // Curl
                         var curl = lattice[x][y].curl;
                         color = get_color(curl, -0.1, 0.1);
+                    } else if (draw_mode == 5) {
+                        // Draw nothing. This mode is useful when flow vectors or particles are turned on.
+                        continue;
                     }
                     draw_square(x, y, color);
-                    if (draw_flow_vectors && x % 10 === 0 && y % 10 ===0) {
-                        // Draw flow vectors every tenth node.
-                        // TODO: Some flow vectors appear to be going in the wrong direction.
-                        // Maybe this is just how fluid works, though. Look into this.
-                        draw_flow_vector(x, y, ux, uy);
-                    }
                 }
             }
         }
