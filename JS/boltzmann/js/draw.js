@@ -78,6 +78,7 @@ function draw_lattice() {
         }
         ctx.putImageData(image, 0, 0);
     }
+    
     function draw_square(x, y, color) {
         // Draw a square region on the canvas image corresponding to a
         // lattice node at (x,y).
@@ -91,6 +92,7 @@ function draw_lattice() {
             }
         }
     }
+
     function draw_flow_vector(x,y,ux,uy) {
         var scale = 200;
         vectorctx.beginPath();
@@ -102,12 +104,14 @@ function draw_lattice() {
         vectorctx.fill();
         vectorctx.closePath();
     }
+
     function draw_flow_particle(x,y) {
         particlectx.beginPath();
         particlectx.arc(x * px_per_node, y * px_per_node, 1, 0, 2 * Math.PI, false);
         particlectx.fill();
         particlectx.closePath();
     }
+
     function draw_barriers() {
         for (var x = 0; x < lattice_width; x++) {
             for (var y = 0; y < lattice_height; y++) {
@@ -120,6 +124,7 @@ function draw_lattice() {
             }
         }
     }
+
     function get_color(val, min, max) {
         // Returns a color for a given value in a range between min and max.
         // Min and max were experimentally derived for speed, density, etc.

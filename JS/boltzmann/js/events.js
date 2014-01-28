@@ -5,7 +5,7 @@ function mouse_handler () {
 
     var mousedownListener = function(e) {
         var button = e.which || e.button;
-        if (button !== 1) {return} // Only capture left click
+        if (button !== 1) {return;} // Only capture left click
         var oldX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
         var oldY = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
 
@@ -39,6 +39,7 @@ function mouse_handler () {
         oldX = newX;
         oldY = newY;
         };
+
         var mouseupListener = function(e) {
             canvas.removeEventListener('mousemove', moveListener, false);
             canvas.removeEventListener('mouseup', mouseupListener, false);
@@ -46,12 +47,14 @@ function mouse_handler () {
             canvas.removeEventListener('touchmove', moveListener, false);
             document.body.removeEventListener('touchend', mouseupListener, false);
         };
+
         canvas.addEventListener('mousemove', moveListener, false);
         canvas.addEventListener('mouseup', mouseupListener, false);
 
         canvas.addEventListener('touchmove', moveListener, false);
         document.body.addEventListener('touchend', mouseupListener, false);
     };
+
     canvas.addEventListener('mousedown', mousedownListener, false);
     canvas.addEventListener('touchstart', mousedownListener, false);
 
@@ -67,6 +70,7 @@ function mouse_handler () {
             draw = false;
         }
         lattice[lattice_x][lattice_y].barrier = draw;
+
         var moveListener = function(e) {
             mouse_x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
             mouse_y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
@@ -77,6 +81,7 @@ function mouse_handler () {
             lattice[lattice_x][lattice_y].barrier = draw;
             new_barrier = true;
         };
+
         var mouseupListener = function(e) {
             canvas.removeEventListener('mousemove', moveListener, false);
             canvas.removeEventListener('mouseup', mouseupListener, false);
@@ -84,13 +89,14 @@ function mouse_handler () {
             canvas.removeEventListener('touchmove', moveListener, false);
             document.body.removeEventListener('touchend', mouseupListener, false);
         };
+
         canvas.addEventListener('mousemove', moveListener, false);
         canvas.addEventListener('mouseup', mouseupListener, false);
 
         canvas.addEventListener('touchmove', moveListener, false);
         document.body.addEventListener('touchend', mouseupListener, false);
-    }
-    // Right click 
+    };
+    // Register right click 
     canvas.addEventListener('contextmenu', place_barrier, false);
 }
 
@@ -98,13 +104,16 @@ function mouse_handler () {
     function update_draw_mode(e){
         draw_mode = this.selectedIndex;
     }
+
     function update_speed(e){
         steps_per_frame = parseInt(this.value, 10);
     }
+
     function update_viscosity(e){
         steps_per_frame = parseInt(this.value, 10) / 100;
         omega = 1 / (3 * viscosity + 0.5);
     }
+
     function toggle_vectors(e){
         if (this.checked) {
             draw_flow_vectors = true;
@@ -113,6 +122,7 @@ function mouse_handler () {
             vectorcanvas.width = vectorcanvas.width; // Clear vector canvas
         }
     }
+    
     function toggle_particles(e){
         if (this.checked) {
             init_flow_particles();

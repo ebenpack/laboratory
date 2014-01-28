@@ -1,5 +1,6 @@
 function boltzmann(lattice_width, lattice_height) {
     // TODO: Draw stream generators/force emitters.
+    // TODO: Refactor. Maybe bung everything into a single object?
     var four9ths = 4/9;
     var one9th = 1/9;
     var one36th = 1/36;
@@ -47,6 +48,7 @@ function boltzmann(lattice_width, lattice_height) {
         this.barrier = false; // Boolean indicating if node is a barrier.
         this.curl = 0; // Curl of node.
     }
+
     function make_lattice(lattice_width, lattice_height) {
         // Make a new lattice 
         var new_lattice = [];
@@ -75,6 +77,7 @@ function boltzmann(lattice_width, lattice_height) {
             }
         }
     }
+    
     function move_particles() {
         for (var x = 0, l=particles.length; x < l; x++) {
             var p = particles[x];
