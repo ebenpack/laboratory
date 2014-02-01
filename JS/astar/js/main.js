@@ -154,7 +154,7 @@ function Particle(x,y) {
             this.path = [];
         }
         function to_str(node) {
-                return node.x + '|' + node.y;
+                return JSON.stringify([node.x,node.y]);
             }
         function calc_h(p0, p1){
             // Calculate H using Manhatten method.
