@@ -7,7 +7,6 @@ var boltzmann = (function (module) {
         var lattice_height = module.lattice_height;
         var lattice = module.lattice;
         var particles = module.flow_particles;
-        var omega = module.omega;
         var four9ths = 4/9;
         var one9th = 1/9;
         var one36th = 1/36;
@@ -207,7 +206,7 @@ var boltzmann = (function (module) {
                         var eq = equilibrium(ux, uy, rho);
                         for (var i = 0; i < 9; i++) {
                             var old_value = d[i];
-                            node.distribution[i] = old_value + (omega * (eq[i] - old_value));
+                            node.distribution[i] = old_value + (module.omega * (eq[i] - old_value));
                         }
                     }
                 }
