@@ -169,6 +169,8 @@ var boltzmann = (function (module) {
         function reset(e) {
             stop(startbutton);
             module.main.init();
+            module.flow_vectors = false;
+            module.flow_particles.length = 0;
             module.drawing.draw(); // Draw one more frame to clear the canvas
         }
 
