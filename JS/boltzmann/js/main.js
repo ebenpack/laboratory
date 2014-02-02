@@ -124,6 +124,8 @@ var boltzmann = (function (module) {
             // Calculate equilibrium densities of a node
             // This is no longer performed in a loop, as that required
             // too many redundant calculations and was a performance drag.
+            // Thanks to Daniel V. Schroeder http://physics.weber.edu/schroeder/fluids/
+            // for this optimization
             var eq = []; // Equilibrium values for all velocities in a node.
             var ux3 = 3 * ux;
             var uy3 = 3 * uy;
@@ -195,6 +197,8 @@ var boltzmann = (function (module) {
                             d[p] = node.stream[p];
                         }
                         // Calculate macroscopic density (rho) and velocity (ux, uy)
+                        // Thanks to Daniel V. Schroeder for this optimization
+                        // http://physics.weber.edu/schroeder/fluids/
                         var rho = d[0] + d[1] + d[2] + d[3] + d[4] + d[5] + d[6] + d[7] + d[8];
                         var ux = (d[1] + d[5] + d[8] - d[3] - d[6] - d[7]) / rho;
                         var uy = (d[4] + d[7] + d[8] - d[2] - d[5] - d[6]) / rho;

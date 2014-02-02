@@ -217,7 +217,7 @@ var boltzmann = (function (module) {
             resetbutton.addEventListener('click', reset, false);
             // Register clear barriers
             var clear = document.getElementById('clearbarriers');
-            clear.addEventListener('click', clear_barriers, false);
+            // clear.addEventListener('click', clear_barriers, false);
         })();
     })();
     return module;

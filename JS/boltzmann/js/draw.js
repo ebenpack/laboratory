@@ -29,7 +29,9 @@ boltzmann = (function (module) {
 
         function draw_square(x, y, color, image) {
             // Draw a square region on the canvas image corresponding to a
-            // lattice node at (x,y).
+            // lattice node at (x,y). Credit to Daniel V. Schroeder
+            // http://physics.weber.edu/schroeder/fluids/
+            // for this drawing method.
             for (var ypx = y * px_per_node; ypx < (y+1) * px_per_node; ypx++) {
                 for (var xpx = x * px_per_node; xpx < (x + 1) * px_per_node; xpx++) {
                     var index = (xpx + ypx * image.width) * 4;
