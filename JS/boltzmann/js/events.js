@@ -9,13 +9,16 @@ var boltzmann = (function (module) {
         var canvas = module.canvas;
         var steps_per_frame = module.steps_per_frame;
         var particles = module.flow_particles;
-        // The reset button also affects the start button, so
-        // it needs to be available to both
+        // The reset button also affects the start button and vector and particle
+        // checkboxes, , so they need to be available outside of the register function
         var startbutton;
+        var flowvector;
+        var flowparticle;
 
         function mousedownListener(e) {
             var button = e.which || e.button;
             if (button !== 1) {return;} // Only capture left click
+            if (!module.animation_id) {return;} // Don't capture if stopped
             var oldX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
             var oldY = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
 
@@ -85,7 +88,11 @@ var boltzmann = (function (module) {
                 lattice_y = Math.floor(mouse_y / px_per_node);
                 // Draw/erase barrier
                 lattice[lattice_x][lattice_y].barrier = draw;
-                new_barrier = true;
+                module.new_barrier = true;
+                if (!module.animation_id) {
+                    // If stopped, we need to explicitly call draw()
+                    module.drawing.draw();
+                }
             };
 
             var mouseupListener = function(e) {
@@ -145,17 +152,19 @@ var boltzmann = (function (module) {
             }
         }
 
-        function stop(elmt) {
+        function stop(bttn) {
             // Stop animation
             window.cancelAnimationFrame(module.animation_id);
             module.animation_id = null;
-            elmt.innerHTML = "Start";
+            bttn.innerHTML = "Start";
         }
 
-        function start(elmt) {
+        function start(bttn) {
             // Start animation
+            // Flush any mouse events that occured while the program was stopped
+            module.queue.length = 0;
             module.main.updater();
-            elmt.innerHTML = "Pause";
+            bttn.innerHTML = "Pause";
         }
 
         function toggle_play_state(e) {
@@ -168,30 +177,37 @@ var boltzmann = (function (module) {
 
         function reset(e) {
             stop(startbutton);
-            module.main.init();
             module.flow_vectors = false;
             module.flow_particles.length = 0;
-            module.drawing.draw(); // Draw one more frame to clear the canvas
+            flowvector.checked = false;
+            flowparticle.checked = false;
+            module.main.init(); // Reset lattice, barriers
+            module.drawing.clear();
         }
 
-        (function(){
+        function clear_barriers(e) {
+            module.main.init_barrier([]);
+            module.drawing.clear();
+        }
+
+        (function register(){
             // Register left click
             canvas.addEventListener('mousedown', mousedownListener, false);
             canvas.addEventListener('touchstart', mousedownListener, false);
             // Register right click 
             canvas.addEventListener('contextmenu', place_barrier, false);
             // Register dropdown
-            var options = document.getElementById("drawmode");
-            options.addEventListener('change', update_draw_mode, false);
+            var drawoptions = document.getElementById("drawmode");
+            drawoptions.addEventListener('change', update_draw_mode, false);
             // Register sliders
             var viscoslider = document.getElementById("viscosity");
             viscoslider.addEventListener('input', update_viscosity, false);
             var speedslider = document.getElementById("speed");
             speedslider.addEventListener('input', update_speed, false);
             // Register checkboxes
-            var flowvector = document.getElementById("flowvectors");
+            flowvector = document.getElementById("flowvectors");
             flowvector.addEventListener('click', toggle_vectors, false);
-            var flowparticle = document.getElementById("flowparticles");
+            flowparticle = document.getElementById("flowparticles");
             flowparticle.addEventListener('click', toggle_particles, false);
             // Register start/stop
             startbutton = document.getElementById('play');
@@ -199,6 +215,9 @@ var boltzmann = (function (module) {
             // Register reset
             var resetbutton = document.getElementById('reset');
             resetbutton.addEventListener('click', reset, false);
+            // Register clear barriers
+            var clear = document.getElementById('clearbarriers');
+            clear.addEventListener('click', clear_barriers, false);
         })();
     })();
     return module;

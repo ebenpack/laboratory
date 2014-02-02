@@ -162,6 +162,16 @@ boltzmann = (function (module) {
             }
             boltzctx.putImageData(image, 0, 0);
         };
+        drawing.clear = function() {
+            vectorcanvas.width = vectorcanvas.width;
+            particlecanvas.width = particlecanvas.width;
+            canvas.width = canvas.width;
+            // Clear barrier canvas, but redraw in case barriers are still present
+            barriercanvas.width = barriercanvas.width; // Clear
+            barrierctx.fillStyle = "yellow";
+            draw_barriers(barrierctx);
+            module.new_barrier = false;
+        };
         return drawing;
     })();
     return module;

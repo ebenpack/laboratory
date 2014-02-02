@@ -97,8 +97,18 @@ var boltzmann = (function (module) {
         function init_barrier(barrier) {
             // Initialize barrier nodes.
             if (barrier !== undefined) {
-                // Initialize from barrier array
+                // Clear all
+                for (var x = 0; x < lattice_width; x++) {
+                    for (var y = 0; y < lattice_height; y++) {
+                        lattice[x][y].barrier = false;
+                    }
+                }
+                // Set new barriers from barrier array
+                for (var i = 0; i < barrier.length; i++) {
+                    lattice[bar[i].x][bar[i].y].barrier = true;
+                }
             } else {
+                // Default barrier setup
                 for (var x = 0; x < lattice_width; x++) {
                     for (var y = 0; y < lattice_height; y++) {
                         if (x === 0 || x === lattice_width - 1 ||
@@ -227,7 +237,10 @@ var boltzmann = (function (module) {
             make_lattice(lattice_width, lattice_height);
             init_barrier();
             init_flow(0, 0, 1); // Initialize all lattice nodes with zero velocity, and density of 1
+            queue.length = 0;
+            module.drawing.draw(); // Call draw once to draw barriers, but don't start animating
         };
+        main.init_barrier = init_barrier;
         return main;
     })();
     return module;
