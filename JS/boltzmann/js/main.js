@@ -238,11 +238,12 @@ var boltzmann = (function (module) {
         };
         main.init = function(){
             make_lattice(lattice_width, lattice_height);
-            init_barrier();
+            init_barrier([]);
             init_flow(0, 0, 1); // Initialize all lattice nodes with zero velocity, and density of 1
             queue.length = 0;
             module.drawing.draw(); // Call draw once to draw barriers, but don't start animating
         };
+        //main.init_flow = init_flow;
         main.init_barrier = init_barrier;
         return main;
     })();
