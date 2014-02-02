@@ -25,6 +25,8 @@
                 </select>
                 <label><input id="flowvectors" type="checkbox" name="flowvectors"> Flow Vectors</label>
                 <label><input id="flowparticles" type="checkbox" name="flowparticles"> Flow Particles</label>
+                <button id="play">Start</button>
+                <button id="reset">Reset</button>
                 <br>
                 <br>
                 <label><input id="viscosity" type="range" name="viscosity" min="2" max="30"> Viscosity</label><br><br>
@@ -34,7 +36,9 @@
                 <p><b>Left click</b> to drag fluid</p>
                 <p><b>Right click</b> to draw/erase barriers</p>
             </div>
+            <div id="debug"></div>
         </div>
+        <script src="js/benchmark.js"></script>
         <script src="js/init.js"></script>
         <script src="js/draw.js"></script>
         <script src="js/events.js"></script>

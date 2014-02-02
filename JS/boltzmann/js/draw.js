@@ -1,7 +1,7 @@
 var boltzmann = boltzmann || {};
 boltzmann = (function (module) {
     module.drawing = (function () {
-        drawing = {};
+        var drawing = {};
         var canvas = module.canvas;
         var vectorcanvas = module.vectorcanvas;
         var particlecanvas = module.particlecanvas;
@@ -11,13 +11,17 @@ boltzmann = (function (module) {
         var particles = module.flow_particles;
         var lattice_width = module.lattice_width;
         var lattice_height = module.lattice_height;
+        var boltzctx;
+        var vectorctx;
+        var particlectx;
+        var barrierctx;
         (function() {
             // Initialize
             if (module.canvas.getContext) {
-                drawing.boltzctx = canvas.getContext('2d');
-                drawing.vectorctx = vectorcanvas.getContext('2d');
-                drawing.particlectx = particlecanvas.getContext('2d');
-                drawing.barrierctx = barriercanvas.getContext('2d');
+                boltzctx = canvas.getContext('2d');
+                vectorctx = vectorcanvas.getContext('2d');
+                particlectx = particlecanvas.getContext('2d');
+                barrierctx = barriercanvas.getContext('2d');
             } else {
                 // ABORT!
             }
@@ -39,12 +43,14 @@ boltzmann = (function (module) {
 
         function draw_flow_vector(x, y, ux, uy, ctx) {
             var scale = 200;
+            var xpx = x * px_per_node;
+            var ypx = y * px_per_node;
             ctx.beginPath();
-            ctx.moveTo(x * px_per_node, y * px_per_node);
-            ctx.lineTo((x * px_per_node) + Math.round(ux * px_per_node * scale), (y * px_per_node) + Math.round(uy * px_per_node * scale));
+            ctx.moveTo(xpx, ypx);
+            ctx.lineTo(Math.round(xpx + (ux * px_per_node * scale)), ypx + (uy * px_per_node * scale));
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(x * px_per_node, y * px_per_node, 1, 0, 2 * Math.PI, false);
+            ctx.arc(xpx, ypx, 1, 0, 2 * Math.PI, false);
             ctx.fill();
             ctx.closePath();
         }
@@ -61,7 +67,7 @@ boltzmann = (function (module) {
                 for (var y = 0; y < lattice_height; y++) {
                     if (lattice[x][y].barrier) {
                         ctx.beginPath();
-                        ctx.rect(x*px_per_node, y*px_per_node, px_per_node,px_per_node);
+                        ctx.rect(x * px_per_node, y * px_per_node, px_per_node, px_per_node);
                         ctx.fill();
                         ctx.closePath();
                     }
@@ -91,28 +97,27 @@ boltzmann = (function (module) {
             return color;
         }
         drawing.draw = function() {
-            drawing.boltzctx = canvas.getContext('2d');
             var draw_mode = module.draw_mode;
             if (module.flow_vectors) {
                 vectorcanvas.width = vectorcanvas.width; // Clear
-                drawing.vectorctx.strokeStyle = "red";
-                drawing.vectorctx.fillStyle = "red";
+                vectorctx.strokeStyle = "red";
+                vectorctx.fillStyle = "red";
             }
             if (particles.length > 0) {
                 particlecanvas.width = particlecanvas.width; // Clear
-                drawing.particlectx.strokeStyle = "green";
-                drawing.particlectx.fillStyle = "green";
+                particlectx.strokeStyle = "green";
+                particlectx.fillStyle = "green";
                 for (var x = 0, l=particles.length; x < l; x++) {
-                    draw_flow_particle(particles[x].x, particles[x].y, drawing.particlectx);
+                    draw_flow_particle(particles[x].x, particles[x].y, particlectx);
                 }
             }
             if (module.new_barrier) {
                 barriercanvas.width = barriercanvas.width; // Clear
-                drawing.barrierctx.fillStyle = "yellow";
-                draw_barriers(drawing.barrierctx);
+                barrierctx.fillStyle = "yellow";
+                draw_barriers(barrierctx);
                 module.new_barrier = false;
             }
-            var image = drawing.boltzctx.createImageData(module.canvas.width, module.canvas.height);
+            var image = boltzctx.createImageData(module.canvas.width, module.canvas.height);
             for (var x = 0; x < lattice_width; x++) {
                 for (var y = 0; y < lattice_height; y++) {
                     if (!lattice[x][y].barrier) {
@@ -121,7 +126,7 @@ boltzmann = (function (module) {
                         var uy = lattice[x][y].uy;
                         if (module.flow_vectors && x % 10 === 0 && y % 10 ===0) {
                             // Draw flow vectors every tenth node.
-                            draw_flow_vector(x, y, ux, uy, drawing.vectorctx);
+                            draw_flow_vector(x, y, ux, uy, vectorctx);
                         }
                         if (draw_mode === 0) {
                             // Speed
@@ -155,7 +160,7 @@ boltzmann = (function (module) {
                     }
                 }
             }
-            drawing.boltzctx.putImageData(image, 0, 0);
+            boltzctx.putImageData(image, 0, 0);
         };
         return drawing;
     })();

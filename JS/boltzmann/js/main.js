@@ -2,23 +2,12 @@ var boltzmann = boltzmann || {};
 var boltzmann = (function (module) {
     module.main = (function () {
         var main = {};
-        //##############
-        window.requestAnimFrame = (function(){
-            return  window.requestAnimationFrame ||
-            window.webkitRequestAnimationFrame ||
-            window.mozRequestAnimationFrame ||
-            function( callback ){
-                window.setTimeout(callback, 1000 / 60);
-            };
-        })();
-
         var queue = module.queue;
         var lattice_width = module.lattice_width;
         var lattice_height = module.lattice_height;
         var lattice = module.lattice;
         var particles = module.flow_particles;
         var omega = module.omega;
-
         var four9ths = 4/9;
         var one9th = 1/9;
         var one36th = 1/36;
@@ -214,7 +203,7 @@ var boltzmann = (function (module) {
                 }
             }
         }
-        function updater(){
+        main.updater = function(){
             var steps = module.steps_per_frame;
             var q;
             for (var i = 0; i < steps; i++) {
@@ -232,15 +221,13 @@ var boltzmann = (function (module) {
                 }
             }
             module.drawing.draw();
-            requestAnimFrame(updater);
-        }
+            module.animation_id = requestAnimationFrame(main.updater);
+        };
         main.init = function(){
             make_lattice(lattice_width, lattice_height);
             init_barrier();
             init_flow(0, 0, 1); // Initialize all lattice nodes with zero velocity, and density of 1
-            requestAnimFrame(updater);
         };
-        //##############
         return main;
     })();
     return module;

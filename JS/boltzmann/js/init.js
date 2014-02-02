@@ -22,6 +22,8 @@ boltzmann = (function(settings){
         // function know it needs to redraw barriers (this saves us from redrawing barriers every single frame)
         new_barrier: true,
         flow_particles: [],
+        // play: false, // Start the simulation in a paused state
+        animation_id: null, // requestanimationframe ID
         canvas: canvas,
         vectorcanvas: document.getElementById("vectorcanvas"),
         particlecanvas: document.getElementById("particlecanvas"),
@@ -31,3 +33,31 @@ boltzmann = (function(settings){
     };
     return main;
 })(config);
+
+
+(function() {
+    // requestAnimationFrame polyfill, courtesy of
+    // http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+    var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame =
+          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());

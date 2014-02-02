@@ -1,7 +1,6 @@
 var boltzmann = boltzmann || {};
 var boltzmann = (function (module) {
     module.events = (function () {
-        //##########################
         var lattice_width = module.lattice_width;
         var lattice_height = module.lattice_height;
         var lattice = module.lattice;
@@ -10,8 +9,11 @@ var boltzmann = (function (module) {
         var canvas = module.canvas;
         var steps_per_frame = module.steps_per_frame;
         var particles = module.flow_particles;
+        // The reset button also affects the start button, so
+        // it needs to be available to both
+        var startbutton;
 
-        var mousedownListener = function(e) {
+        function mousedownListener(e) {
             var button = e.which || e.button;
             if (button !== 1) {return;} // Only capture left click
             var oldX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
@@ -61,8 +63,9 @@ var boltzmann = (function (module) {
 
             canvas.addEventListener('touchmove', moveListener, false);
             document.body.addEventListener('touchend', mouseupListener, false);
-        };
-        var place_barrier = function(e) {
+        }
+
+        function place_barrier(e) {
             e.preventDefault();
             var mouse_x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
             var mouse_y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
@@ -98,12 +101,13 @@ var boltzmann = (function (module) {
 
             canvas.addEventListener('touchmove', moveListener, false);
             document.body.addEventListener('touchend', mouseupListener, false);
-        };
-        function update_draw_mode(e){
+        }
+
+        function update_draw_mode(e) {
             module.draw_mode = this.selectedIndex;
         }
 
-        function update_speed(e){
+        function update_speed(e) {
             module.steps_per_frame = parseInt(this.value, 10);
         }
 
@@ -123,7 +127,7 @@ var boltzmann = (function (module) {
             }
         }
 
-        function toggle_vectors(e){
+        function toggle_vectors(e) {
             if (this.checked) {
                 module.flow_vectors = true;
             } else {
@@ -132,7 +136,7 @@ var boltzmann = (function (module) {
             }
         }
         
-        function toggle_particles(e){
+        function toggle_particles(e) {
             if (this.checked) {
                 init_flow_particles();
             } else {
@@ -140,6 +144,34 @@ var boltzmann = (function (module) {
                 module.particlecanvas.width = module.particlecanvas.width; // Clear
             }
         }
+
+        function stop(elmt) {
+            // Stop animation
+            window.cancelAnimationFrame(module.animation_id);
+            module.animation_id = null;
+            elmt.innerHTML = "Start";
+        }
+
+        function start(elmt) {
+            // Start animation
+            module.main.updater();
+            elmt.innerHTML = "Pause";
+        }
+
+        function toggle_play_state(e) {
+            if (module.animation_id) {
+                stop(this);
+            } else {
+                start(this);
+            }
+        }
+
+        function reset(e) {
+            stop(startbutton);
+            module.main.init();
+            module.drawing.draw(); // Draw one more frame to clear the canvas
+        }
+
         (function(){
             // Register left click
             canvas.addEventListener('mousedown', mousedownListener, false);
@@ -159,8 +191,13 @@ var boltzmann = (function (module) {
             flowvector.addEventListener('click', toggle_vectors, false);
             var flowparticle = document.getElementById("flowparticles");
             flowparticle.addEventListener('click', toggle_particles, false);
+            // Register start/stop
+            startbutton = document.getElementById('play');
+            startbutton.addEventListener('click', toggle_play_state, false);
+            // Register reset
+            var resetbutton = document.getElementById('reset');
+            resetbutton.addEventListener('click', reset, false);
         })();
-        //##########################
     })();
     return module;
 })(boltzmann);
