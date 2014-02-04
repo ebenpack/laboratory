@@ -88,5 +88,5 @@
     dropzone.addEventListener('dragleave', dragleave_handler);
 
     var colorslide = document.getElementById('colorslide');
-    colorslide.addEventListener('change', color_separation);
+    colorslide.addEventListener('input', color_separation);
 })();
