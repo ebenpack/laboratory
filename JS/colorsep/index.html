@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Image color separator</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+    <body>
+        <div class="main" style="position:relative;">
+            <canvas id="imagecanvas" style="display:none; background-color:black;" width='600' height='240'></canvas>
+            <div id="dropzone" class="dropzone">Drop image here</div>
+            <div id="controls" style="display:none; margin-top: 20px;">
+                <input id="colorslide" type="range" name="colorslide" min="-10" max="10">
+            </div>
+        </div>
+        <script src="js/main.js"></script>
+    </body>
+</html>
