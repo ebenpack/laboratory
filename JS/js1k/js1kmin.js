@@ -9,7 +9,8 @@
 // Google's closure compiler, and thus represents the smallest
 // size achieved thus far.
 
-W = a.width; // canvas width
+K = "width";
+W = a[K]; // canvas width
 H = a.height; // canvas height
 X = a.addEventListener;
 V = a.removeEventListener;
@@ -17,43 +18,43 @@ w = 200; // lattice width
 h = 80; // lattice height
 l = []; // l consisting of l nodes.
 q = []; // Mouse event qq
-o = 1 / (3 * 0.02 + 0.5); // omega
+o = 1.7; // omega
 v = true; // vectors
-nb = true; // new barrier
-fp = []; // flow particles
-dm = 0; // draw mode
-a.style.background = "#0"; // Black
+B = []; // flow particles
+J = 0; // draw mode
+a.style.background = "#000"; // Black
 f = 10; // Steps per frame
-MF = Math.floor;  // Cache math functions
-MA = Math.abs;
+A = Math.floor;  // Cache math functions
+F = Math.abs;
 MS = Math.sqrt;
 Mp = Math.pow;
 P = Math.PI;
-Mm = 'mousemove';
-Mu = 'mouseup';
+Q = 'mousemove';
+O = 'mouseup';
 R = 'red'; // Red (name is smaller than hex code)
 G = '#0F0'; // Green
 Y = '#FF0'; // Yellow
-p = MF(W / w); // Pixels per node
-T = 255;
+p = A(W / w); // Pixels per node
+T = 255; // Constant, used for color stuff
+zf = .04; // # used for some color stuff
 
-bp = c.beginPath.bind(c);
+bp = c.beginPath.bind(c); // Canvas methods
 st = c.stroke.bind(c);
 cp = c.closePath.bind(c);
 cf = c.fill.bind(c);
 ca = c.arc.bind(c);
 
-function L(elmt){
-    return elmt.length;
-}
+L="length";
+z='layerX';
+r='layerY';
 
 function I() {
     //init_flow_particles
-    fp.length = 0;
+    B[L] = 0;
     for (x = 0; x < 20; x++) {
         for (y = 0; y < 8; y++) {
             if (!l[x*f][y*f].b) {
-                fp.push({'x':x*f, 'y':y*f});
+                B.push({'x':x*f, 'y':y*f});
             }
         }
     }
@@ -62,10 +63,10 @@ function I() {
 
 function DS(x, y, color, image) {
     //draw_square
-    id = image.data;
+    var id = image.data;
     for (var ypx = y * p; ypx < (y+1) * p; ypx++) {
         for (var xpx = x * p; xpx < (x + 1) * p; xpx++) {
-            var index = (xpx + ypx * image.width) * 4;
+            var index = (xpx + ypx * image[K]) * 4;
             id[index+0] = color.r;
             id[index+1] = color.g;
             id[index+2] = color.b;
@@ -78,13 +79,12 @@ function DF(x, y, ux, uy) {
     //draw_flow_vector
     c.strokeStyle = R;
     c.fillStyle = R;
-    var scale = w;
     var xpx = x * p;
     var ypx = y * p;
 
     bp();
     c.moveTo(xpx, ypx);
-    c.lineTo(Math.round(xpx + (ux * p * scale)), ypx + (uy * p * scale));
+    c.lineTo(Math.round(xpx + (ux * p * w)), ypx + (uy * p * w));
     st();
     bp();
     ca(xpx, ypx, 1, 0, 2 * P, false);
@@ -121,7 +121,7 @@ function GC(val, min, max) {
     // Returns a color for a given value in a range between min and max.
     // Min and max were experimentally derived for speed, density, etc.
     var mid = (min + max) / 2;
-    var range = MA(max-mid);
+    var range = F(max-mid);
     var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
     if (val > max) {
         val = max;
@@ -131,18 +131,17 @@ function GC(val, min, max) {
     }
     if (val >= mid) {
         color.r = T;
-        color.a = MF(MA(val) * (1/range) * T);
+        color.a = A(F(val) * (1/range) * T);
     } else {
         color.g = T;
-        color.a = MF(MA(val) * (1/range) * T);
+        color.a = A(F(val) * (1/range) * T);
     }
     return color;
 }
 
 function D() {
     // draw
-    a.width = W; // Clear
-
+    a[K] = W; // Clear
     var image = c.createImageData(W, H);
     for (x = 0; x < w; x++) {
         for (y = 0; y < h; y++) {
@@ -150,31 +149,31 @@ function D() {
                 var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
                 var ux = l[x][y].x;
                 var uy = l[x][y].y;
-                if (dm === 0) {
+                if (J == 0) {
                     // Speed
                     var speed = MS(Mp(ux, 2) + Mp(uy, 2));
-                    color = {'r': 0, 'a': MF(speed*4E3), 'b': 0, 'g': T};
+                    color = {'r': 0, 'a': A(speed*4E3), 'b': 0, 'g': T};
                     if (color.g > T) {color.g = T;}
                     if (color.g < 0) {color.g = 0;}
-                } else if (dm == 1) {
+                } else if (J == 1) {
                     // X velocity
                     var xvel = ux;
-                    color = GC(xvel, -0.04, 0.04);
-                } else if (dm == 2) {
+                    color = GC(xvel, -zf, zf);
+                } else if (J == 2) {
                     // Y Velocity
                     var yvel = uy;
-                    color = GC(yvel, -0.04, 0.04);
-                } else if (dm == 3) {
+                    color = GC(yvel, -zf, zf);
+                } else if (J == 3) {
                     // Density
                     var dens = l[x][y].n;
-                    color = {'r': 0, 'a': MF((T - (T / MA(dens)))*20), 'b': 0, 'g': T};
+                    color = {'r': 0, 'a': A((T - (T / F(dens)))*20), 'b': 0, 'g': T};
                     if (color.g > T) {color.g = T;}
                     if (color.g < 0) {color.g = 0;}
-                } else if (dm == 4) {
+                } else if (J == 4) {
                     // Curl
                     var curl = l[x][y].c;
                     color = GC(curl, -0.1, 0.1);
-                } else if (dm == 5) {
+                } else if (J == 5) {
                     // Draw nothing. This mode is useful when flow vectors or particles are turned on.
                     continue;
                 }
@@ -183,9 +182,9 @@ function D() {
         }
     }
     c.putImageData(image, 0, 0);
-    for (x = 0, ln=L(fp); x < ln; x++) {
+    for (x = 0, ln=B[L]; x < ln; x++) {
         // Draw particles
-        DP(fp[x].x, fp[x].y);
+        DP(B[x].x, B[x].y);
     }
     if (v) {
         // Draw flow vectors every tenth node
@@ -197,45 +196,33 @@ function D() {
             }
         }
     }
-    if (nb) {
-        // Draw barrriers
-        DB();
-        nb = false;
-    }
-}
-
-function C() {
-    //clear
-    a.width = W;
-    // Clear barrier canvas, but redraw in case barriers are still present
     DB();
-    nb = false;
 }
 
 function M(e) {
     //mousedownListener
     var button = e.which;
     if (button !== 1) {return;} // Only capture left click
-    var oldX = e.layerX;
-    var oldY = e.layerY;
+    var oldX = e[z];
+    var oldY = e[r];
 
     var B = function(e) {
         //moveListener
         var radius = 5;
-        var newX = e.layerX;
-        var newY = e.layerY;
+        var newX = e[z];
+        var newY = e[r];
         var dx = (newX - oldX) / p / f;
         var dy = (newY - oldY) / p / f;
         // Ensure that push isn't too big
-        if (MA(dx) > 0.1) {
-            dx = 0.1 * MA(dx) / dx;
+        if (F(dx) > 0.1) {
+            dx = 0.1 * F(dx) / dx;
         }
-        if (MA(dy) > 0.1) {
-            dy = 0.1 * MA(dy) / dy;
+        if (F(dy) > 0.1) {
+            dy = 0.1 * F(dy) / dy;
         }
         // Scale from canvas coordinates to l coordinates
-        var l_x = MF(newX / p);
-        var l_y = MF(newY / p);
+        var l_x = A(newX / p);
+        var l_y = A(newY / p);
         for (x = -radius; x <= radius; x++) {
             for (y = -radius; y <= radius; y++) {
                 // Push in circle around cursor. Make sure coordinates are in bounds.
@@ -253,13 +240,13 @@ function M(e) {
 
     var N = function(e) {
         //mouseupListener
-        V(Mm, B, false);
-        V(Mu, N, false);
+        V(Q, B, false);
+        V(O, N, false);
 
     };
 
-    X(Mm, B, false);
-    X(Mu, N, false);
+    X(Q, B, false);
+    X(O, N, false);
 
 }
 
@@ -267,10 +254,10 @@ function M(e) {
 function PB(e) {
     //place_barrier
     e.preventDefault();
-    var mouse_x = e.layerX;
-    var mouse_y = e.layerY;
-    var l_x = MF(mouse_x / p);
-    var l_y = MF(mouse_y / p);
+    var mouse_x = e[z];
+    var mouse_y = e[r];
+    var l_x = A(mouse_x / p);
+    var l_y = A(mouse_y / p);
     var draw = true; // Drawing, or erasing?
     if (l[l_x][l_y].b) {
         draw = false;
@@ -279,44 +266,48 @@ function PB(e) {
 
     var B = function(e) {
         //moveListener
-        mouse_x = e.layerX;
-        mouse_y = e.layerY;
+        mouse_x = e[z];
+        mouse_y = e[r];
         // Scale from canvas coordinates to l coordinates
-        l_x = MF(mouse_x / p);
-        l_y = MF(mouse_y / p);
+        l_x = A(mouse_x / p);
+        l_y = A(mouse_y / p);
         // Draw/erase barrier
         l[l_x][l_y].b = draw;
-        nb = true;
     };
 
-    var N = function(e) {
+    var Nz = function(e) {
         ////mouseupListener
-        V(Mm, B, false);
-        V(Mu, N, false);
+        V(Q, B, false);
+        V(O, Nz, false);
 
     };
 
-    X(Mm, B, false);
-    X(Mu, N, false);
+    X(Q, B, false);
+    X(O, Nz, false);
 
 }
-function K(e){
+function Kz(e){
     //change_draw_mode
     var key = e.keyCode;
     if(key == 72) {
-        dm = (dm + 1) % 6;
+        // h key: change draw mode
+        J = (J + 1) % 6;
     }
     if (key == 74) {
+        // j key: toggle flow vectors
         v = !v;
     }
     if (key == 75) {
-        if (L(fp) > 0) {
-            fp.length = 0;
+        // k key: toggle flow particles
+        if (B[L] > 0) {
+            B[L] = 0;
         } else {
             I();
         }
     }
     if (key == 76) {
+        // l key: reset
+        // TODO: This slows things down like crazy
         t();
     }
 }
@@ -327,13 +318,13 @@ X('mousedown', M, false);
 // Register right click 
 X('contextmenu', PB, false);
 // Register keydown
-b.addEventListener('keydown', K, false); //ALREADY HAVE
+b.addEventListener('keydown', Kz, false); //ALREADY HAVE
 
 
 // MAIN
-f9 = 4/9;
-o9 = 1/9;
-o3 = 1/36;
+
+
+
 ND = {
     //node distribution velocities
     0: {'x':0, 'y':0},
@@ -363,18 +354,21 @@ Rf = {
  */
 function LN() {
     // LatticeNode
-    this.d = [0,0,0,0,0,0,0,0,0]; // Individual density distributions for 
+    var t =this;
+    // N.B. Google closure compiler refuses to shorten
+    // `this` in this way. Do this manually. As far as I can tell, this
+    // doesn't cause any problems.
+    t.d = [0,0,0,0,0,0,0,0,0]; // Individual density distributions for 
     // each of the nine possible discrete velocities of a node.
-    this.s = [0,0,0,0,0,0,0,0,0]; // Used to temporarily hold streamed values
-    this.n = 0; // Macroscopic density of a node.
-    this.x = 0; // X component of macroscopic velocity of a node.
-    this.y = 0; // Y component of macroscopic velocity of a node.
-    this.b = false; // Boolean indicating if node is a barrier.
-    this.c = 0; // Curl of node.
+    t.s = [0,0,0,0,0,0,0,0,0]; // Used to temporarily hold streamed values
+    t.n = 0; // Macroscopic density of a node.
+    t.x = 0; // X component of macroscopic velocity of a node.
+    t.y = 0; // Y component of macroscopic velocity of a node.
+    t.b = false; // Boolean indicating if node is a barrier.
+    t.c = 0; // Curl of node.
 }
 function ml(w, h) {
     // make_lattice
-    // Make a new empty l 
     for (var i = 0; i < w; i++) {
         l[i] = [];
         for (var j = 0; j < h; j++) {
@@ -401,10 +395,10 @@ function IF(ux, uy, rho) {
 }
 function MP() {
     //move_particles
-    for (x = 0, ln=L(fp); x < ln; x++) {
-        var p = fp[x];
-        var lx = MF(p.x);
-        var ly = MF(p.y);
+    for (x = 0, ln=B[L]; x < ln; x++) {
+        var p = B[x];
+        var lx = A(p.x);
+        var ly = A(p.y);
         if (lx >=0 && lx < w &&
             ly >=0 && ly < h) {
             var node = l[lx][ly];
@@ -424,7 +418,6 @@ function IB(barrier) {
             l[x][y].b = false;
         }
     }
-    nb = true;
 }
 function E(ux, uy, rho) {
     // equilibrium
@@ -434,22 +427,22 @@ function E(ux, uy, rho) {
     // Thanks to Daniel V. Schroeder http://physics.weber.edu/schroeder/fluids/
     // for this optimization
     var eq = []; // Equilibrium values for all velocities in a node.
-    var ux3 = 3 * ux;
     var uy3 = 3 * uy;
     var ux2 = ux * ux;
+    var ff = 4.5;
     var uy2 = uy * uy;
     var uxuy2 = 2 * ux * uy;
     var u2 = ux2 + uy2;
     var u215 = 1.5 * u2;
-    var on = o9 * rho;
-    var ot = o3 * rho;
-    var foo = 4.5*ux2 - u215;
-    var bar = 4.5*uy2 - u215;
-    var ux3p = 1 + ux3;
-    var ux3n = 1 - ux3;
-    var u45p = 4.5*(u2+uxuy2) - u215;
-    var u45n = 4.5*(u2-uxuy2) - u215;
-    eq[0] = f9 * rho * (1 - u215);
+    var on = 1/9 * rho;
+    var ot = 1/36 * rho;
+    var foo = ff*ux2 - u215;
+    var bar = ff*uy2 - u215;
+    var ux3p = 1 + 3 * ux;
+    var ux3n = 1 - 3 * ux;
+    var u45p = ff*(u2+uxuy2) - u215;
+    var u45n = ff*(u2-uxuy2) - u215;
+    eq[0] = 4/9 * rho * (1 - u215);
     eq[1] = on * (ux3p + foo);
     eq[2] = on * (1 - uy3 + bar);
     eq[3] = on * (ux3n + foo);
@@ -461,7 +454,7 @@ function E(ux, uy, rho) {
     return eq;
 }
 
-function S() {
+function Sz() {
     //stream
     // Stream distributions from old l to new l. Boundary conditions are
     // considered at this stage, and distributions are bounced back to originating node
@@ -497,7 +490,7 @@ function S() {
     }
 }
 
-function Z() {
+function Zz() {
     //collide
     for (x = 0; x < w; x++) {
         for (y = 0; y < h; y++) {
@@ -538,12 +531,12 @@ function Z() {
 function U(){
     //updater
     for (var i = 0; i < f; i++) {
-        S();
-        Z();
-        if (L(fp) > 0) {
+        Sz();
+        Zz();
+        if (B[L] > 0) {
             MP();
         }
-        while (L(q) > 0) {
+        while (q[L] > 0) {
             u = q.shift();
             var node = l[u[0]][u[1]];
             var ux = u[2];
@@ -559,7 +552,7 @@ function t(){
     ml(w, h);
     IB(); // Initialize barriers
     IF(0, 0, 1); // Initialize all l nodes with zero velocity, and density of 1
-    q.length = 0;
+    q[L] = 0;
     I(); // Initialize flow
     D(); // Call draw once to draw/erase barriers
     U(); // Start updater
