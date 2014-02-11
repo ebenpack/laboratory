@@ -16,7 +16,7 @@ X = a.addEventListener;
 V = a.removeEventListener;
 w = 200; // lattice width
 h = 80; // lattice height
-l = []; // l consisting of l nodes.
+l = []; // lattice consisting of l nodes.
 q = []; // Mouse event qq
 o = 1.7; // omega
 v = true; // vectors
@@ -47,6 +47,7 @@ ca = c.arc.bind(c);
 L="length";
 z='layerX';
 r='layerY';
+Z="fillStyle"
 
 function I() {
     //init_flow_particles
@@ -78,7 +79,7 @@ function DS(x, y, color, image) {
 function DF(x, y, ux, uy) {
     //draw_flow_vector
     c.strokeStyle = R;
-    c.fillStyle = R;
+    c[Z] = R;
     var xpx = x * p;
     var ypx = y * p;
 
@@ -94,27 +95,27 @@ function DF(x, y, ux, uy) {
 
 function DP(x,y) {
     //draw_flow_particle
-    c.fillStyle = G;
+    c[Z] = G;
     bp();
     ca(x * p, y * p, 1, 0, 2 * P, false);
     cf();
     cp();
 }
 
-function DB() {
-    //draw_barriers
-    c.fillStyle = Y;
-    for (x = 0; x < w; x++) {
-        for (y = 0; y < h; y++) {
-            if (l[x][y].b) {
-                bp();
-                c.rect(x * p, y * p, p, p);
-                cf();
-                cp();
-            }
-        }
-    }
-}
+// function DB() {
+//     //draw_barriers
+//     c[Z] = Y;
+//     for (x = 0; x < w; x++) {
+//         for (y = 0; y < h; y++) {
+//             if (l[x][y].b) {
+//                 bp();
+//                 c.rect(x * p, y * p, p, p);
+//                 cf();
+//                 cp();
+//             }
+//         }
+//     }
+// }
 
 function GC(val, min, max) {
     // get_color
@@ -196,7 +197,7 @@ function D() {
             }
         }
     }
-    DB();
+    // DB();
 }
 
 function M(e) {
@@ -251,41 +252,41 @@ function M(e) {
 }
 
 
-function PB(e) {
-    //place_barrier
-    e.preventDefault();
-    var mouse_x = e[z];
-    var mouse_y = e[r];
-    var l_x = A(mouse_x / p);
-    var l_y = A(mouse_y / p);
-    var draw = true; // Drawing, or erasing?
-    if (l[l_x][l_y].b) {
-        draw = false;
-    }
-    l[l_x][l_y].b = draw;
+// function PB(e) {
+//     //place_barrier
+//     e.preventDefault();
+//     var mouse_x = e[z];
+//     var mouse_y = e[r];
+//     var l_x = A(mouse_x / p);
+//     var l_y = A(mouse_y / p);
+//     var draw = true; // Drawing, or erasing?
+//     if (l[l_x][l_y].b) {
+//         draw = false;
+//     }
+//     l[l_x][l_y].b = draw;
 
-    var B = function(e) {
-        //moveListener
-        mouse_x = e[z];
-        mouse_y = e[r];
-        // Scale from canvas coordinates to l coordinates
-        l_x = A(mouse_x / p);
-        l_y = A(mouse_y / p);
-        // Draw/erase barrier
-        l[l_x][l_y].b = draw;
-    };
+//     var B = function(e) {
+//         //moveListener
+//         mouse_x = e[z];
+//         mouse_y = e[r];
+//         // Scale from canvas coordinates to l coordinates
+//         l_x = A(mouse_x / p);
+//         l_y = A(mouse_y / p);
+//         // Draw/erase barrier
+//         l[l_x][l_y].b = draw;
+//     };
 
-    var Nz = function(e) {
-        ////mouseupListener
-        V(Q, B, false);
-        V(O, Nz, false);
+//     var Nz = function(e) {
+//         ////mouseupListener
+//         V(Q, B, false);
+//         V(O, Nz, false);
 
-    };
+//     };
 
-    X(Q, B, false);
-    X(O, Nz, false);
+//     X(Q, B, false);
+//     X(O, Nz, false);
 
-}
+// }
 function Kz(e){
     //change_draw_mode
     var key = e.keyCode;
@@ -316,7 +317,7 @@ function Kz(e){
 // Register left click
 X('mousedown', M, false);
 // Register right click 
-X('contextmenu', PB, false);
+// X('contextmenu', PB, false);
 // Register keydown
 b.addEventListener('keydown', Kz, false); //ALREADY HAVE
 
