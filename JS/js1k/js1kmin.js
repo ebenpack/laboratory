@@ -156,28 +156,28 @@ function D() {
                     color = {'r': 0, 'a': A(speed*4E3), 'b': 0, 'g': T};
                     if (color.g > T) {color.g = T;}
                     if (color.g < 0) {color.g = 0;}
-                } else if (J == 1) {
-                    // X velocity
-                    var xvel = ux;
-                    color = GC(xvel, -zf, zf);
-                } else if (J == 2) {
-                    // Y Velocity
-                    var yvel = uy;
-                    color = GC(yvel, -zf, zf);
-                } else if (J == 3) {
-                    // Density
-                    var dens = l[x][y].n;
-                    color = {'r': 0, 'a': A((T - (T / F(dens)))*20), 'b': 0, 'g': T};
-                    if (color.g > T) {color.g = T;}
-                    if (color.g < 0) {color.g = 0;}
-                } else if (J == 4) {
-                    // Curl
-                    var curl = l[x][y].c;
-                    color = GC(curl, -0.1, 0.1);
-                } else if (J == 5) {
-                    // Draw nothing. This mode is useful when flow vectors or particles are turned on.
-                    continue;
-                }
+                }//  else if (J == 1) {
+                //     // X velocity
+                //     var xvel = ux;
+                //     color = GC(xvel, -zf, zf);
+                // } else if (J == 2) {
+                //     // Y Velocity
+                //     var yvel = uy;
+                //     color = GC(yvel, -zf, zf);
+                // } else if (J == 3) {
+                //     // Density
+                //     var dens = l[x][y].n;
+                //     color = {'r': 0, 'a': A((T - (T / F(dens)))*20), 'b': 0, 'g': T};
+                //     if (color.g > T) {color.g = T;}
+                //     if (color.g < 0) {color.g = 0;}
+                // } else if (J == 4) {
+                //     // Curl
+                //     var curl = l[x][y].c;
+                //     color = GC(curl, -0.1, 0.1);
+                // } else if (J == 5) {
+                //     // Draw nothing. This mode is useful when flow vectors or particles are turned on.
+                //     continue;
+                // }
                 DS(x, y, color, image);
             }
         }
@@ -287,31 +287,31 @@ function M(e) {
 //     X(O, Nz, false);
 
 // }
-function Kz(e){
-    //change_draw_mode
-    var key = e.keyCode;
-    if(key == 72) {
-        // h key: change draw mode
-        J = (J + 1) % 6;
-    }
-    if (key == 74) {
-        // j key: toggle flow vectors
-        v = !v;
-    }
-    if (key == 75) {
-        // k key: toggle flow particles
-        if (B[L] > 0) {
-            B[L] = 0;
-        } else {
-            I();
-        }
-    }
-    if (key == 76) {
-        // l key: reset
-        // TODO: This slows things down like crazy
-        t();
-    }
-}
+// function Kz(e){
+//     //change_draw_mode
+//     var key = e.keyCode;
+//     if(key == 72) {
+//         // h key: change draw mode
+//         J = (J + 1) % 6;
+//     }
+//     if (key == 74) {
+//         // j key: toggle flow vectors
+//         v = !v;
+//     }
+//     if (key == 75) {
+//         // k key: toggle flow particles
+//         if (B[L] > 0) {
+//             B[L] = 0;
+//         } else {
+//             I();
+//         }
+//     }
+//     if (key == 76) {
+//         // l key: reset
+//         // TODO: This slows things down like crazy
+//         t();
+//     }
+// }
 
 
 // Register left click
@@ -319,7 +319,7 @@ X('mousedown', M, false);
 // Register right click 
 // X('contextmenu', PB, false);
 // Register keydown
-b.addEventListener('keydown', Kz, false); //ALREADY HAVE
+// b.addEventListener('keydown', Kz, false);
 
 
 // MAIN
