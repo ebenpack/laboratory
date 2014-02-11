@@ -35,7 +35,7 @@ G = '#0F0'; // Green
 Y = '#FF0'; // Yellow
 p = A(W / w); // Pixels per node
 T = 255; // Constant, used for color stuff
-zf = .04; // # used for some color stuff
+// zf = .04; // # used for some color stuff
 
 bp = c.beginPath.bind(c); // Canvas methods
 st = c.stroke.bind(c);
@@ -147,14 +147,14 @@ function D() {
         for (y = 0; y < h; y++) {
             if (!l[x][y].b) {
                 var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
-                var ux = l[x][y].x;
-                var uy = l[x][y].y;
+                // var ux = l[x][y].x;
+                // var uy = l[x][y].y;
                 // if (J == 0) {
                     // Speed
-                    var speed = MS(Mp(ux, 2) + Mp(uy, 2));
+                    var speed = MS(Mp(l[x][y].x, 2) + Mp(l[x][y].y, 2));
                     color = {'r': 0, 'a': A(speed*4E3), 'b': 0, 'g': T};
-                    if (color.g > T) {color.g = T;}
-                    if (color.g < 0) {color.g = 0;}
+                    // if (color.g > T) {color.g = T;}
+                    // if (color.g < 0) {color.g = 0;}
                 // }  else if (J == 1) {
                 //     // X velocity
                 //     var xvel = ux;
@@ -206,7 +206,7 @@ function M(e) {
     var oldX = e[z];
     var oldY = e[r];
 
-    var B = function(e) {
+    function B(e) {
         //moveListener
         var radius = 5;
         var newX = e[z];
@@ -238,7 +238,7 @@ function M(e) {
     oldY = newY;
     };
 
-    var N = function(e) {
+    function N(e) {
         //mouseupListener
         V(Q, B, false);
         V(O, N, false);
