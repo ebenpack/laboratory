@@ -11,17 +11,16 @@
 
 K = "width";
 W = a[K]; // canvas width
-H = a.height; // canvas height
 X = a.addEventListener;
 V = a.removeEventListener;
 w = 200; // lattice width
 h = 80; // lattice height
 l = []; // lattice consisting of l nodes.
 q = []; // Mouse event qq
-o = 1.7; // omega
-v = true; // vectors
+// o = 1.7; // omega
+// v = true; // vectors
 B = []; // flow particles
-J = 0; // draw mode
+// J = 0; // draw mode
 a.style.background = "#000"; // Black
 f = 10; // Steps per frame
 A = Math.floor;  // Cache math functions
@@ -76,22 +75,22 @@ function DS(x, y, color, image) {
     }
 }
 
-function DF(x, y, ux, uy) {
-    //draw_flow_vector
-    c.strokeStyle = R;
-    c[Z] = R;
-    var xpx = x * p;
-    var ypx = y * p;
+// function DF(x, y, ux, uy) {
+//     //draw_flow_vector
+//     c.strokeStyle = R;
+//     c[Z] = R;
+//     var xpx = x * p;
+//     var ypx = y * p;
 
-    bp();
-    c.moveTo(xpx, ypx);
-    c.lineTo(Math.round(xpx + (ux * p * w)), ypx + (uy * p * w));
-    st();
-    bp();
-    ca(xpx, ypx, 1, 0, 2 * P, false);
-    st();
-    cp();
-}
+//     bp();
+//     c.moveTo(xpx, ypx);
+//     c.lineTo(Math.round(xpx + (ux * p * w)), ypx + (uy * p * w));
+//     st();
+//     bp();
+//     ca(xpx, ypx, 1, 0, 2 * P, false);
+//     st();
+//     cp();
+// }
 
 function DP(x,y) {
     //draw_flow_particle
@@ -117,46 +116,46 @@ function DP(x,y) {
 //     }
 // }
 
-function GC(val, min, max) {
-    // get_color
-    // Returns a color for a given value in a range between min and max.
-    // Min and max were experimentally derived for speed, density, etc.
-    var mid = (min + max) / 2;
-    var range = F(max-mid);
-    var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
-    if (val > max) {
-        val = max;
-    }
-    if (val < min) {
-        val = min;
-    }
-    if (val >= mid) {
-        color.r = T;
-        color.a = A(F(val) * (1/range) * T);
-    } else {
-        color.g = T;
-        color.a = A(F(val) * (1/range) * T);
-    }
-    return color;
-}
+// function GC(val, min, max) {
+//     // get_color
+//     // Returns a color for a given value in a range between min and max.
+//     // Min and max were experimentally derived for speed, density, etc.
+//     var mid = (min + max) / 2;
+//     var range = F(max-mid);
+//     var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
+//     if (val > max) {
+//         val = max;
+//     }
+//     if (val < min) {
+//         val = min;
+//     }
+//     if (val >= mid) {
+//         color.r = T;
+//         color.a = A(F(val) * (1/range) * T);
+//     } else {
+//         color.g = T;
+//         color.a = A(F(val) * (1/range) * T);
+//     }
+//     return color;
+// }
 
 function D() {
     // draw
     a[K] = W; // Clear
-    var image = c.createImageData(W, H);
+    var image = c.createImageData(W, a.height);
     for (x = 0; x < w; x++) {
         for (y = 0; y < h; y++) {
             if (!l[x][y].b) {
                 var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
                 var ux = l[x][y].x;
                 var uy = l[x][y].y;
-                if (J == 0) {
+                // if (J == 0) {
                     // Speed
                     var speed = MS(Mp(ux, 2) + Mp(uy, 2));
                     color = {'r': 0, 'a': A(speed*4E3), 'b': 0, 'g': T};
                     if (color.g > T) {color.g = T;}
                     if (color.g < 0) {color.g = 0;}
-                }//  else if (J == 1) {
+                // }  else if (J == 1) {
                 //     // X velocity
                 //     var xvel = ux;
                 //     color = GC(xvel, -zf, zf);
@@ -187,16 +186,16 @@ function D() {
         // Draw particles
         DP(B[x].x, B[x].y);
     }
-    if (v) {
+    // if (v) {
         // Draw flow vectors every tenth node
-        for (x = 0; x < w; x+=f) {
-            for (y = 0; y < h; y+=f) {
-                var ux = l[x][y].x;
-                var uy = l[x][y].y;
-                DF(x, y, ux, uy);
-            }
-        }
-    }
+        // for (x = 0; x < w; x+=f) {
+        //     for (y = 0; y < h; y+=f) {
+        //         var ux = l[x][y].x;
+        //         var uy = l[x][y].y;
+        //         DF(x, y, ux, uy);
+        //     }
+        // }
+    // }
     // DB();
 }
 
@@ -410,16 +409,16 @@ function MP() {
         }
     }
 }
-function IB(barrier) {
-    //init_barrier
-    // Initialize barrier nodes.
-    // Clear all
-    for (x = 0; x < w; x++) {
-        for (y = 0; y < h; y++) {
-            l[x][y].b = false;
-        }
-    }
-}
+// function IB(barrier) {
+//     //init_barrier
+//     // Initialize barrier nodes.
+//     // Clear all
+//     for (x = 0; x < w; x++) {
+//         for (y = 0; y < h; y++) {
+//             l[x][y].b = false;
+//         }
+//     }
+// }
 function E(ux, uy, rho) {
     // equilibrium
     // Calculate equilibrium densities of a node
@@ -523,7 +522,7 @@ function Zz() {
                 var eq = E(ux, uy, rho);
                 for (var i = 0; i < 9; i++) {
                     var old_value = d[i];
-                    node.d[i] = old_value + (o * (eq[i] - old_value));
+                    node.d[i] = old_value + (1.7 * (eq[i] - old_value));
                 }
             }
         }
@@ -548,14 +547,14 @@ function U(){
     D();
     requestAnimationFrame(U);
 }
-function t(){
+// function t(){
     //Initialize
-    ml(w, h);
-    IB(); // Initialize barriers
+    ml(w, h); // Make lattice
+    // IB(); // Initialize barriers
     IF(0, 0, 1); // Initialize all l nodes with zero velocity, and density of 1
-    q[L] = 0;
+    q[L] = 0; // Empty queue
     I(); // Initialize flow
-    D(); // Call draw once to draw/erase barriers
+    // D(); // Call draw once to draw/erase barriers
     U(); // Start updater
-}
-t();
+// }
+// t();
