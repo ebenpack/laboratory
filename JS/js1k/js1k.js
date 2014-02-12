@@ -1,9 +1,15 @@
-// Taking a different tack
+// MANUAL MINIFICATION TODOS
+// REMOVE OUTER SIAF
+// SET WIDTH=200
+// SET HEIGHT=80
+// SET FOO='WIDTH'
+// REMOVE BLACK BACKGROUND
+// LOOP CONTEXT VARIABLE AND RENAME METHODS?? (createImageData, putImageData)
+// LOOP CANVAS VARIABLE AND RENAME METHODS/PROPERTIES (width, height, style, onmousemove, style)
 
 (function(){  // remove SIAF: 16bytes
 // TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
-var lattice_width = 200; // lattice width
-var lattice_height = 80; //lattice height
+var lattice_dim = 125; // lattice
 var lattice=[]; // lattice
 var x; // loop variable
 var y;// loop variable
@@ -13,33 +19,19 @@ var one9th = 1/9;
 var one36th = 1/36;
 var WIDTH = 'width';
 // MATHS
-var M = Math;
-var SQRT =M.sqrt;
-var POW = M.pow;
-var ABS = M.abs;
-var FLOOR = M.floor;
-var px_per_node = FLOOR(a[WIDTH] / lattice_width); // Pixels per node
+with(Math)S=sqrt,P=pow,F=floor;
+var px_per_node = F(a[WIDTH] / lattice_dim); // Pixels per node
+a[WIDTH] = a.height = px_per_node *lattice_dim;
 var node_directions = [
-    [ 0,  0], // Origin
-    [ 1,  0], // E
-    [ 0, -1], // N
-    [-1,  0], // W
-    [ 0,  1], // S
-    [ 1, -1], // NE
-    [-1, -1], // NW
-    [-1,  1], // SW
-    [ 1,  1]  // SE
-];
-var node_weight = [
-    four9ths,
-    one9th,
-    one9th,
-    one9th,
-    one9th,
-    one36th,
-    one36th,
-    one36th,
-    one36th
+    [ 0,  0, four9ths], // Origin
+    [ 1,  0, one9th], // E
+    [ 0, -1, one9th], // N
+    [-1,  0, one9th], // W
+    [ 0,  1, one9th], // S
+    [ 1, -1, one36th], // NE
+    [-1, -1, one36th], // NW
+    [-1,  1, one36th], // SW
+    [ 1,  1, one36th]  // SE
 ];
 // END VARIABLES
 a.style.background="#000"; // remove: 26bytes
@@ -57,20 +49,20 @@ function equilibrium(ux, uy, rho) {
         // } else {
         //     node_weight = four9ths;
         // }
-        eq.push(node_weight[d] * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*((ux * ux) + (uy * uy)))); // Equilibrium equation
+        eq.push(node_directions[d][2] * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*((ux * ux) + (uy * uy)))); // Equilibrium equation
     }
 }
 function stream(){
-    for (x = 0; x < lattice_width; x++) {
-        for(y = 0; y < lattice_height; y++) {
+    for (x = 0; x < lattice_dim; x++) {
+        for(y = 0; y < lattice_dim; y++) {
             var node = lattice[x][y];
             for (var d = 0; d < 9; d++) {
                 var move = node_directions[d];
                 var newx = move[0] + x;
                 var newy = move[1] + y;
                 // Check if new node is in the l
-                if (newx >= 0 && newx < lattice_width &&
-                    newy >= 0 && newy < lattice_height) {
+                if (newx >= 0 && newx < lattice_dim &&
+                    newy >= 0 && newy < lattice_dim) {
                     lattice[newx][newy].s[d] = node.d[d];
                 }
             }
@@ -78,8 +70,8 @@ function stream(){
     }
 }
 function collide(){
-    for (x = 0; x < lattice_width; x++) {
-        for(y = 0; y < lattice_height; y++) {
+    for (x = 0; x < lattice_dim; x++) {
+        for(y = 0; y < lattice_dim; y++) {
             var node = lattice[x][y];
             var d = node.d;
             for (var p = 0; p < 9; p++) {
@@ -109,34 +101,34 @@ function collide(){
 
 function mousemove(e){
     // Scale from canvas coordinates to lattice coordinates
-    var lattice_x = FLOOR(e.layerX / px_per_node);
-    var lattice_y = FLOOR(e.layerY / px_per_node);
+    var lattice_x = F(e.layerX / px_per_node);
+    var lattice_y = F(e.layerY / px_per_node);
     for (var x = -5; x <= 5; x++) {
         for (var y = -5; y <= 5; y++) {
             // Push in circle around cursor. Make sure coordinates are in bounds.
-            if (lattice_x + x >= 0 && lattice_x + x < lattice_width &&
-                lattice_y + y >= 0 && lattice_y + y < lattice_height &&
-                SQRT((x * x) + (y * y)) < 5) {
+            // if (lattice_x + x >= 0 && lattice_x + x < lattice_dim &&
+            //     lattice_y + y >= 0 && lattice_y + y < lattice_dim &&
+            //     S((x * x) + (y * y)) < 5) {
                 var node = lattice[lattice_x + x][lattice_y + y];
                 equilibrium(.1, .1, node.n);
                 node.d = eq;
-            }
+            // }
         }
     }
 }
 function draw(){
     var image = c.createImageData(a[WIDTH], a.height);
     var id = image.data;
-    for (x = 0; x < lattice_width; x++) {
-        for(y = 0; y < lattice_height; y++) {
-            var speed = SQRT(POW(lattice[x][y].x, 2) + POW(lattice[x][y].y, 2));
+    for (x = 0; x < lattice_dim; x++) {
+        for(y = 0; y < lattice_dim; y++) {
+            var speed = S(P(lattice[x][y].x, 2) + P(lattice[x][y].y, 2));
             for (var ypx = y * px_per_node; ypx < (y+1) * px_per_node; ypx++) {
                 for (var xpx = x * px_per_node; xpx < (x + 1) * px_per_node; xpx++) {
                     var index = (xpx + ypx * image[WIDTH]) * 4;
                     id[index+0] = 0; // Red
                     id[index+1] = 255; // Green
                     id[index+2] = 0; // Blue
-                    id[index+3] = FLOOR(speed*4E3); // Alpha
+                    id[index+3] = F(speed*4E3); // Alpha
                 }
             }
         }
@@ -144,9 +136,9 @@ function draw(){
     c.putImageData(image, 0, 0);
 }
 // Initialize lattice
-for (x = 0; x < lattice_width; x++) {
+for (x = 0; x < lattice_dim; x++) {
     lattice[x]=[];
-    for(y = 0; y < lattice_height; y++) {
+    for(y = 0; y < lattice_dim; y++) {
         // lattice[x][y] = new LatticeNode();
         lattice[x][y] = {'d':[],'s':[],'n':1,'x':0,'y':0};
         equilibrium(0,0,1);
@@ -157,10 +149,10 @@ for (x = 0; x < lattice_width; x++) {
 
 a.onmousemove=mousemove;
 (function update(){
-    for (var i = 0; i < 10; i++) {
+    //for (var i = 0; i < 10; i++) { // Loop takes too many bytes :(
         stream();
         collide();
-    }
+    //}
     draw();
     setInterval(update,10); // sorry requestAnimationFrame, you're too long :(
 })();
