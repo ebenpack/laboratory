@@ -5,8 +5,10 @@
 // SET DIMENSION=100
 // SET FOO='WIDTH' (2bytes)
 // REMOVE LEADING ZEROS (E.G. 0.1)(2bytes)
+// RENAME TO c.pg && c.cI
 // PUT ALL VARIABLES IN GLOBAL SCOPE (maybe ~50bytes??)
-// LOOP CANVAS VARIABLE AND RENAME METHODS/PROPERTIES (width, height, style, onmousemove, style) (maybe?? ~10bytes??)
+// LOOP CANVAS VARIABLE AND RENAME METHODS/PROPERTIES (width, height, style, onmousemove, style) (maybe ~10bytes??)
+// CHANGE setInterval TO while LOOP??? (PROBABLY WON't WORK)
 // 
 // #######################
 a = document.getElementById("js1k");
@@ -74,10 +76,12 @@ function stream(){
     }
 }
 function collide(){
-    // collide is going to draw and initialize now, too, because LOL, why not?
+    // Drawing is going to initialize, too, because LOL, why not?
     var image = c.createImageData(a[WIDTH], a.height);
     var id = image.data;
     for (x = 0; x < lattice_sq; x++) {
+        y_pos = F(x/lattice_dim);
+        x_pos = x%lattice_dim;
         if (init) {
             // Inititialize lattice
             if (y_pos==0){
@@ -106,7 +110,7 @@ function collide(){
             // TODO: TWEAK OMEGA (CURRENTLY 1.7)
             node.d[i] = d[i] + (1.7 * (eq[i] - d[i]));
         }
-        //DRAW
+        // DRAW
         // TODO: Reduce to single loop
         for (var ypx = y_pos * px_per_node; ypx < (y_pos+1) * px_per_node; ypx++) {
             for (var xpx = x_pos * px_per_node; xpx < (x_pos + 1) * px_per_node; xpx++) {
@@ -117,8 +121,8 @@ function collide(){
             }
         }
     }
-    init=0;
     c.putImageData(image, 0, 0);
+    init=0;
 }
 
 function mousemove(e){
@@ -128,13 +132,11 @@ function mousemove(e){
         // you don't have your console open. Probably.
         var node = lattice[F(e.layerX / px_per_node + x/5)][F(e.layerY / px_per_node) + x%5];
         equilibrium(.1, .1, node.n);
-        node.d = eq;
+        node.s = eq;
     }
 }
-
 a.onmousemove=mousemove;
 (function update(){
-    //draw();
     collide();
     stream();
     setTimeout(update); // sorry requestAnimationFrame, your name is too long :(
