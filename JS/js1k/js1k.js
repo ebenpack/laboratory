@@ -1,16 +1,13 @@
 // Taking a different tack
 
 (function(){  // remove SIAF: 16bytes
-//START SIAF
-// START VARIABLE ASSIGNMENT
-
-// TODO: MANUALLY SET THIS VARIABLE. CLOSURE INLINES IT
+// TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
 var lattice_width = 200; // lattice width
 var lattice_height = 80; //lattice height
 var lattice=[]; // lattice
 var x; // loop variable
 var y;// loop variable
-var eq = [];
+var eq = []; // Instead of equilibrium() returning an array, we'll just use this one over and over again and hope we don't forget to initialize it before every use
 var four9ths = 4/9;
 var one9th = 1/9;
 var one36th = 1/36;
@@ -21,7 +18,7 @@ var SQRT =M.sqrt;
 var POW = M.pow;
 var ABS = M.abs;
 var FLOOR = M.floor;
-var px_per_node = FLOOR(a.width / lattice_width); // Pixels per node
+var px_per_node = FLOOR(a[WIDTH] / lattice_width); // Pixels per node
 var node_directions = [
     [ 0,  0], // Origin
     [ 1,  0], // E
@@ -33,24 +30,34 @@ var node_directions = [
     [-1,  1], // SW
     [ 1,  1]  // SE
 ];
+var node_weight = [
+    four9ths,
+    one9th,
+    one9th,
+    one9th,
+    one9th,
+    one36th,
+    one36th,
+    one36th,
+    one36th
+];
 // END VARIABLES
-a.style.background="#000"; // 26bytes
+a.style.background="#000"; // remove: 26bytes
 
 function equilibrium(ux, uy, rho) {
     // equilibrium
     eq = [];
-    var u2 = (ux * ux) + (uy * uy); // Magnitude of macroscopic velocity
     for (var d = 0; d < 9; d++) {
         // Calculate equilibrium value
         var velocity = node_directions[d]; // Node direction vector
         var eu = (velocity[0] * ux) + (velocity[1] * uy); // Macro velocity multiplied by distribution velocity
-        var node_weight = d;
-        if (node_weight){
-            node_weight = (node_weight < 5) ? one9th: one36th;
-        } else {
-            node_weight = four9ths;
-        }
-        eq.push(node_weight * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*u2)); // Equilibrium equation
+        // var node_weight = d;
+        // if (node_weight){
+        //     node_weight = (node_weight < 5) ? one9th: one36th;
+        // } else {
+        //     node_weight = four9ths;
+        // }
+        eq.push(node_weight[d] * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*((ux * ux) + (uy * uy)))); // Equilibrium equation
     }
 }
 function stream(){
@@ -118,7 +125,7 @@ function mousemove(e){
     }
 }
 function draw(){
-    var image = c.createImageData(a.width, a.height);
+    var image = c.createImageData(a[WIDTH], a.height);
     var id = image.data;
     for (x = 0; x < lattice_width; x++) {
         for(y = 0; y < lattice_height; y++) {
@@ -155,8 +162,7 @@ a.onmousemove=mousemove;
         collide();
     }
     draw();
-    // requestAnimationFrame is too long :(
-    setInterval(update,10);
+    setInterval(update,10); // sorry requestAnimationFrame, you're too long :(
 })();
-//END SELF INVOKED ANONYMOUS FUNCTION
+
 })();
