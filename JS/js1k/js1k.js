@@ -2,6 +2,7 @@
 
 (function(){
 //START SIAF
+// START VARIABLE ASSIGNMENT
 var lattice_width = 200; // lattice width
 var lattice_height = 80; //lattice height
 var lattice=[]; // lattice
@@ -24,6 +25,8 @@ var MOUSEMOVE = 'mousemove';
 var MOUSEUP = 'mouseup';
 var LAYERX='layerX';
 var LAYERY='layerY';
+var oldX = 0;
+var oldY = 0;
 var px_per_node = FLOOR(a.width / lattice_width); // Pixels per node
 var node_directions = [
     [0,0],
@@ -119,50 +122,81 @@ function collide(){
     }
 }
 
-function mousedown(e) {
-            var oldX = e[LAYERX];
-            var oldY = e[LAYERY];
-            var moveListener = function(e) {
-                var radius = 5;
-                var newX = e[LAYERX];
-                var newY = e[LAYERY];
-                var dx = (newX - oldX) / px_per_node / 10;
-                var dy = (newY - oldY) / px_per_node / 10;
-                // Ensure that push isn't too big
-                if (ABS(dx) > 0.1) {
-                    dx = 0.1 * ABS(dx) / dx;
-                }
-                if (ABS(dy) > 0.1) {
-                    dy = 0.1 * ABS(dy) / dy;
-                }
-                // Scale from canvas coordinates to lattice coordinates
-                var lattice_x = FLOOR(newX / px_per_node);
-                var lattice_y = FLOOR(newY / px_per_node);
-                for (var x = -radius; x <= radius; x++) {
-                    for (var y = -radius; y <= radius; y++) {
-                        // Push in circle around cursor. Make sure coordinates are in bounds.
-                        if (lattice_x + x >= 0 && lattice_x + x < lattice_width &&
-                            lattice_y + y >= 0 && lattice_y + y < lattice_height &&
-                            SQRT((x * x) + (y * y)) < radius) {
-                            var node = lattice[lattice_x + x][lattice_y + y];
-                            equilibrium(dx, dy, node.n);
-                            node.d = eq;
-                        }
-                    }
-                }
-            oldX = newX;
-            oldY = newY;
-            };
-
-            var mouseupListener = function(e) {
-                REMOVEEVENT(MOUSEMOVE, moveListener);
-                REMOVEEVENT(MOUSEUP, mouseupListener);
-
-            };
-
-            ADDEVENT(MOUSEMOVE, moveListener);
-            ADDEVENT(MOUSEUP, mouseupListener);
+function mousemove(e){
+    var radius = 5;
+    var newX = e[LAYERX];
+    var newY = e[LAYERY];
+    var dx = (newX - oldX) / px_per_node / 10;
+    var dy = (newY - oldY) / px_per_node / 10;
+    // Ensure that push isn't too big
+    if (ABS(dx) > 0.1) {
+        dx = 0.1 * ABS(dx) / dx;
+    }
+    if (ABS(dy) > 0.1) {
+        dy = 0.1 * ABS(dy) / dy;
+    }
+    // Scale from canvas coordinates to lattice coordinates
+    var lattice_x = FLOOR(newX / px_per_node);
+    var lattice_y = FLOOR(newY / px_per_node);
+    for (var x = -radius; x <= radius; x++) {
+        for (var y = -radius; y <= radius; y++) {
+            // Push in circle around cursor. Make sure coordinates are in bounds.
+            if (lattice_x + x >= 0 && lattice_x + x < lattice_width &&
+                lattice_y + y >= 0 && lattice_y + y < lattice_height &&
+                SQRT((x * x) + (y * y)) < radius) {
+                var node = lattice[lattice_x + x][lattice_y + y];
+                equilibrium(dx, dy, node.n);
+                node.d = eq;
+            }
         }
+    }
+    oldX = newX;
+    oldY = newY;
+}
+function mousedown(e) {
+    var oldX = e[LAYERX];
+    var oldY = e[LAYERY];
+    var moveListener = function(e) {
+        var radius = 5;
+        var newX = e[LAYERX];
+        var newY = e[LAYERY];
+        var dx = (newX - oldX) / px_per_node / 10;
+        var dy = (newY - oldY) / px_per_node / 10;
+        // Ensure that push isn't too big
+        if (ABS(dx) > 0.1) {
+            dx = 0.1 * ABS(dx) / dx;
+        }
+        if (ABS(dy) > 0.1) {
+            dy = 0.1 * ABS(dy) / dy;
+        }
+        // Scale from canvas coordinates to lattice coordinates
+        var lattice_x = FLOOR(newX / px_per_node);
+        var lattice_y = FLOOR(newY / px_per_node);
+        for (var x = -radius; x <= radius; x++) {
+            for (var y = -radius; y <= radius; y++) {
+                // Push in circle around cursor. Make sure coordinates are in bounds.
+                if (lattice_x + x >= 0 && lattice_x + x < lattice_width &&
+                    lattice_y + y >= 0 && lattice_y + y < lattice_height &&
+                    SQRT((x * x) + (y * y)) < radius) {
+                    var node = lattice[lattice_x + x][lattice_y + y];
+                    equilibrium(dx, dy, node.n);
+                    node.d = eq;
+                }
+            }
+        }
+    oldX = newX;
+    oldY = newY;
+    };
+
+    var mouseupListener = function(e) {
+        REMOVEEVENT(MOUSEMOVE, moveListener);
+        REMOVEEVENT(MOUSEUP, mouseupListener);
+
+    };
+
+    ADDEVENT(MOUSEMOVE, moveListener);
+    ADDEVENT(MOUSEUP, mouseupListener);
+}
 function draw(){
     var image = c.createImageData(a.width, a.height);
     var id = image.data;
@@ -193,7 +227,8 @@ for (x = 0; x < lattice_width; x++) {
     }
 }
 // Register mouse events
-ADDEVENT('mousedown', mousedown);
+//ADDEVENT('mousedown', mousedown);
+a.onmousemove=mousemove;
 (function update(){
     for (var i = 0; i < 10; i++) {
         stream();
