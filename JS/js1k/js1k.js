@@ -1,8 +1,10 @@
-// Taking a different
+// Taking a different tack
 
-(function(){
+(function(){  // remove SIAF: 16bytes
 //START SIAF
 // START VARIABLE ASSIGNMENT
+
+// TODO: MANUALLY SET THIS VARIABLE. CLOSURE INLINES IT
 var lattice_width = 200; // lattice width
 var lattice_height = 80; //lattice height
 var lattice=[]; // lattice
@@ -14,57 +16,26 @@ var one9th = 1/9;
 var one36th = 1/36;
 var WIDTH = 'width';
 // MATHS
-var SQRT =Math.sqrt;
-var POW = Math.pow;
-var ABS = Math.abs;
-var FLOOR = Math.floor;
-// EVENTS
-var ADDEVENT = a.addEventListener;
-var REMOVEEVENT = a.removeEventListener;
-var MOUSEMOVE = 'mousemove';
-var MOUSEUP = 'mouseup';
-var LAYERX='layerX';
-var LAYERY='layerY';
-var oldX = 0;
-var oldY = 0;
+var M = Math;
+var SQRT =M.sqrt;
+var POW = M.pow;
+var ABS = M.abs;
+var FLOOR = M.floor;
 var px_per_node = FLOOR(a.width / lattice_width); // Pixels per node
 var node_directions = [
-    [0,0],
-    [1,0],
-    [0,-1],
-    [-1,0],
-    [0,1],
-    [1,-1],
-    [-1,-1],
-    [-1,1],
-    [1,1]
-];
-var node_weight = [
-    four9ths,
-    one9th,
-    one9th,
-    one9th,
-    one9th,
-    one36th,
-    one36th,
-    one36th,
-    one36th
+    [ 0,  0], // Origin
+    [ 1,  0], // E
+    [ 0, -1], // N
+    [-1,  0], // W
+    [ 0,  1], // S
+    [ 1, -1], // NE
+    [-1, -1], // NW
+    [-1,  1], // SW
+    [ 1,  1]  // SE
 ];
 // END VARIABLES
-a.style.background="#000";
-//Lattice Node
-/**
- * @constructor
- */
-function LatticeNode() {
-    // LatticeNode
-    this.d = [0,0,0,0,0,0,0,0,0]; // Individual density distributions for 
-    // each of the nine possible discrete velocities of a node.
-    this.s = [0,0,0,0,0,0,0,0,0]; // Used to temporarily hold streamed values
-    this.n = 1; // Macroscopic density of a node.
-    this.x = 0; // X component of macroscopic velocity of a node.
-    this.y = 0; // Y component of macroscopic velocity of a node.
-}
+a.style.background="#000"; // 26bytes
+
 function equilibrium(ux, uy, rho) {
     // equilibrium
     eq = [];
@@ -73,7 +44,13 @@ function equilibrium(ux, uy, rho) {
         // Calculate equilibrium value
         var velocity = node_directions[d]; // Node direction vector
         var eu = (velocity[0] * ux) + (velocity[1] * uy); // Macro velocity multiplied by distribution velocity
-        eq.push(node_weight[d] * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*u2)); // Equilibrium equation
+        var node_weight = d;
+        if (node_weight){
+            node_weight = (node_weight < 5) ? one9th: one36th;
+        } else {
+            node_weight = four9ths;
+        }
+        eq.push(node_weight * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*u2)); // Equilibrium equation
     }
 }
 function stream(){
@@ -116,6 +93,7 @@ function collide(){
             equilibrium(ux, uy, rho);
             for (var i = 0; i < 9; i++) {
                 var old_value = d[i];
+                // TODO: TWEAK OMEGA (CURRENTLY 1.7)
                 node.d[i] = old_value + (1.7 * (eq[i] - old_value));
             }
         }
@@ -123,79 +101,21 @@ function collide(){
 }
 
 function mousemove(e){
-    var radius = 5;
-    var newX = e[LAYERX];
-    var newY = e[LAYERY];
-    var dx = (newX - oldX) / px_per_node / 10;
-    var dy = (newY - oldY) / px_per_node / 10;
-    // Ensure that push isn't too big
-    if (ABS(dx) > 0.1) {
-        dx = 0.1 * ABS(dx) / dx;
-    }
-    if (ABS(dy) > 0.1) {
-        dy = 0.1 * ABS(dy) / dy;
-    }
     // Scale from canvas coordinates to lattice coordinates
-    var lattice_x = FLOOR(newX / px_per_node);
-    var lattice_y = FLOOR(newY / px_per_node);
-    for (var x = -radius; x <= radius; x++) {
-        for (var y = -radius; y <= radius; y++) {
+    var lattice_x = FLOOR(e.layerX / px_per_node);
+    var lattice_y = FLOOR(e.layerY / px_per_node);
+    for (var x = -5; x <= 5; x++) {
+        for (var y = -5; y <= 5; y++) {
             // Push in circle around cursor. Make sure coordinates are in bounds.
             if (lattice_x + x >= 0 && lattice_x + x < lattice_width &&
                 lattice_y + y >= 0 && lattice_y + y < lattice_height &&
-                SQRT((x * x) + (y * y)) < radius) {
+                SQRT((x * x) + (y * y)) < 5) {
                 var node = lattice[lattice_x + x][lattice_y + y];
-                equilibrium(dx, dy, node.n);
+                equilibrium(.1, .1, node.n);
                 node.d = eq;
             }
         }
     }
-    oldX = newX;
-    oldY = newY;
-}
-function mousedown(e) {
-    var oldX = e[LAYERX];
-    var oldY = e[LAYERY];
-    var moveListener = function(e) {
-        var radius = 5;
-        var newX = e[LAYERX];
-        var newY = e[LAYERY];
-        var dx = (newX - oldX) / px_per_node / 10;
-        var dy = (newY - oldY) / px_per_node / 10;
-        // Ensure that push isn't too big
-        if (ABS(dx) > 0.1) {
-            dx = 0.1 * ABS(dx) / dx;
-        }
-        if (ABS(dy) > 0.1) {
-            dy = 0.1 * ABS(dy) / dy;
-        }
-        // Scale from canvas coordinates to lattice coordinates
-        var lattice_x = FLOOR(newX / px_per_node);
-        var lattice_y = FLOOR(newY / px_per_node);
-        for (var x = -radius; x <= radius; x++) {
-            for (var y = -radius; y <= radius; y++) {
-                // Push in circle around cursor. Make sure coordinates are in bounds.
-                if (lattice_x + x >= 0 && lattice_x + x < lattice_width &&
-                    lattice_y + y >= 0 && lattice_y + y < lattice_height &&
-                    SQRT((x * x) + (y * y)) < radius) {
-                    var node = lattice[lattice_x + x][lattice_y + y];
-                    equilibrium(dx, dy, node.n);
-                    node.d = eq;
-                }
-            }
-        }
-    oldX = newX;
-    oldY = newY;
-    };
-
-    var mouseupListener = function(e) {
-        REMOVEEVENT(MOUSEMOVE, moveListener);
-        REMOVEEVENT(MOUSEUP, mouseupListener);
-
-    };
-
-    ADDEVENT(MOUSEMOVE, moveListener);
-    ADDEVENT(MOUSEUP, mouseupListener);
 }
 function draw(){
     var image = c.createImageData(a.width, a.height);
@@ -220,14 +140,14 @@ function draw(){
 for (x = 0; x < lattice_width; x++) {
     lattice[x]=[];
     for(y = 0; y < lattice_height; y++) {
-        lattice[x][y] = new LatticeNode();
+        // lattice[x][y] = new LatticeNode();
+        lattice[x][y] = {'d':[],'s':[],'n':1,'x':0,'y':0};
         equilibrium(0,0,1);
         lattice[x][y].s = eq.slice(0);
         lattice[x][y].d = eq.slice(0);
     }
 }
-// Register mouse events
-//ADDEVENT('mousedown', mousedown);
+
 a.onmousemove=mousemove;
 (function update(){
     for (var i = 0; i < 10; i++) {
@@ -235,7 +155,8 @@ a.onmousemove=mousemove;
         collide();
     }
     draw();
-    requestAnimationFrame(update);
+    // requestAnimationFrame is too long :(
+    setInterval(update,10);
 })();
 //END SELF INVOKED ANONYMOUS FUNCTION
 })();
