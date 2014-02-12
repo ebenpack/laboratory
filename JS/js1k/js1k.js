@@ -29,18 +29,11 @@ var one9th = 1/9;
 var one36th = 1/36;
 var init=1;
 var WIDTH = 'width';
-var node_directions = [
-    // Tacked weight on, instead of keepign in separate array. For speed.
-    [ 0,  0, four9ths], // Origin
-    [ 1,  0, one9th], // E
-    [ 0, -1, one9th], // N
-    [-1,  0, one9th], // W
-    [ 0,  1, one9th], // S
-    [ 1, -1, one36th], // NE
-    [-1, -1, one36th], // NW
-    [-1,  1, one36th], // SW
-    [ 1,  1, one36th]  // SE
-];
+var weight;
+// Instead of keeping this in an array, we'll put it in a string
+// to save some space (although lookup is more complicated, so
+// I'm not 100% sure if I actually gained anything)
+var ND = " 0 0 1 0 0-1-1 0 0 1 1-1-1-1-1 1 1 1";
 var px_per_node = F(a[WIDTH] / lattice_dim); // Pixels per node
 a[WIDTH] = a.height = px_per_node *lattice_dim;
 // END VARIABLES
@@ -58,9 +51,15 @@ function equilibrium(ux, uy, rho) {
     eq = [];
     for (var d = 0; d < 9; d++) {
         // Calculate equilibrium value
-        var velocity = node_directions[d]; // Node direction vector
-        var eu = (velocity[0] * ux) + (velocity[1] * uy); // Macro velocity multiplied 
-        eq[d] = node_directions[d][2] * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*((ux * ux) + (uy * uy))); // Equilibrium equation
+        var eu = (ND.slice(d*4,d*4+2) * ux) + (ND.slice(d*4+2,d*4+4) * uy);
+        // Find the node weight. I think this is more succinct than looking up in an array
+        if (d) {
+            weight = (d<5)?1/9:1/36;
+        } else {
+            weight = 4/9;
+        }
+        // Equilibrium equation
+        eq[d] = weight * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*((ux * ux) + (uy * uy)));
     }
 }
 function stream(){
@@ -69,9 +68,9 @@ function stream(){
         x_pos = x%lattice_dim;
         var node = lattice[x_pos][y_pos];
         for (var d = 0; d < 9; d++) {
-            var move = node_directions[d];
-            var newx = move[0] + x_pos;
-            var newy = move[1] + y_pos;
+            // Multiply by one to coerce to int
+            var newx = ND.slice(d*4,d*4+2)*1 + x_pos;
+            var newy = ND.slice(d*4+2,d*4+4)*1 + y_pos;
             // Check if new node is in the l
             if (newx >= 0 && newx < lattice_dim &&
                 newy >= 0 && newy < lattice_dim) {
@@ -111,7 +110,7 @@ function mousemove(e){
     for (var x = -25; x <= 25; x++) {
         // There's no OOB checks here anymore. It's fine so long as
         // you don't have your console open. Probably.
-        var node = lattice[F(e.layerX / px_per_node) + F(x/5)][F(e.layerY / px_per_node) + x%5];
+        var node = lattice[F(e.layerX / px_per_node + x/5)][F(e.layerY / px_per_node) + x%5];
         equilibrium(.1, .1, node.n);
         node.d = eq;
     }
