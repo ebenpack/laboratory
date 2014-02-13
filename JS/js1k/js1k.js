@@ -3,7 +3,7 @@
 // REMOVE a,b,c globals
 // REMOVE OUTER IIFE (~16bytes)
 // SET DIMENSION=100
-// SET FOO='WIDTH' (2bytes)
+// SET FOO='slice' (2bytes)
 // REMOVE LEADING ZEROS (E.G. 0.1)(2bytes)
 // PUT ALL VARIABLES IN GLOBAL SCOPE (maybe ~50bytes??)
 // LOOP CANVAS VARIABLE AND RENAME METHODS/PROPERTIES (width, height, style, onmousemove, style) (maybe ~10bytes??)
@@ -37,8 +37,8 @@ var weight;
 // the logic to achieve this might actually take longer than the savings
 // it would gain. I may consider this later if I'm very desperate for bytes.
 var ND = " 0 0 1 0 0-1-1 0 0 1 1-1-1-1-1 1 1 1";
-var px_per_node = F(a[WIDTH] / lattice_dim); // Pixels per node
-a[WIDTH] = a.height = px_per_node *lattice_dim;
+var px_per_node = 6; // Pixels per node
+a[WIDTH] = a.height = 600;
 function equilibrium(ux, uy, rho) {
     // equilibrium
     eq = [];
@@ -78,7 +78,7 @@ function stream(){
 }
 function collide(){
     // Drawing is going to initialize, too, because LOL, why not?
-    var image = c.createImageData(a[WIDTH], a.height);
+    var image = c.createImageData(600, 600);
     var id = image.data;
     for (x = 0; x < lattice_sq; x++) {
         y_pos = F(x/lattice_dim);
@@ -115,7 +115,7 @@ function collide(){
         // TODO: Reduce to single loop
         for (var ypx = y_pos * px_per_node; ypx < (y_pos+1) * px_per_node; ypx++) {
             for (var xpx = x_pos * px_per_node; xpx < (x_pos + 1) * px_per_node; xpx++) {
-                var index = (xpx + ypx * image[WIDTH]) * 4;
+                var index = (xpx + ypx * 600) * 4;
                 // We only need to draw green and alpha.
                 id[index+1] = 255; // Green
                 id[index+3] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3); // Alpha
@@ -128,7 +128,7 @@ function collide(){
 
 function mousemove(e){
     // Scale from canvas coordinates to lattice coordinates
-    for (var x = -25; x < 26; x++) {
+    for (var x = -16; x < 17; x++) {
         // There's no OOB checks here anymore. It's fine so long as
         // you don't have your console open. Probably.
         var node = lattice[F(e.layerX / px_per_node + x/5)][F(e.layerY / px_per_node) + x%5];
