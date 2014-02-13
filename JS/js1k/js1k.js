@@ -18,8 +18,8 @@ c = a.getContext("2d");
 (function(){  // remove IIFE: ~16bytes
 with(Math)S=sqrt,P=pow,F=floor;
 // TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
-var lattice_dim = 100; // lattice dimensions
-var lattice_sq = 1E4; // total # of nodes
+var lattice_dim = 99; // lattice dimensions. 99 saves me 1 byte vs 100. I'm seriously that desperate 
+var lattice_sq = lattice_dim*lattice_dim; // total # of nodes
 var lattice=[]; // lattice
 var x, x_pos, y_pos; // loop variables
 var eq = []; // Instead of equilibrium() returning an array, we'll just use this one over and over again and hope we don't forget to initialize it before every use
@@ -77,7 +77,7 @@ function stream(){
     }
 }
 function collide(){
-    // Drawing is going to initialize, too, because LOL, why not?
+    // Collide is going to draw and initialize, too, because LOL, why not?
     var image = c.createImageData(600, 600);
     var id = image.data;
     for (x = 0; x < lattice_sq; x++) {
@@ -97,6 +97,7 @@ function collide(){
         // Copy over values from streaming phase.
         d = node.s.slice(0);
         // Calculate macroscopic density (rho) and velocity (ux, uy)
+        // and update values stored in node.
         // TODO: Can this be compacted any more?
         var d1 = d[1] + d[5] + d[8];
         var d2 = d[3] + d[6] + d[7];
@@ -112,14 +113,13 @@ function collide(){
             node.d[i] = d[i] + (1.7 * (eq[i] - d[i]));
         }
         // DRAW
-        // TODO: Reduce to single loop
-        for (var ypx = y_pos * px_per_node; ypx < (y_pos+1) * px_per_node; ypx++) {
-            for (var xpx = x_pos * px_per_node; xpx < (x_pos + 1) * px_per_node; xpx++) {
-                var index = (xpx + ypx * 600) * 4;
-                // We only need to draw green and alpha.
-                id[index+1] = 255; // Green
-                id[index+3] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3); // Alpha
-            }
+        for (var xpx = 0; xpx < 36; xpx++) {
+            // This loop was way too difficult for me to flatten.
+            // I just wasn't getting my head around it. Maybe I
+            // should take a break.
+            var index = 4*(xpx%6+6*x_pos+600*(F(xpx/6)+6*y_pos));
+            id[index+1] = lattice_sq; // Green. Setting this way above the max 255, just to save 2 bytes
+            id[index+3] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3); // Alpha
         }
     }
     c.putImageData(image, 0, 0);
