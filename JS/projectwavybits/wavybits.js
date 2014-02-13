@@ -11,7 +11,7 @@
 // #######################
 // These are givens for the contest, but it helps to have
 // them here so Google closure doesn't use the names
-// a = document.getElementById("js1k");
+// a = document.getElementById("c");
 // b = document.body;
 // c = a.getContext("2d");
 // d = 999;
