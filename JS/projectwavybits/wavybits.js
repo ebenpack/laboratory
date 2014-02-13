@@ -10,10 +10,10 @@
 // #######################
 // These are givens for the contest, but it helps to have
 // them here so Google closure doesn't use the names
-// a = document.getElementById("c");
-// b = document.body;
-// c = a.getContext("2d");
-// d = 999;
+a = document.getElementsByTagName('canvas')[0];
+b = document.body;
+c = a.getContext("2d");
+d = function(e){ return function(){ e.parentNode.removeChild(e); }; }(a);
 X="slice";Y=600;Z=99;
 (function(){
 with(Math)S=sqrt,P=pow,F=floor;
@@ -99,10 +99,9 @@ function collide(){
             }
             lattice[x_pos][y_pos] = {d:[],s:[],n:1,x:0,y:0};
             equilibrium(0,0,1);
-            lattice[x_pos][y_pos].s = eq;
+            lattice[x_pos][y_pos].s = eq; 
         }
         M = lattice[x_pos][y_pos];
-        C = M.d;
         // Copy over values from streaming phase.
         C = M.s.slice(0);
         // Calculate macroscopic density (rho) and velocity (ux, uy)
@@ -119,7 +118,7 @@ function collide(){
         equilibrium(M.x, M.y, W);
         for (i = 0; i < 9; i++) {
             // TODO: TWEAK OMEGA (CURRENTLY 1.7)
-            M.d[i] = C[i] + (1.7 * (eq[i] - C[i]));
+            M.d[i] = C[i] + (1 * (eq[i] - C[i]));
         }
         // DRAW
         for (i = 0; i < 36; i++) {
@@ -152,7 +151,7 @@ a.onmousemove=mousemove;
 (function update(){
     collide();
     stream();
-    setTimeout(update); // sorry requestAnimationFrame, your name is too long :(
+    setInterval(update,10); // sorry requestAnimationFrame, your name is too long :(
 })();
 
 })();
