@@ -1,22 +1,21 @@
 // MANUAL MINIFICATION TODOS
 // ######################
 // REMOVE a,b,c globals
-// REMOVE OUTER SIAF (~16bytes)
+// REMOVE OUTER IIFE (~16bytes)
 // SET DIMENSION=100
 // SET FOO='WIDTH' (2bytes)
 // REMOVE LEADING ZEROS (E.G. 0.1)(2bytes)
-// RENAME TO c.pg && c.cI
 // PUT ALL VARIABLES IN GLOBAL SCOPE (maybe ~50bytes??)
 // LOOP CANVAS VARIABLE AND RENAME METHODS/PROPERTIES (width, height, style, onmousemove, style) (maybe ~10bytes??)
 // CHANGE setInterval TO while LOOP??? (PROBABLY WON't WORK)
 // 
 // #######################
+// These are givens for the contest, but it helps to have
+// them here so Google closure doesn't use the names
 a = document.getElementById("js1k");
 b = document.body;
 c = a.getContext("2d");
-//1282
-(function(){  // remove SIAF: 16bytes
-// MATHS
+(function(){  // remove IIFE: ~16bytes
 with(Math)S=sqrt,P=pow,F=floor;
 // TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
 var lattice_dim = 100; // lattice dimensions
@@ -39,7 +38,6 @@ var weight;
 // it would gain. I may consider this later if I'm very desperate for bytes.
 var ND = " 0 0 1 0 0-1-1 0 0 1 1-1-1-1-1 1 1 1";
 var px_per_node = F(a[WIDTH] / lattice_dim); // Pixels per node
-// END VARIABLES
 a[WIDTH] = a.height = px_per_node *lattice_dim;
 function equilibrium(ux, uy, rho) {
     // equilibrium
@@ -56,6 +54,9 @@ function equilibrium(ux, uy, rho) {
         }
         // Equilibrium equation
         eq[d] = weight * rho * (1 + 3*eu + 4.5*(eu*eu) - 1.5*((ux * ux) + (uy * uy)));
+        // TODO: Try returning eq. `return` takes up a few bytes, but I'm
+        // also doing a lot of gymnastics to copy over eq outside the function
+        // so it might be worth it in the end
     }
 }
 function stream(){
@@ -89,14 +90,14 @@ function collide(){
             }
             lattice[x_pos][y_pos] = {d:[],s:[],n:1,x:0,y:0};
             equilibrium(0,0,1);
-            lattice[x_pos][y_pos].s = eq.slice(0);
-            lattice[x_pos][y_pos].d = eq.slice(0);
+            lattice[x_pos][y_pos].s = eq;
         }
-        var node = lattice[x%lattice_dim][F(x/lattice_dim)];
+        var node = lattice[x_pos][y_pos];
         var d = node.d;
         // Copy over values from streaming phase.
         d = node.s.slice(0);
         // Calculate macroscopic density (rho) and velocity (ux, uy)
+        // TODO: Can this be compacted any more?
         var d1 = d[1] + d[5] + d[8];
         var d2 = d[3] + d[6] + d[7];
         var rho = d1 + d2 + d[0] + d[2] + d[4];
@@ -116,7 +117,7 @@ function collide(){
             for (var xpx = x_pos * px_per_node; xpx < (x_pos + 1) * px_per_node; xpx++) {
                 var index = (xpx + ypx * image[WIDTH]) * 4;
                 // We only need to draw green and alpha.
-                id[index+1] = lattice_sq; // Green
+                id[index+1] = 255; // Green
                 id[index+3] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3); // Alpha
             }
         }
