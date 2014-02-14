@@ -146,7 +146,7 @@ function mousemove(e){
         // So... this bounds check is definitely the right thing to do,
         // and it makes to program look and act better, but... it puts us
         // over the top. I'm not sure if this can be made up elsewhere, either.
-        //if (g>0&&g<98&&h>0&&h<98) {
+        if (g>0&&g<98&&h>0&&h<98) {
             J = lattice[g+h*600];
             // x&&x/abs(v) == sign of x
             // Note to future self: It's pretty important that we take the 
@@ -158,7 +158,7 @@ function mousemove(e){
             // if the user exits the canvas and renters somewhere
             // far from where they exited.
             J.s = eq;
-        //}
+        }
     }
     mousex=t;
     mousey=u;
