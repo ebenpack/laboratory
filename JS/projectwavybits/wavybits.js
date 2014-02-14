@@ -28,7 +28,7 @@ d = function(e){ return function(){ e.parentNode.removeChild(e); }; }(a);
 Y=600;Z=99;
 (function(){
 //a.style.background='#000';
-with(Math)S=sqrt,P=pow,F=floor;
+with(Math)S=sqrt,P=pow,F=floor,A=abs;
 // TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
 var lattice_dim = 99; // lattice dimensions. 99 saves me 1 byte vs 100. I'm seriously that desperate 
 var lattice_sq = lattice_dim*lattice_dim; // total # of nodes
@@ -40,8 +40,8 @@ var init=1; // This is only used once. Is there another variable that could be u
 var ND = [0,0,1,0,0,-1,-1,0,0,1,1,-1,-1,-1,-1,1,1,1];
 var px_per_node = 6;
 I = c.createImageData(600, 600);
-var $ = 0;
-var _ = 0;
+var mousex = 0;
+var mousey = 0;
 function equilibrium(ux, uy, rho) {
     // D = loop variable
     // E = node_distribution index
@@ -60,9 +60,6 @@ function equilibrium(ux, uy, rho) {
         }
         // Equilibrium equation
         eq[D] = B * rho * (1 + 3*G + 4.5*(G*G) - 1.5*((ux * ux) + (uy * uy)));
-        // TODO: Try returning eq. `return` takes up a few bytes, but I'm
-        // also doing a lot of gymnastics to copy over eq outside the function
-        // so it might be worth it in the end
     }
 }
 function stream(){
@@ -96,7 +93,7 @@ function collide(){
     // T = d1
     // U = d2
     // W = rho
-    // V = image index
+    // V = index
     L = I.data;
     for (x = 0; x < lattice_sq; x++) {
         y_pos = F(x/lattice_dim);
@@ -133,17 +130,10 @@ function collide(){
         // DRAW
         //if (count%5==0) {
             for (i = 0; i < 36; i++) {
-
                 V = 4*(i%6+6*x_pos+600*(F(i/6)+6*y_pos));
-                L[V+2] = 1; // Green. Setting this way above the max 255, just to save 2 bytes
-                // DENSITY
-                //L[V+3] = F((255 - (255 / A(lattice[x_pos][y_pos].r)))*30);
+                L[V+1] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3);; // Green. Setting this way above the max 255, just to save 2 bytes
                 // SPEED
-                L[V+3] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3);
-                // XVEL
-                //L[V+3] = 4000*A(lattice[x_pos][y_pos].x);
-                // YVEL
-                // L[V+3] = 4000*A(lattice[x_pos][y_pos].y); 
+                L[V+3] = 255;
             }
         //}
     }
@@ -162,19 +152,19 @@ function mousemove(e){
     // w = delta y
     t = e.layerX;
     u = e.layerY;
-    v = t-$;
-    w = u-_;
+    v = t-mousex;
+    w = u-mousey;
     for (O = -16; O < 17; O++) {
         // There's no OOB checks here anymore. It's fine so long as
         // you don't have your console open. Probably.
-        J = lattice[F(e.layerX / px_per_node + O/5)][F(e.layerY / px_per_node) + O%5];
+        J = lattice[F(t / px_per_node + O/5)][F(u / px_per_node) + O%5];
         // TODO: Tweak strength of "push"
         // x&&x/abs(v) == sign of x
-        equilibrium(v&&v/v*.05, w&&w/w*.05, J.r);
+        equilibrium(v&&v/A(v)*.05, w&&w/A(w)*.05, J.r);
         J.s = eq;
     }
-    $=t;
-    _=u;
+    mousex=t;
+    mousey=u;
 }
 a.onmousemove=mousemove;
 (function update(){
