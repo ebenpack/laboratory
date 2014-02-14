@@ -6,6 +6,7 @@
 // 5. better drawing (tone down alpha)
 // 6. More loops per draw (would need extra count variable and if statement)
 // 7. Fullscreen drawing
+// 8. Bouceback
 // MANUAL MINIFICATION TODOS
 // ######################
 // REMOVE OUTER IIFE
@@ -14,7 +15,9 @@
 // REPLACE 9801 W/ Z*Z
 // REPLACE `array.slice` with `X='slice'; array[X]`
 // REMOVE LEADING ZEROS (E.G. 0.1)
-// 
+// #######################
+// AVAILABLE NAMES
+// ABCDEFGHIJKLMNOPQRSTUV
 // #######################
 // These are givens for the contest, but it helps to have
 // them here so Google closure doesn't use the names
@@ -24,6 +27,7 @@ c = a.getContext("2d");
 d = function(e){ return function(){ e.parentNode.removeChild(e); }; }(a);
 Y=600;Z=99;
 (function(){
+//a.style.background='#000';
 with(Math)S=sqrt,P=pow,F=floor;
 // TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
 var lattice_dim = 99; // lattice dimensions. 99 saves me 1 byte vs 100. I'm seriously that desperate 
@@ -32,15 +36,17 @@ var lattice=[];
 var x, x_pos, y_pos, d; // loop variables
 var eq = []; // Instead of equilibrium() returning an array, we'll just use this one over and over again and hope we don't forget to initialize it before every use
 var init=1; // This is only used once. Is there another variable that could be used instead?
-var WIDTH = 'width';
-var weight;
+//var count=0;
 var ND = [0,0,1,0,0,-1,-1,0,0,1,1,-1,-1,-1,-1,1,1,1];
 var px_per_node = 6;
 I = c.createImageData(600, 600);
+var $ = 0;
+var _ = 0;
 function equilibrium(ux, uy, rho) {
     // D = loop variable
     // E = node_distribution index
     // G = velocity * node direction... or something
+    // B = node weight
     eq = [];
     for (D = 0; D < 9; D++) {
         // Calculate equilibrium value
@@ -48,12 +54,12 @@ function equilibrium(ux, uy, rho) {
         // Find the node weight. I think this is more succinct than keeping 
         // an array of these values
         if (D) {
-            weight = (D<5)?1/9:1/36;
+            B = (D<5)?1/9:1/36;
         } else {
-            weight = 4/9;
+            B = 4/9;
         }
         // Equilibrium equation
-        eq[D] = weight * rho * (1 + 3*G + 4.5*(G*G) - 1.5*((ux * ux) + (uy * uy)));
+        eq[D] = B * rho * (1 + 3*G + 4.5*(G*G) - 1.5*((ux * ux) + (uy * uy)));
         // TODO: Try returning eq. `return` takes up a few bytes, but I'm
         // also doing a lot of gymnastics to copy over eq outside the function
         // so it might be worth it in the end
@@ -90,7 +96,7 @@ function collide(){
     // T = d1
     // U = d2
     // W = rho
-    // V = index
+    // V = image index
     L = I.data;
     for (x = 0; x < lattice_sq; x++) {
         y_pos = F(x/lattice_dim);
@@ -125,31 +131,50 @@ function collide(){
             M.d[i] = C[i] + (1 * (eq[i] - C[i]));
         }
         // DRAW
-        for (i = 0; i < 36; i++) {
-            // This loop was way too difficult for me to flatten.
-            // I just wasn't getting my head around it. Maybe I
-            // should take a break.
-            V = 4*(i%6+6*x_pos+600*(F(i/6)+6*y_pos));
-            L[V+1] = lattice_sq; // Green. Setting this way above the max 255, just to save 2 bytes
-            L[V+3] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3); // Alpha
-        }
+        //if (count%5==0) {
+            for (i = 0; i < 36; i++) {
+
+                V = 4*(i%6+6*x_pos+600*(F(i/6)+6*y_pos));
+                L[V+2] = 1; // Green. Setting this way above the max 255, just to save 2 bytes
+                // DENSITY
+                //L[V+3] = F((255 - (255 / A(lattice[x_pos][y_pos].r)))*30);
+                // SPEED
+                L[V+3] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3);
+                // XVEL
+                //L[V+3] = 4000*A(lattice[x_pos][y_pos].x);
+                // YVEL
+                // L[V+3] = 4000*A(lattice[x_pos][y_pos].y); 
+            }
+        //}
     }
+    //count++;
     c.putImageData(I, 0, 0);
     init=0;
 }
 
 function mousemove(e){
     // Scale from canvas coordinates to lattice coordinates
-    // M = radius around mouse
+    // O = radius around mouse
     // J = node
-    for (M = -16; M < 17; M++) {
+    // t = new mouse x position
+    // u = new mouse y position
+    // v = delta x
+    // w = delta y
+    t = e.layerX;
+    u = e.layerY;
+    v = t-$;
+    w = u-_;
+    for (O = -16; O < 17; O++) {
         // There's no OOB checks here anymore. It's fine so long as
         // you don't have your console open. Probably.
-        J = lattice[F(e.layerX / px_per_node + M/5)][F(e.layerY / px_per_node) + M%5];
+        J = lattice[F(e.layerX / px_per_node + O/5)][F(e.layerY / px_per_node) + O%5];
         // TODO: Tweak strength of "push"
-        equilibrium(.1, .1, J.r);
+        // x&&x/abs(v) == sign of x
+        equilibrium(v&&v/v*.05, w&&w/w*.05, J.r);
         J.s = eq;
     }
+    $=t;
+    _=u;
 }
 a.onmousemove=mousemove;
 (function update(){
