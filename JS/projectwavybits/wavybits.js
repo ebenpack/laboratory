@@ -45,7 +45,7 @@ function equilibrium(ux, uy, rho) {
             B = 4/9;
         }
         // Equilibrium equation
-        eq[D] = B * rho * (1 + 3*G + 4.5*(G*G) - 1.5*((ux * ux) + (uy * uy)));
+        eq[D] = B * rho * (1 + 3*(G) + 4.5*(G*G) - 1.5*(ux * ux + uy * uy));
     }
 }
 function stream(){
@@ -62,9 +62,10 @@ function stream(){
             N = ND[K*2] + x_pos;
             R = ND[K*2+1] + y_pos;
             // Check if new node is in the lattice
-            if (N >= 0 && N < lattice_dim &&
-                R >= 0 && R < lattice_dim) {
-                lattice[N][R].s[K] = lattice[x_pos][y_pos].d[K];
+            // Cheat a little, though (N>0 instead of N>=0). For the bytes.
+            if (N > 0 && N < lattice_dim &&
+                R > 0 && R < lattice_dim) {
+                lattice[N+R*600].s[K] = lattice[x_pos+y_pos*600].d[K];
             }
         }
     }
@@ -86,15 +87,11 @@ function collide(){
         x_pos = x%lattice_dim;
         if (init) {
             // Inititialize lattice
-            if (y_pos==0){
-                lattice[x_pos]=[];
-            }
             // Distribution, stream, density (rho), x velocity, y velocity
-            lattice[x_pos][y_pos] = {d:[],s:[],r:1,x:0,y:0};
             equilibrium(0,0,1);
-            lattice[x_pos][y_pos].s = eq; 
+            lattice[x_pos+y_pos*600] = {d:[],s:eq,r:1,x:0,y:0};
         }
-        M = lattice[x_pos][y_pos];
+        M = lattice[x_pos+y_pos*600];
         // Copy over values from streaming phase.
         C = M.s;
         // Calculate macroscopic density (rho) and velocity (ux, uy)
@@ -110,17 +107,20 @@ function collide(){
         // Set node equilibrium for each velocity
         equilibrium(M.x, M.y, W);
         for (i = 0; i < 9; i++) {
-            // TODO: TWEAK OMEGA (CURRENTLY 1.7)
             M.d[i] = C[i] + (1 * (eq[i] - C[i]));
         }
         // DRAW
         //if (count%5==0) {
-            for (i = 0; i < 36; i++) {
-                V = 4*(i%6+6*x_pos+600*(F(i/6)+6*y_pos));
-                L[V+1] = F(S(P(lattice[x_pos][y_pos].x, 2) + P(lattice[x_pos][y_pos].y, 2))*4E3);; // Green. Setting this way above the max 255, just to save 2 bytes
-                // SPEED
-                L[V+3] = 255;
-            }
+        for (i = 0; i < 36; i++) {
+            V = 4*(i%6+6*x_pos+600*(F(i/6)+6*y_pos));
+            q = lattice[x_pos+y_pos*600];
+            // Surprisingly, floor is not required here.
+            // SPEED
+            L[V+1] = S(P(q.x, 2) + P(q.y, 2))*4E3;
+            // DENSITY
+            //L[V+1] = F((255 - (255 / A(q.r)))*20)
+            L[V+3] = Y; // Setting this way above the max of 255. 2 bytes is 2 bytes.
+        }
         //}
     }
     //count++;
@@ -141,20 +141,24 @@ function mousemove(e){
     v = t-mousex;
     w = u-mousey;
     for (O = 0; O < 36; O++) {
-        // There's no OOB checks here anymore. It's fine so long as
-        // you don't have your console open. Probably.
-        J = lattice[F(t / px_per_node + O/6)][F(u / px_per_node) + O%6];
-        // TODO: Tweak strength of "push"
-        // x&&x/abs(v) == sign of x
-        // Note to future self: It's pretty important that we take the 
-        // absolute value here. You might thing you can save 12 bytes
-        // by removing it, but it won't work.
-        equilibrium(v&&v/A(v)*.05, w&&w/A(w)*.05, J.r);
-        // This is enticing, but it can cause major issues
-        // if the user exits the canvas and renters somewhere
-        // far from where they exited.
-        //equilibrium(.002*v, .002*w, J.r);
-        J.s = eq;
+        g = F(t / px_per_node + O/6);
+        h = F(u / px_per_node) + O%6;
+        // So... this bounds check is definitely the right thing to do,
+        // and it makes to program look and act better, but... it puts us
+        // over the top. I'm not sure if this can be made up elsewhere, either.
+        //if (g>0&&g<98&&h>0&&h<98) {
+            J = lattice[g+h*600];
+            // x&&x/abs(v) == sign of x
+            // Note to future self: It's pretty important that we take the 
+            // absolute value here. You might think you can save 12 bytes
+            // by removing it, but I assure you it won't work.
+            equilibrium(v&&v/A(v)/20, w&&w/A(w)/20, J.r);
+            //equilibrium(.002*v, .002*w, J.r);
+            // This is enticing, but it can cause major issues
+            // if the user exits the canvas and renters somewhere
+            // far from where they exited.
+            J.s = eq;
+        //}
     }
     mousex=t;
     mousey=u;
