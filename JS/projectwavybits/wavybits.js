@@ -7,18 +7,6 @@
 // 6. More loops per draw (would need extra count variable and if statement)
 // 7. Fullscreen drawing
 // 8. Bouceback
-// MANUAL MINIFICATION TODOS
-// ######################
-// REMOVE OUTER IIFE
-// REPLACE 99 W/ Z
-// REPLACE 600 W/ Y
-// REPLACE 9801 W/ Z*Z
-// REPLACE `array.slice` with `X='slice'; array[X]`
-// REMOVE LEADING ZEROS (E.G. 0.1)
-// #######################
-// AVAILABLE NAMES
-// ABCDEFGHIJKLMNOPQRSTUV
-// #######################
 // These are givens for the contest, but it helps to have
 // them here so Google closure doesn't use the names
 a = document.getElementsByTagName('canvas')[0];
@@ -27,9 +15,7 @@ c = a.getContext("2d");
 d = function(e){ return function(){ e.parentNode.removeChild(e); }; }(a);
 Y=600;Z=99;
 (function(){
-//a.style.background='#000';
 with(Math)S=sqrt,P=pow,F=floor,A=abs;
-// TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
 var lattice_dim = 99; // lattice dimensions. 99 saves me 1 byte vs 100. I'm seriously that desperate 
 var lattice_sq = lattice_dim*lattice_dim; // total # of nodes
 var lattice=[];
@@ -154,13 +140,20 @@ function mousemove(e){
     u = e.layerY;
     v = t-mousex;
     w = u-mousey;
-    for (O = -16; O < 17; O++) {
+    for (O = 0; O < 36; O++) {
         // There's no OOB checks here anymore. It's fine so long as
         // you don't have your console open. Probably.
-        J = lattice[F(t / px_per_node + O/5)][F(u / px_per_node) + O%5];
+        J = lattice[F(t / px_per_node + O/6)][F(u / px_per_node) + O%6];
         // TODO: Tweak strength of "push"
         // x&&x/abs(v) == sign of x
+        // Note to future self: It's pretty important that we take the 
+        // absolute value here. You might thing you can save 12 bytes
+        // by removing it, but it won't work.
         equilibrium(v&&v/A(v)*.05, w&&w/A(w)*.05, J.r);
+        // This is enticing, but it can cause major issues
+        // if the user exits the canvas and renters somewhere
+        // far from where they exited.
+        //equilibrium(.002*v, .002*w, J.r);
         J.s = eq;
     }
     mousex=t;
