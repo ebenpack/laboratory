@@ -1,3 +1,11 @@
+// WHAT TO DO WITH EXTRA BYTES
+// 1. OOB checks for mouse
+// 2. curl
+// 3. different draw method
+// 4. black background (25 bytes)
+// 5. better drawing (tone down alpha)
+// 6. More loops per draw (would need extra count variable and if statement)
+// 7. Fullscreen drawing
 // MANUAL MINIFICATION TODOS
 // ######################
 // REMOVE OUTER IIFE
@@ -14,7 +22,7 @@ a = document.getElementsByTagName('canvas')[0];
 b = document.body;
 c = a.getContext("2d");
 d = function(e){ return function(){ e.parentNode.removeChild(e); }; }(a);
-X="slice";Y=600;Z=99;
+Y=600;Z=99;
 (function(){
 with(Math)S=sqrt,P=pow,F=floor;
 // TODO: MANUALLY SET THESE VARIABLES. GOOGLE CLOSURE INLINES THEM
@@ -26,11 +34,9 @@ var eq = []; // Instead of equilibrium() returning an array, we'll just use this
 var init=1; // This is only used once. Is there another variable that could be used instead?
 var WIDTH = 'width';
 var weight;
-// Instead of keeping this in an array, we'll put it in a string
-// to save some space (although lookup is more complicated, so
-// I'm not 100% sure if I actually gained anything).
-var ND = " 0 0 1 0 0-1-1 0 0 1 1-1-1-1-1 1 1 1";
-var px_per_node = 6; // Pixels per node
+var ND = [0,0,1,0,0,-1,-1,0,0,1,1,-1,-1,-1,-1,1,1,1];
+var px_per_node = 6;
+I = c.createImageData(600, 600);
 function equilibrium(ux, uy, rho) {
     // D = loop variable
     // E = node_distribution index
@@ -38,8 +44,7 @@ function equilibrium(ux, uy, rho) {
     eq = [];
     for (D = 0; D < 9; D++) {
         // Calculate equilibrium value
-        E = D*4;
-        G = (ND.slice(E,E+2) * ux) + (ND.slice(E+2,E+4) * uy);
+        G = (ND[D*2] * ux) + (ND[D*2+1] * uy);
         // Find the node weight. I think this is more succinct than keeping 
         // an array of these values
         if (D) {
@@ -65,9 +70,8 @@ function stream(){
         x_pos = Q%lattice_dim;
         for (K = 0; K < 9; K++) {
             // Multiply node direction by one to coerce to int
-            H = K*4;
-            N = ND.slice(H,H+2)*1 + x_pos;
-            R = ND.slice(H+2,H+4)*1 + y_pos;
+            N = ND[K*2] + x_pos;
+            R = ND[K*2+1] + y_pos;
             // Check if new node is in the lattice
             if (N >= 0 && N < lattice_dim &&
                 R >= 0 && R < lattice_dim) {
@@ -87,7 +91,6 @@ function collide(){
     // U = d2
     // W = rho
     // V = index
-    I = c.createImageData(600, 600);
     L = I.data;
     for (x = 0; x < lattice_sq; x++) {
         y_pos = F(x/lattice_dim);
@@ -97,13 +100,14 @@ function collide(){
             if (y_pos==0){
                 lattice[x_pos]=[];
             }
-            lattice[x_pos][y_pos] = {d:[],s:[],n:1,x:0,y:0};
+            // Distribution, stream, density (rho), x velocity, y velocity
+            lattice[x_pos][y_pos] = {d:[],s:[],r:1,x:0,y:0};
             equilibrium(0,0,1);
             lattice[x_pos][y_pos].s = eq; 
         }
         M = lattice[x_pos][y_pos];
         // Copy over values from streaming phase.
-        C = M.s.slice(0);
+        C = M.s;
         // Calculate macroscopic density (rho) and velocity (ux, uy)
         // and update values stored in node.
         // TODO: Can this be compacted any more?
@@ -113,7 +117,7 @@ function collide(){
         M.x = (T - U) / W;
         M.y = (C[4] + C[7] + C[8] - C[2] - C[5] - C[6]) / W;
         // Update values stored in node.
-        M.n = W;
+        M.r = W;
         // Set node equilibrium for each velocity
         equilibrium(M.x, M.y, W);
         for (i = 0; i < 9; i++) {
@@ -143,7 +147,7 @@ function mousemove(e){
         // you don't have your console open. Probably.
         J = lattice[F(e.layerX / px_per_node + M/5)][F(e.layerY / px_per_node) + M%5];
         // TODO: Tweak strength of "push"
-        equilibrium(.1, .1, J.n);
+        equilibrium(.1, .1, J.r);
         J.s = eq;
     }
 }
@@ -151,7 +155,7 @@ a.onmousemove=mousemove;
 (function update(){
     collide();
     stream();
-    setInterval(update,10); // sorry requestAnimationFrame, your name is too long :(
+    requestAnimationFrame(update);
 })();
 
 })();
