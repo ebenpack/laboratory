@@ -1,3 +1,3 @@
-# colorsep #
+# quadtree #
 
-Image offset color separation, with drag 'n' drop file upload.
+Collision detection using quadtree.
