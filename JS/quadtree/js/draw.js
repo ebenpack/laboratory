@@ -4,20 +4,22 @@ var quad = (function(module) {
     var ctx;
     var qctx;
     var quadcanvas = document.getElementById("qtree");
-    var collisioncanvas = document.getElementById("collisioncanvas");
-    var object_list = module.object_list;
-    var collision_list = module.collision_list;
     var stats = document.getElementById("stats");
+    var width = module.width;
+    var height = module.height;
+    var object_list = module.object_list;
     (function() {
         // Initialize
         if (module.canvas.getContext) {
             ctx = canvas.getContext('2d');
             qctx = quadcanvas.getContext('2d');
-            colctx = collisioncanvas.getContext('2d');
         } else {
             // ABORT!
         }
     })();
+
+    qctx.fillStyle = "rgba(0,0,255,0.05)";
+    qctx.strokeStyle = "black";
 
     // TODO: Optimize draw functions
     function drawBall(ball){
@@ -30,20 +32,12 @@ var quad = (function(module) {
             ctx.fillStyle = "rgba(255,255,255,0.1)";
         }
         ctx.beginPath();
-        ctx.arc(ball.x,ball.y,ball.radius,0,2*Math.PI);
+        ctx.arc(ball.x, ball.y, ball.radius, 0, 2*Math.PI);
         ctx.fill();
         ctx.stroke();
+        ctx.closePath();
     }
-
-    function drawCollision(collision){
-        var alpha = 1/collision.age;
-        colctx.strokeStyle = "rgba(255,0,0, " + alpha + ")";
-        colctx.beginPath();
-        colctx.arc(collision.x,collision.y,collision.age,0,2*Math.PI);
-        colctx.stroke();
-        colctx.closePath();
-    }
-
+    
     function recursive_draw_quad(qtree){
         for (var i = 0; i < qtree.nodes.length; i++){
             recursive_draw_quad(qtree.nodes[i]);
@@ -57,22 +51,12 @@ var quad = (function(module) {
     }
 
     function draw_quad(){
-        quadcanvas.width = quadcanvas.width;
-        qctx.fillStyle = "rgba(0,0,255,0.05)";
-        qctx.strokeStyle = "black";
+        qctx.clearRect(0,0, width, height);
         recursive_draw_quad(module.qtree);
     }
 
-    function draw_collisions(){
-        collisioncanvas.width = collisioncanvas.width;
-        colctx.lineWidth = 2;
-        for (var i = 0; i < collision_list.length; i++){
-            drawCollision(collision_list[i]);
-        }
-    }
-
     function draw_balls(){
-        canvas.width = canvas.width; // Clear canvas
+        ctx.clearRect(0,0, width, height);
         for (var i = 0; i < object_list.length; i++){
             ball = object_list[i];
             drawBall(ball);
@@ -89,7 +73,6 @@ var quad = (function(module) {
     function draw(){
         draw_balls();
         draw_quad();
-        draw_collisions();
         draw_stats();
     }
 
