@@ -187,6 +187,9 @@ boltzmann = (function (module) {
             boltzctx.putImageData(image, 0, 0);
         };
         drawing.clear = function() {
+            image = boltzctx.createImageData(canvas_width, canvas_height);
+            image_data = image.data;
+            image_width = image.width;
             vectorctx.clearRect(0, 0, canvas_width, canvas_height);
             particlectx.clearRect(0, 0, canvas_width, canvas_height);
             boltzctx.clearRect(0, 0, canvas_width, canvas_height);

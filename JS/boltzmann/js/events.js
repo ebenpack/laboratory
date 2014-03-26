@@ -112,6 +112,10 @@ var boltzmann = (function (module) {
 
         function update_draw_mode(e) {
             module.draw_mode = this.selectedIndex;
+            if (module.draw_mode == 5) {
+                // Clear canvas
+                module.drawing.clear();
+            }
         }
 
         function update_speed(e) {
