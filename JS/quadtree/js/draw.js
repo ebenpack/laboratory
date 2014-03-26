@@ -52,7 +52,9 @@ var quad = (function(module) {
 
     function draw_quad(){
         qctx.clearRect(0,0, width, height);
-        recursive_draw_quad(module.qtree);
+        if (module.overlay) {
+            recursive_draw_quad(module.qtree);
+        }
     }
 
     function draw_balls(){

@@ -14,10 +14,15 @@ var quad = (function(module) {
         var velocity = {x: randSign(randInt(1,mv)), y: randSign(randInt(1,mv))};
         module.object_list.push(new Ball(position, velocity, radius));
     }
+    function toggleOverlay(e){
+        module.overlay = this.checked;
+    }
     (function(){
         // Register events
         var add = document.getElementById('add-ball');
         add.addEventListener('click', addBall, false);
+        var overlay = document.getElementById("overlay");
+        overlay.addEventListener('click', toggleOverlay, false);
     })();
     return module;
 })(quad);
