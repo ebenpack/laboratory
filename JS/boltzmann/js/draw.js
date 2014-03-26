@@ -204,11 +204,11 @@ boltzmann = (function (module) {
                         } else if (draw_mode == 1) {
                             // X velocity
                             var xvel = ux;
-                            color = get_color2(xvel*5,  -0.1, 0.1);
+                            color = get_color2(xvel*5, -0.09, 0.03);
                         } else if (draw_mode == 2) {
                             // Y Velocity
                             var yvel = uy;
-                            color = get_color2(yvel*5, -0.1, 0.1);
+                            color = get_color2(yvel*5, -0.09, 0.03);
                         } else if (draw_mode == 3) {
                             // Density
                             var dens = lattice[x][y].density;
@@ -216,7 +216,7 @@ boltzmann = (function (module) {
                         } else if (draw_mode == 4) {
                             // Curl
                             var curl = lattice[x][y].curl;
-                            color = get_color2(curl*5, -0.1, 0.1);
+                            color = get_color2(curl*5, -0.1, 0.03);
                         } else if (draw_mode == 5) {
                             // Draw nothing. This mode is useful when flow vectors or particles are turned on.
                             continue;
