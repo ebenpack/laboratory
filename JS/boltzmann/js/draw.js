@@ -166,7 +166,7 @@ boltzmann = (function (module) {
                         } else if (draw_mode == 4) {
                             // Curl
                             var curl = lattice[x][y].curl;
-                            color = get_color(curl, -0.1, 0.1);
+                            color = get_color(curl, -0.05, 0.05);
                         } else if (draw_mode == 5) {
                             // Draw nothing. This mode is useful when flow vectors or particles are turned on.
                             continue;
