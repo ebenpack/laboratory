@@ -200,10 +200,7 @@ boltzmann = (function (module) {
                         if (draw_mode === 0) {
                             // Speed
                             var speed = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2));
-                            //color = {'r': 0, 'a': Math.floor(speed*4000), 'b': 0, 'g': 255};
                             color = get_color(speed, 0, 0.1);
-                            //if (color.g > 255) {color.g = 255;}
-                            //if (color.g < 0) {color.g = 0;}
                         } else if (draw_mode == 1) {
                             // X velocity
                             var xvel = ux;
@@ -215,10 +212,7 @@ boltzmann = (function (module) {
                         } else if (draw_mode == 3) {
                             // Density
                             var dens = lattice[x][y].density;
-                            //color = {'r': 0, 'a': Math.floor((255 - (255 / Math.abs(dens)))*20), 'b': 0, 'g': 255};
                             color = get_color(dens, 0.9,3);
-                            //if (color.g > 255) {color.g = 255;}
-                            //if (color.g < 0) {color.g = 0;}
                         } else if (draw_mode == 4) {
                             // Curl
                             var curl = lattice[x][y].curl;
