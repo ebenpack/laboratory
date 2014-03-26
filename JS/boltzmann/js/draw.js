@@ -82,14 +82,14 @@ boltzmann = (function (module) {
             ctx.closePath();
         }
 
-        function draw_barriers(ctx) {
+        function draw_barriers() {
             for (var x = 0; x < lattice_width; x++) {
                 for (var y = 0; y < lattice_height; y++) {
                     if (lattice[x][y].barrier) {
-                        ctx.beginPath();
-                        ctx.rect(x * px_per_node, y * px_per_node, px_per_node, px_per_node);
-                        ctx.fill();
-                        ctx.closePath();
+                        barrierctx.beginPath();
+                        barrierctx.rect(x * px_per_node, y * px_per_node, px_per_node, px_per_node);
+                        barrierctx.fill();
+                        barrierctx.closePath();
                     }
                 }
             }
@@ -188,11 +188,11 @@ boltzmann = (function (module) {
         };
         drawing.clear = function() {
             vectorctx.clearRect(0, 0, canvas_width, canvas_height);
-            particlectxclearRect(0, 0, canvas_width, canvas_height);
+            particlectx.clearRect(0, 0, canvas_width, canvas_height);
             boltzctx.clearRect(0, 0, canvas_width, canvas_height);
             // Clear barrier canvas, but redraw in case barriers are still present
             barrierctx.clearRect(0, 0, canvas_width, canvas_height);
-            draw_barriers(barrierctx);
+            draw_barriers();
             module.new_barrier = false;
         };
         return drawing;
