@@ -11,6 +11,8 @@ boltzmann = (function (module) {
         var particles = module.flow_particles;
         var lattice_width = module.lattice_width;
         var lattice_height = module.lattice_height;
+        var canvas_width = canvas.width;
+        var canvas_height = canvas.height;
         var boltzctx;
         var vectorctx;
         var particlectx;
@@ -22,7 +24,13 @@ boltzmann = (function (module) {
                 vectorctx = vectorcanvas.getContext('2d');
                 particlectx = particlecanvas.getContext('2d');
                 barrierctx = barriercanvas.getContext('2d');
+                vectorctx.strokeStyle = "red";
+                vectorctx.fillStyle = "red";
+                particlectx.strokeStyle = "green";
+                particlectx.fillStyle = "green";
+                barrierctx.fillStyle = "yellow";
             } else {
+                console.log("This browser does not support canvas");
                 // ABORT!
             }
         })();
@@ -101,25 +109,20 @@ boltzmann = (function (module) {
         drawing.draw = function() {
             var draw_mode = module.draw_mode;
             if (module.flow_vectors) {
-                vectorcanvas.width = vectorcanvas.width; // Clear
-                vectorctx.strokeStyle = "red";
-                vectorctx.fillStyle = "red";
+                vectorctx.clearRect(0, 0, canvas_width, canvas_height);
             }
             if (particles.length > 0) {
-                particlecanvas.width = particlecanvas.width; // Clear
-                particlectx.strokeStyle = "green";
-                particlectx.fillStyle = "green";
+                particlectx.clearRect(0, 0, canvas_width, canvas_height);
                 for (var x = 0, l=particles.length; x < l; x++) {
                     draw_flow_particle(particles[x].x, particles[x].y, particlectx);
                 }
             }
             if (module.new_barrier) {
-                barriercanvas.width = barriercanvas.width; // Clear
-                barrierctx.fillStyle = "yellow";
+                barrierctx.clearRect(0, 0, canvas_width, canvas_height);
                 draw_barriers(barrierctx);
                 module.new_barrier = false;
             }
-            var image = boltzctx.createImageData(module.canvas.width, module.canvas.height);
+            var image = boltzctx.createImageData(canvas_width, canvas_height);
             for (var x = 0; x < lattice_width; x++) {
                 for (var y = 0; y < lattice_height; y++) {
                     if (!lattice[x][y].barrier) {
@@ -165,12 +168,11 @@ boltzmann = (function (module) {
             boltzctx.putImageData(image, 0, 0);
         };
         drawing.clear = function() {
-            vectorcanvas.width = vectorcanvas.width;
-            particlecanvas.width = particlecanvas.width;
-            canvas.width = canvas.width;
+            vectorctx.clearRect(0, 0, canvas_width, canvas_height);
+            particlectxclearRect(0, 0, canvas_width, canvas_height);
+            boltzctx.clearRect(0, 0, canvas_width, canvas_height);
             // Clear barrier canvas, but redraw in case barriers are still present
-            barriercanvas.width = barriercanvas.width; // Clear
-            barrierctx.fillStyle = "yellow";
+            barrierctx.clearRect(0, 0, canvas_width, canvas_height);
             draw_barriers(barrierctx);
             module.new_barrier = false;
         };

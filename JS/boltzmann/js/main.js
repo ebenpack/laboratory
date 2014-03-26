@@ -154,11 +154,6 @@ var boltzmann = (function (module) {
                 for (var y = 0; y < lattice_height; y++) {
                     var node = lattice[x][y];
                     if (!node.barrier) {
-                        // Compute curl. Non-edge nodes only.
-                        if (x > 0 && x < lattice_width - 1 &&
-                            y > 0 && y < lattice_height - 1) {
-                            node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
-                        }
                         for (var d = 0; d < 9; d++) {
                             var move = node_directions[d];
                             var newx = move.x + x;
@@ -206,6 +201,12 @@ var boltzmann = (function (module) {
                         node.density = rho;
                         node.ux = ux;
                         node.uy = uy;
+                        // Compute curl. Non-edge nodes only.
+                        // Don't compute if it won't get drawn
+                        if (module.draw_mode == 4 && x > 0 && x < lattice_width - 1 &&
+                            y > 0 && y < lattice_height - 1) {
+                            node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
+                        }
                         // Set node equilibrium for each velocity
                         var eq = equilibrium(ux, uy, rho);
                         for (var i = 0; i < 9; i++) {

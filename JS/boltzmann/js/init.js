@@ -29,7 +29,7 @@ boltzmann = (function(settings){
         particlecanvas: document.getElementById("particlecanvas"),
         barriercanvas: document.getElementById("barriercanvas"),
         steps_per_frame: 10,
-        px_per_node: Math.floor(canvas.width / lattice_width),
+        px_per_node: Math.floor(canvas.width / lattice_width)
     };
     return main;
 })(config);
