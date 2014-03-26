@@ -55,6 +55,7 @@ var boltzmann = (function (module) {
         }
         function make_lattice(lattice_width, lattice_height) {
             // Make a new empty lattice 
+            lattice.length = 0;
             for (var i = 0; i < lattice_width; i++) {
                 lattice[i] = [];
                 for (var j = 0; j < lattice_height; j++) {
@@ -128,21 +129,21 @@ var boltzmann = (function (module) {
             // for this optimization
             var eq = []; // Equilibrium values for all velocities in a node.
             var ux3 = 3 * ux;
-            var uy3 = 3 * uy;
+            var uy3 = 3 * -uy;
             var ux2 = ux * ux;
-            var uy2 = uy * uy;
-            var uxuy2 = 2 * ux * uy;
+            var uy2 = -uy * -uy;
+            var uxuy2 = 2 * ux * -uy;
             var u2 = ux2 + uy2;
             var u215 = 1.5 * u2;
             eq[0] = four9ths * rho * (1 - u215);
             eq[1] = one9th * rho * (1 + ux3 + 4.5*ux2 - u215);
-            eq[2] = one9th * rho * (1 - uy3 + 4.5*uy2 - u215);
+            eq[2] = one9th * rho * (1 + uy3 + 4.5*uy2 - u215);
             eq[3] = one9th * rho * (1 - ux3 + 4.5*ux2 - u215);
-            eq[4] = one9th * rho * (1 + uy3 + 4.5*uy2 - u215);
-            eq[5] = one36th * rho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215);
-            eq[6] = one36th * rho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215);
-            eq[7] = one36th * rho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215);
-            eq[8] = one36th * rho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215);
+            eq[4] = one9th * rho * (1 - uy3 + 4.5*uy2 - u215);
+            eq[5] = one36th * rho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215);
+            eq[6] = one36th * rho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215);
+            eq[7] = one36th * rho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215);
+            eq[8] = one36th * rho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215);
             return eq;
         }
 
@@ -176,8 +177,8 @@ var boltzmann = (function (module) {
 
         function collide() {
             var omega = module.omega;
-            for (var x = 0; x < lattice_width; x++) {
-                for (var y = 0; y < lattice_height; y++) {
+            for (var x = 1; x < lattice_width-1; x++) {
+                for (var y = 1; y < lattice_height-1; y++) {
                     var node = lattice[x][y];
                     if (!node.barrier) {
                         var d = node.distribution;
@@ -228,9 +229,22 @@ var boltzmann = (function (module) {
                 }
             }
         }
+        function set_boundaries() {
+            // Copied from Daniel V. Schroeder.
+            var u0 = module.flow_speed;
+            for (var x=0; x<lattice_width-1; x++) {
+                lattice[x][0].distribution = equilibrium(u0, 0, 1);
+                lattice[x][lattice_height-1].distribution = equilibrium(u0, 0, 1);
+            }
+            for (var y=0; y<lattice_height-1; y++) {
+                lattice[0][y].distribution = equilibrium(u0, 0, 1);
+                lattice[lattice_width-1][y].distribution = equilibrium(u0, 0, 1);
+            }
+        }
         main.updater = function(){
             var steps = module.steps_per_frame;
             var q;
+            set_boundaries();
             for (var i = 0; i < steps; i++) {
                 stream();
                 collide();

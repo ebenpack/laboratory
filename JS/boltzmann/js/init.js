@@ -22,6 +22,7 @@ boltzmann = (function(settings){
         // function know it needs to redraw barriers (this saves us from redrawing barriers every single frame)
         new_barrier: true,
         flow_particles: [],
+        flow_speed: 0,
         // play: false, // Start the simulation in a paused state
         animation_id: null, // requestanimationframe ID
         boltzcanvas: canvas,

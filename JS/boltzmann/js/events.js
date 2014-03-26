@@ -194,6 +194,10 @@ var boltzmann = (function (module) {
             module.drawing.clear();
         }
 
+        function set_flow_speed(e){
+            module.flow_speed = parseInt(this.value, 10) / 833;
+        }
+
         (function register(){
             // Register left click
             canvas.addEventListener('mousedown', mousedownListener, false);
@@ -222,6 +226,9 @@ var boltzmann = (function (module) {
             // Register clear barriers
             var clear = document.getElementById('clearbarriers');
             clear.addEventListener('click', clear_barriers, false);
+            // Register flow speed slider
+            var flow_speed = document.getElementById('flow-speed');
+            flow_speed.addEventListener('input', set_flow_speed, false);
         })();
     })();
     return module;
