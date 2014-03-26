@@ -95,7 +95,7 @@ boltzmann = (function (module) {
             }
         }
 
-        function get_color(val, min, max) {
+        function get_color2(val, min, max) {
             // Returns a color for a given value in a range between min and max.
             // Min and max were experimentally derived for speed, density, etc.
             var mid = (min + max) / 2;
@@ -116,6 +116,60 @@ boltzmann = (function (module) {
             }
             return color;
         }
+        function get_color(actual, minVal, maxVal) {
+            var midVal = (maxVal - minVal)/2;
+            var intR;
+            var intG = 0;
+            var intB = Math.round(0);
+
+            if (actual >= midVal){
+                 intR = 255;
+                 intG = Math.round(255 * ((maxVal - actual) / (maxVal - midVal)));
+            }
+            else{
+                intG = 255;
+                intR = Math.round(255 * ((actual - minVal) / (midVal - minVal)));
+            }
+
+            return {'r': intR, 'g': intG, 'b': intB, 'a': 255};
+        }
+
+        function hslToRgb(h, s, l){
+            var r, g, b;
+
+            if(s == 0){
+                r = g = b = l; // achromatic
+            }else{
+                function hue2rgb(p, q, t){
+                    if(t < 0) t += 1;
+                    if(t > 1) t -= 1;
+                    if(t < 1/6) return p + (q - p) * 6 * t;
+                    if(t < 1/2) return q;
+                    if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                }
+
+                var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                var p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+
+            return {r:Math.round(r * 255), g:Math.round(g * 255), b:Math.round(b * 255), a:255};
+        }
+
+        function get_color2(actual, minVal, maxVal) {
+            // Scale value to 0..1 range
+            var leftSpan = maxVal - minVal;
+            var rightSpan = 1;
+            var valueScaled = actual - minVal / leftSpan;
+            var h = (1 - valueScaled)
+            var s = 1
+            var l = valueScaled / 2
+            return hslToRgb(h, s, l);
+        }
+
         drawing.draw = function() {
             var draw_mode = module.draw_mode;
             if (module.flow_vectors) {
@@ -146,27 +200,29 @@ boltzmann = (function (module) {
                         if (draw_mode === 0) {
                             // Speed
                             var speed = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2));
-                            color = {'r': 0, 'a': Math.floor(speed*4000), 'b': 0, 'g': 255};
-                            if (color.g > 255) {color.g = 255;}
-                            if (color.g < 0) {color.g = 0;}
+                            //color = {'r': 0, 'a': Math.floor(speed*4000), 'b': 0, 'g': 255};
+                            color = get_color(speed, 0, 0.1);
+                            //if (color.g > 255) {color.g = 255;}
+                            //if (color.g < 0) {color.g = 0;}
                         } else if (draw_mode == 1) {
                             // X velocity
                             var xvel = ux;
-                            color = get_color(xvel, -0.04, 0.04);
+                            color = get_color2(xvel, -4, 1);
                         } else if (draw_mode == 2) {
                             // Y Velocity
                             var yvel = uy;
-                            color = get_color(yvel, -0.04, 0.04);
+                            color = get_color2(yvel, -4, 1);
                         } else if (draw_mode == 3) {
                             // Density
                             var dens = lattice[x][y].density;
-                            color = {'r': 0, 'a': Math.floor((255 - (255 / Math.abs(dens)))*20), 'b': 0, 'g': 255};
-                            if (color.g > 255) {color.g = 255;}
-                            if (color.g < 0) {color.g = 0;}
+                            //color = {'r': 0, 'a': Math.floor((255 - (255 / Math.abs(dens)))*20), 'b': 0, 'g': 255};
+                            color = get_color(dens, 0.9,3);
+                            //if (color.g > 255) {color.g = 255;}
+                            //if (color.g < 0) {color.g = 0;}
                         } else if (draw_mode == 4) {
                             // Curl
                             var curl = lattice[x][y].curl;
-                            color = get_color(curl, -0.05, 0.05);
+                            color = get_color2(curl,  -9, 2);
                         } else if (draw_mode == 5) {
                             // Draw nothing. This mode is useful when flow vectors or particles are turned on.
                             continue;
