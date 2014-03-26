@@ -162,8 +162,6 @@ var boltzmann = (function (module) {
                             if (newx >= 0 && newx < lattice_width && newy >= 0 && newy < lattice_height) {
                                 // If destination node is barrier, bounce distribution back to 
                                 // originating node in opposite direction.
-                                // TODO: Look more closely into boundary conditions. 
-                                // Simple reflection might be a bit simplistic.
                                 if (lattice[newx][newy].barrier) {
                                     lattice[x][y].stream[reflection[d]] = node.distribution[d];
                                 } else {
@@ -177,6 +175,7 @@ var boltzmann = (function (module) {
         }
 
         function collide() {
+            var omega = module.omega;
             for (var x = 0; x < lattice_width; x++) {
                 for (var y = 0; y < lattice_height; y++) {
                     var node = lattice[x][y];
@@ -208,11 +207,23 @@ var boltzmann = (function (module) {
                             node.curl = lattice[x+1][y].uy - lattice[x-1][y].uy - lattice[x][y+1].ux + lattice[x][y-1].ux;
                         }
                         // Set node equilibrium for each velocity
-                        var eq = equilibrium(ux, uy, rho);
-                        for (var i = 0; i < 9; i++) {
-                            var old_value = d[i];
-                            node.distribution[i] = old_value + (module.omega * (eq[i] - old_value));
-                        }
+                        // Inlining the equilibrium function here provides significant performance improvements
+                        var ux3 = 3 * ux;
+                        var uy3 = 3 * uy;
+                        var ux2 = ux * ux;
+                        var uy2 = uy * uy;
+                        var uxuy2 = 2 * ux * uy;
+                        var u2 = ux2 + uy2;
+                        var u215 = 1.5 * u2;
+                        d[0] = d[0] + (omega * ((four9ths * rho * (1 - u215)) - d[0]));
+                        d[1] = d[1] + (omega * ((one9th * rho * (1 + ux3 + 4.5*ux2 - u215)) - d[1]));
+                        d[2] = d[2] + (omega * ((one9th * rho * (1 - uy3 + 4.5*uy2 - u215)) - d[2]));
+                        d[3] = d[3] + (omega * ((one9th * rho * (1 - ux3 + 4.5*ux2 - u215)) - d[3]));
+                        d[4] = d[4] + (omega * ((one9th * rho * (1 + uy3 + 4.5*uy2 - u215)) - d[4]));
+                        d[5] = d[5] + (omega * ((one36th * rho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215)) - d[5]));
+                        d[6] = d[6] + (omega * ((one36th * rho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215)) - d[6]));
+                        d[7] = d[7] + (omega * ((one36th * rho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215)) - d[7]));
+                        d[8] = d[8] + (omega * ((one36th * rho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215)) - d[8]));
                     }
                 }
             }

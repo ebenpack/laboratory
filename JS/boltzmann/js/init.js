@@ -24,10 +24,14 @@ boltzmann = (function(settings){
         flow_particles: [],
         // play: false, // Start the simulation in a paused state
         animation_id: null, // requestanimationframe ID
-        canvas: canvas,
+        boltzcanvas: canvas,
         vectorcanvas: document.getElementById("vectorcanvas"),
         particlecanvas: document.getElementById("particlecanvas"),
         barriercanvas: document.getElementById("barriercanvas"),
+        boltzctx: null,
+        vectorctx: null,
+        particlectx: null,
+        barrierctx: null,
         steps_per_frame: 10,
         px_per_node: Math.floor(canvas.width / lattice_width)
     };

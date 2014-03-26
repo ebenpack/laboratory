@@ -2,33 +2,43 @@ var boltzmann = boltzmann || {};
 boltzmann = (function (module) {
     module.drawing = (function () {
         var drawing = {};
-        var canvas = module.canvas;
+        var boltzcanvas = module.boltzcanvas;
         var vectorcanvas = module.vectorcanvas;
         var particlecanvas = module.particlecanvas;
         var barriercanvas = module.barriercanvas;
+        var boltzctx;
+        var vectorctx;
+        var particlectx;
+        var barrierctx;
         var px_per_node = module.px_per_node;
         var lattice = module.lattice;
         var particles = module.flow_particles;
         var lattice_width = module.lattice_width;
         var lattice_height = module.lattice_height;
-        var canvas_width = canvas.width;
-        var canvas_height = canvas.height;
-        var boltzctx;
-        var vectorctx;
-        var particlectx;
-        var barrierctx;
+        var canvas_width = boltzcanvas.width;
+        var canvas_height = boltzcanvas.height;
+        var image;
+        var image_data;
+        var image_width;
         (function() {
             // Initialize
-            if (module.canvas.getContext) {
-                boltzctx = canvas.getContext('2d');
-                vectorctx = vectorcanvas.getContext('2d');
-                particlectx = particlecanvas.getContext('2d');
-                barrierctx = barriercanvas.getContext('2d');
+            if (boltzcanvas.getContext) {
+                module.boltzctx = boltzcanvas.getContext('2d');
+                module.vectorctx = vectorcanvas.getContext('2d');
+                module.particlectx = particlecanvas.getContext('2d');
+                module.barrierctx = barriercanvas.getContext('2d');
+                boltzctx = module.boltzctx;
+                vectorctx = module.vectorctx;
+                particlectx = module.particlectx;
+                barrierctx = module.barrierctx;
                 vectorctx.strokeStyle = "red";
                 vectorctx.fillStyle = "red";
                 particlectx.strokeStyle = "green";
                 particlectx.fillStyle = "green";
                 barrierctx.fillStyle = "yellow";
+                image = boltzctx.createImageData(canvas_width, canvas_height);
+                image_data = image.data;
+                image_width = image.width;
             } else {
                 console.log("This browser does not support canvas");
                 // ABORT!
@@ -122,7 +132,7 @@ boltzmann = (function (module) {
                 draw_barriers(barrierctx);
                 module.new_barrier = false;
             }
-            var image = boltzctx.createImageData(canvas_width, canvas_height);
+            
             for (var x = 0; x < lattice_width; x++) {
                 for (var y = 0; y < lattice_height; y++) {
                     if (!lattice[x][y].barrier) {
@@ -161,7 +171,16 @@ boltzmann = (function (module) {
                             // Draw nothing. This mode is useful when flow vectors or particles are turned on.
                             continue;
                         }
-                        draw_square(x, y, color, image);
+                        // draw_square inlined for performance
+                        for (var ypx = y * px_per_node; ypx < (y+1) * px_per_node; ypx++) {
+                            for (var xpx = x * px_per_node; xpx < (x + 1) * px_per_node; xpx++) {
+                                var index = (xpx + ypx * image_width) * 4;
+                                image_data[index+0] = color.r;
+                                image_data[index+1] = color.g;
+                                image_data[index+2] = color.b;
+                                image_data[index+3] = color.a;
+                            }
+                        }
                     }
                 }
             }

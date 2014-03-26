@@ -6,7 +6,7 @@ var boltzmann = (function (module) {
         var lattice = module.lattice;
         var px_per_node = module.px_per_node;
         var queue = module.queue;
-        var canvas = module.canvas;
+        var canvas = module.boltzcanvas;
         var steps_per_frame = module.steps_per_frame;
         var particles = module.flow_particles;
         // The reset button also affects the start button and vector and particle
@@ -139,7 +139,7 @@ var boltzmann = (function (module) {
                 module.flow_vectors = true;
             } else {
                 module.flow_vectors = false;
-                vectorcanvas.width = vectorcanvas.width; // Clear vector canvas
+                module.vectorctx.clearRect(0, 0, canvas.width, canvas.height); // Clear vector canvas
             }
         }
         
@@ -148,7 +148,7 @@ var boltzmann = (function (module) {
                 init_flow_particles();
             } else {
                 particles.length = 0;
-                module.particlecanvas.width = module.particlecanvas.width; // Clear
+                module.particlectx.clearRect(0, 0, canvas.width, canvas.height); // Clear
             }
         }
 
