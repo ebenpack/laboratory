@@ -92,6 +92,10 @@ var boltzmann = (function (module) {
                     p.x += ux;
                     p.y += uy;
                 }
+                if (module.flow_speed > 0 && p.x > lattice_width - 2) {
+                    // Wrap particles around to other side of screen
+                    p.x = 1;
+                }
             }
         }
         function init_barrier(barrier) {
