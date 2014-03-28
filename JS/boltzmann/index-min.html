@@ -11,7 +11,7 @@
     <body>
         <div class="main" style="position:relative;">
             <div class="canvases" style="position: relative; height: 240px; width: 600px;">
-                <canvas id="boltzmann" style="background-color: black; position: absolute; left: 0; top: 0;" width='600' height='240'></canvas>
+                <canvas id="boltzmann" style="background-color: #9044FF; position: absolute; left: 0; top: 0;" width='600' height='240'></canvas>
                 <canvas id="vectorcanvas" style="position: absolute; left: 0; top: 0;; pointer-events: none" width='600' height='240'></canvas>
                 <canvas id="particlecanvas" style="position: absolute; left: 0; top: 0; pointer-events: none" width='600' height='240'></canvas>
                 <canvas id="barriercanvas" style="position: absolute; left: 0; top: 0; pointer-events: none" width='600' height='240'></canvas>
@@ -34,6 +34,8 @@
                 <br>
                 <label><input id="viscosity" type="range" name="viscosity" min="2" max="50"> Viscosity</label><br><br>
                 <label><input id="speed" type="range" name="anim-speed" min="1" max="15"> Animation Speed</label>
+                <br><br>
+                <label><input id="flow-speed" type="range" name="flow-speed" value="0" min="0" max="100"> Flow Speed</label>
             </div>
             <div style="border:1px solid gray; width: 600px; padding: 10px; margin-top:10px;">
                 <p><b>Left click</b> to drag fluid</p>
