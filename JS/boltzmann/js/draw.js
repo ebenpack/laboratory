@@ -20,6 +20,9 @@ boltzmann = (function (module) {
         var image;
         var image_data;
         var image_width;
+        var color_array = [];
+        var num_colors = 400;
+
         (function() {
             // Initialize
             if (boltzcanvas.getContext) {
@@ -33,17 +36,63 @@ boltzmann = (function (module) {
                 barrierctx = module.barrierctx;
                 vectorctx.strokeStyle = "red";
                 vectorctx.fillStyle = "red";
-                particlectx.strokeStyle = "green";
-                particlectx.fillStyle = "green";
+                particlectx.strokeStyle = "black";
+                particlectx.fillStyle = "black";
                 barrierctx.fillStyle = "yellow";
                 image = boltzctx.createImageData(canvas_width, canvas_height);
                 image_data = image.data;
                 image_width = image.width;
+                // Pre-compute color array
+                compute_color_array(num_colors);
+
             } else {
                 console.log("This browser does not support canvas");
                 // ABORT!
             }
         })();
+
+        function hslToRgb(h, s, l){
+            var r, g, b;
+
+            if(s == 0){
+                r = g = b = l;
+            } else {
+                function hue2rgb(p, q, t){
+                    if(t < 0) t += 1;
+                    if(t > 1) t -= 1;
+                    if(t < 1/6) return p + (q - p) * 6 * t;
+                    if(t < 1/2) return q;
+                    if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                }
+
+                var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                var p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+
+            return {r:Math.round(r * 255), g:Math.round(g * 255), b:Math.round(b * 255), a:255};
+        }
+
+        function get_color(actual, minVal, maxVal) {
+            // This function is actually being called
+            // incorrectly, but it produces interesting results.
+            var leftSpan = maxVal - minVal;
+            var rightSpan = 1;
+            var valueScaled = actual - minVal / leftSpan;
+            var h = (1 - valueScaled)
+            var s = 1
+            var l = valueScaled / 2
+            return hslToRgb(h, s, l);
+        }
+
+        function compute_color_array(n){
+            for (var i = 0; i < n; i++){
+                color_array[i] = get_color(0, n, i);
+            }
+        }
 
         function draw_square(x, y, color, image) {
             // Draw a square region on the canvas image corresponding to a
@@ -95,81 +144,6 @@ boltzmann = (function (module) {
             }
         }
 
-        function get_color2(val, min, max) {
-            // Returns a color for a given value in a range between min and max.
-            // Min and max were experimentally derived for speed, density, etc.
-            var mid = (min + max) / 2;
-            var range = Math.abs(max-mid);
-            var color = {'r': 0, 'g': 0, 'b': 0, 'a': 0};
-            if (val > max) {
-                val = max;
-            }
-            if (val < min) {
-                val = min;
-            }
-            if (val >= mid) {
-                color.r = 255;
-                color.a = Math.floor(Math.abs(val) * (1/range) * 255);
-            } else {
-                color.g = 255;
-                color.a = Math.floor(Math.abs(val) * (1/range) * 255);
-            }
-            return color;
-        }
-        function get_color(actual, minVal, maxVal) {
-            var midVal = (maxVal - minVal)/2;
-            var intR;
-            var intG = 0;
-            var intB = Math.round(0);
-
-            if (actual >= midVal){
-                 intR = 255;
-                 intG = Math.round(255 * ((maxVal - actual) / (maxVal - midVal)));
-            }
-            else{
-                intG = 255;
-                intR = Math.round(255 * ((actual - minVal) / (midVal - minVal)));
-            }
-
-            return {'r': intR, 'g': intG, 'b': intB, 'a': 255};
-        }
-
-        function hslToRgb(h, s, l){
-            var r, g, b;
-
-            if(s == 0){
-                r = g = b = l; // achromatic
-            }else{
-                function hue2rgb(p, q, t){
-                    if(t < 0) t += 1;
-                    if(t > 1) t -= 1;
-                    if(t < 1/6) return p + (q - p) * 6 * t;
-                    if(t < 1/2) return q;
-                    if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                    return p;
-                }
-
-                var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                var p = 2 * l - q;
-                r = hue2rgb(p, q, h + 1/3);
-                g = hue2rgb(p, q, h);
-                b = hue2rgb(p, q, h - 1/3);
-            }
-
-            return {r:Math.round(r * 255), g:Math.round(g * 255), b:Math.round(b * 255), a:255};
-        }
-
-        function get_color2(actual, minVal, maxVal) {
-            // Scale value to 0..1 range
-            var leftSpan = maxVal - minVal;
-            var rightSpan = 1;
-            var valueScaled = actual - minVal / leftSpan;
-            var h = (1 - valueScaled)
-            var s = 1
-            var l = valueScaled / 2
-            return hslToRgb(h, s, l);
-        }
-
         drawing.draw = function() {
             var draw_mode = module.draw_mode;
             if (module.flow_vectors) {
@@ -196,30 +170,39 @@ boltzmann = (function (module) {
                             // Draw flow vectors every tenth node.
                             draw_flow_vector(x, y, ux, uy, vectorctx);
                         }
+                        // There are a lot of magic numbers ahead.
+                        // They are primarily expiramentally derived values chosen
+                        // to produce aesthetically pleasing results.
                         if (draw_mode === 0) {
                             // Speed
                             var speed = Math.sqrt(Math.pow(ux, 2) + Math.pow(uy, 2));
-                            color = get_color2(speed, -0.07, 0.028);
+                            color_index = parseInt((speed + 0.21) * num_colors);
                         } else if (draw_mode == 1) {
                             // X velocity
                             var xvel = ux;
-                            color = get_color2(xvel*5, -0.01, 0.003);
+                            color_index = parseInt((xvel + 0.21052631578) * num_colors);
                         } else if (draw_mode == 2) {
                             // Y Velocity
                             var yvel = uy;
-                            color = get_color2(yvel*5, -0.01, 0.003);
+                            color_index = parseInt((yvel + 0.21052631578) * num_colors);
                         } else if (draw_mode == 3) {
                             // Density
                             var dens = lattice[x][y].density;
-                            color = get_color2(dens, -0.1, 0.1);
+                            color_index = parseInt((dens - 0.75) * num_colors);
                         } else if (draw_mode == 4) {
                             // Curl
                             var curl = lattice[x][y].curl;
-                            color = get_color2(curl*5, -0.018, .008);
+                            color_index = parseInt((curl + 0.25196850393) * num_colors);
                         } else if (draw_mode == 5) {
                             // Draw nothing. This mode is useful when flow vectors or particles are turned on.
                             continue;
                         }
+                        if (color_index >= num_colors) {
+                            color_index = num_colors - 1;
+                        } else if (color_index < 0) {
+                            color_index = 0;
+                        }
+                        var color = color_array[color_index];
                         // draw_square inlined for performance
                         for (var ypx = y * px_per_node; ypx < (y+1) * px_per_node; ypx++) {
                             for (var xpx = x * px_per_node; xpx < (x + 1) * px_per_node; xpx++) {
