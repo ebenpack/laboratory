@@ -40,6 +40,9 @@ boltzmann = (function(settings){
 })(config);
 
 
+/**
+ * requestAnimationFrame polyfill.
+ */
 (function() {
     // requestAnimationFrame polyfill, courtesy of
     // http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/

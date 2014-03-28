@@ -1,5 +1,5 @@
 var boltzmann = boltzmann || {};
-var boltzmann = (function (module) {
+boltzmann = (function (module) {
     module.events = (function () {
         var lattice_width = module.lattice_width;
         var lattice_height = module.lattice_height;
@@ -15,6 +15,10 @@ var boltzmann = (function (module) {
         var flowvector;
         var flowparticle;
 
+        /**
+         * Push fluid with mouse 
+         * @param {Object} e MouseEvent 'mousedown'
+         */
         function mousedownListener(e) {
             var button = e.which || e.button;
             if (button !== 1) {return;} // Only capture left click
@@ -22,6 +26,10 @@ var boltzmann = (function (module) {
             var oldX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
             var oldY = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
 
+            /**
+             * Push fluid with mouse 
+             * @param {Object} e MouseEvent 'mousemove'
+             */
             var moveListener = function(e) {
                 var radius = 5;
                 var newX = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
@@ -53,6 +61,10 @@ var boltzmann = (function (module) {
             oldY = newY;
             };
 
+            /**
+             * Remove mousemove listeners
+             * @param {Object} e MouseEvent 'mouseup'
+             */
             var mouseupListener = function(e) {
                 canvas.removeEventListener('mousemove', moveListener, false);
                 canvas.removeEventListener('mouseup', mouseupListener, false);
@@ -68,6 +80,10 @@ var boltzmann = (function (module) {
             document.body.addEventListener('touchend', mouseupListener, false);
         }
 
+        /**
+         * Place/remove barrier
+         * @param {Object} e MouseEvent right 'click'
+         */
         function place_barrier(e) {
             e.preventDefault();
             var mouse_x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
@@ -80,6 +96,10 @@ var boltzmann = (function (module) {
             }
             lattice[lattice_x][lattice_y].barrier = draw;
 
+            /**
+             * Place/remove barrier
+             * @param {Object} e MouseEvent 'mousemove'
+             */
             var moveListener = function(e) {
                 mouse_x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
                 mouse_y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
@@ -95,6 +115,10 @@ var boltzmann = (function (module) {
                 }
             };
 
+            /**
+             * Remove mousemove listeners
+             * @param {Object} e MouseEvent 'mouseup'
+             */
             var mouseupListener = function(e) {
                 canvas.removeEventListener('mousemove', moveListener, false);
                 canvas.removeEventListener('mouseup', mouseupListener, false);
@@ -110,6 +134,10 @@ var boltzmann = (function (module) {
             document.body.addEventListener('touchend', mouseupListener, false);
         }
 
+        /**
+         * Change draw mode.
+         * @param {Object} e Event 'change'
+         */
         function update_draw_mode(e) {
             module.draw_mode = this.selectedIndex;
             if (module.draw_mode == 5) {
@@ -118,26 +146,27 @@ var boltzmann = (function (module) {
             }
         }
 
+        /**
+         * Change animation speed.
+         * @param {Object} e Event 'input'
+         */
         function update_speed(e) {
             module.steps_per_frame = parseInt(this.value, 10);
         }
 
+        /**
+         * Change viscosity of fluid.
+         * @param {Object} e Event 'input'
+         */
         function update_viscosity(e){
             module.viscosity = parseInt(this.value, 10) / 100;
             module.omega = 1 / (3 * module.viscosity + 0.5);
         }
 
-        function init_flow_particles() {
-            particles.length = 0;
-            for (var x = 0; x < 20; x++) {
-                for (var y = 0; y < 8; y++) {
-                    if (!lattice[x*10][y*10].barrier) {
-                        particles.push({'x':x*10, 'y':y*10});
-                    }
-                }
-            }
-        }
-
+        /**
+         * Toggle whether vectors are drawn.
+         * @param {Object} e MouseEvent 'click'
+         */
         function toggle_vectors(e) {
             if (this.checked) {
                 module.flow_vectors = true;
@@ -147,15 +176,23 @@ var boltzmann = (function (module) {
             }
         }
         
+        /**
+         * Toggle whether particles are drawn.
+         * @param {Object} e MouseEvent 'click'
+         */
         function toggle_particles(e) {
             if (this.checked) {
-                init_flow_particles();
+                module.main.init_flow_particles();
             } else {
                 particles.length = 0;
                 module.particlectx.clearRect(0, 0, canvas.width, canvas.height); // Clear
             }
         }
 
+        /**
+         * Stop animation
+         * @param {Object} bttn Button DOM node
+         */
         function stop(bttn) {
             // Stop animation
             window.cancelAnimationFrame(module.animation_id);
@@ -163,6 +200,10 @@ var boltzmann = (function (module) {
             bttn.innerHTML = "Start";
         }
 
+        /**
+         * Stop animation
+         * @param {Object} bttn Button DOM node
+         */
         function start(bttn) {
             // Start animation
             // Flush any mouse events that occured while the program was stopped
@@ -171,6 +212,10 @@ var boltzmann = (function (module) {
             bttn.innerHTML = "Pause";
         }
 
+        /**
+         * Play/pause animation
+         * @param {Object} e MouseEvent 'click'
+         */
         function toggle_play_state(e) {
             if (module.animation_id) {
                 stop(this);
@@ -179,6 +224,10 @@ var boltzmann = (function (module) {
             }
         }
 
+        /**
+         * Reset simulation (removing barriers, particles, etc.) and stop animation
+         * @param {Object} e MouseEvent 'click'
+         */
         function reset(e) {
             stop(startbutton);
             module.flow_vectors = false;
@@ -189,15 +238,26 @@ var boltzmann = (function (module) {
             module.drawing.clear();
         }
 
+        /**
+         * Remove all barriers
+         * @param {Object} e MouseEvent 'click'
+         */
         function clear_barriers(e) {
             module.main.init_barrier([]);
             module.drawing.clear();
         }
 
+        /**
+         * Change speed of flow
+         * @param {Object} e Event 'input'
+         */
         function set_flow_speed(e){
             module.flow_speed = parseInt(this.value, 10) / 833;
         }
 
+        /**
+         * Register events
+         */
         (function register(){
             // Register left click
             canvas.addEventListener('mousedown', mousedownListener, false);

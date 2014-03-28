@@ -1,5 +1,5 @@
 var boltzmann = boltzmann || {};
-var boltzmann = (function (module) {
+boltzmann = (function (module) {
     module.main = (function () {
         var main = {};
         var queue = module.queue;
@@ -43,6 +43,12 @@ var boltzmann = (function (module) {
             7: 5,
             8: 6
         };
+
+        /**
+         * A single node in the lattice.
+         * @constructor
+         * @struct
+         */
         function LatticeNode() {
             this.distribution = [0,0,0,0,0,0,0,0,0]; // Individual density distributions for 
             // each of the nine possible discrete velocities of a node.
@@ -53,8 +59,13 @@ var boltzmann = (function (module) {
             this.barrier = false; // Boolean indicating if node is a barrier.
             this.curl = 0; // Curl of node.
         }
+
+        /**
+         * Make a new empty lattice 
+         * @param {number} lattice_width Width of the lattice being initialized, in nodes
+         * @param {number} lattice_height Width of the lattice being initialized, in nodes
+         */
         function make_lattice(lattice_width, lattice_height) {
-            // Make a new empty lattice 
             lattice.length = 0;
             for (var i = 0; i < lattice_width; i++) {
                 lattice[i] = [];
@@ -63,8 +74,14 @@ var boltzmann = (function (module) {
                 }
             }
         }
+
+        /**
+         * Initialize all nodes in lattice to flow with velocity (ux, uy) and density rho 
+         * @param {number} ux X velocity of flow
+         * @param {number} uy Y velocity of flow
+         * @param {number} rho Macroscopic density
+         */
         function init_flow(ux, uy, rho) {
-            // Initialize all nodes in lattice to flow with velocity (ux, uy) and density rho
             for (var x = 0; x < lattice_width; x++) {
                 for (var y = 0; y < lattice_height; y++) {
                     var node = lattice[x][y];
@@ -79,6 +96,24 @@ var boltzmann = (function (module) {
                 }
             }
         }
+
+        /**
+         * Initialize flow particles
+         */
+        function init_flow_particles() {
+            particles.length = 0;
+            for (var x = 1; x < 20; x++) {
+                for (var y = 1; y < 8; y++) {
+                    if (!lattice[x*10][y*10].barrier) {
+                        particles.push({'x':x*10, 'y':y*10});
+                    }
+                }
+            }
+        }
+
+        /**
+         * Move flow particles 
+         */
         function move_particles() {
             for (var x = 0, l=particles.length; x < l; x++) {
                 var p = particles[x];
@@ -98,8 +133,13 @@ var boltzmann = (function (module) {
                 }
             }
         }
+
+        /**
+         * Initialize barrier nodes.
+         * @param {Array.<Object>=} barrier Optional barrier barrier array. Contains
+         *      objects definining (x, y) coordinates of barrier nodes to initialize
+         */
         function init_barrier(barrier) {
-            // Initialize barrier nodes.
             if (barrier !== undefined) {
                 // Clear all
                 for (var x = 0; x < lattice_width; x++) {
@@ -109,7 +149,7 @@ var boltzmann = (function (module) {
                 }
                 // Set new barriers from barrier array
                 for (var i = 0; i < barrier.length; i++) {
-                    lattice[bar[i].x][bar[i].y].barrier = true;
+                    lattice[barrier[i].x][barrier[i].y].barrier = true;
                 }
             } else {
                 // Default barrier setup
@@ -125,8 +165,14 @@ var boltzmann = (function (module) {
                 }
             }
         }
+
+        /**
+         * Calculate equilibrium densities of a node
+         * @param {number} ux X velocity of node
+         * @param {number} uy Y velocity of node
+         * @param {number} rho Macroscopic density
+         */
         function equilibrium(ux, uy, rho) {
-            // Calculate equilibrium densities of a node
             // This is no longer performed in a loop, as that required
             // too many redundant calculations and was a performance drag.
             // Thanks to Daniel V. Schroeder http://physics.weber.edu/schroeder/fluids/
@@ -151,10 +197,12 @@ var boltzmann = (function (module) {
             return eq;
         }
 
+        /**
+         * Stream distributions from old lattice to new lattice. Boundary conditions are
+         * considered at this stage, and distributions are bounced back to originating node
+         * if a boundary is encountered.
+         */
         function stream() {
-            // Stream distributions from old lattice to new lattice. Boundary conditions are
-            // considered at this stage, and distributions are bounced back to originating node
-            // if a boundary is encountered.
             for (var x = 0; x < lattice_width; x++) {
                 for (var y = 0; y < lattice_height; y++) {
                     var node = lattice[x][y];
@@ -179,6 +227,9 @@ var boltzmann = (function (module) {
             }
         }
 
+        /**
+         * Collision phase of LBM
+         */
         function collide() {
             var omega = module.omega;
             for (var x = 1; x < lattice_width-1; x++) {
@@ -233,6 +284,9 @@ var boltzmann = (function (module) {
                 }
             }
         }
+        /**
+         * Set equilibrium values for boundary nodes.
+         */
         function set_boundaries() {
             // Copied from Daniel V. Schroeder.
             var u0 = module.flow_speed;
@@ -245,6 +299,9 @@ var boltzmann = (function (module) {
                 lattice[lattice_width-1][y].distribution = equilibrium(u0, 0, 1);
             }
         }
+        /**
+         * Update loop. 
+         */
         main.updater = function(){
             var steps = module.steps_per_frame;
             var q;
@@ -267,14 +324,17 @@ var boltzmann = (function (module) {
             module.animation_id = requestAnimationFrame(main.updater);
         };
         main.init = function(){
+            /**
+             * Initialize lattice.
+             */
             make_lattice(lattice_width, lattice_height);
             init_barrier([]);
             init_flow(0, 0, 1); // Initialize all lattice nodes with zero velocity, and density of 1
             queue.length = 0;
             module.drawing.draw(); // Call draw once to draw barriers, but don't start animating
         };
-        //main.init_flow = init_flow;
         main.init_barrier = init_barrier;
+        main.init_flow_particles = init_flow_particles;
         return main;
     })();
     return module;
