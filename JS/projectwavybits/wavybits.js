@@ -118,7 +118,7 @@ function collide(){
             // SPEED
             L[V+1] = S(P(q.x, 2) + P(q.y, 2))*4E3;
             // DENSITY
-            //L[V+1] = F((255 - (255 / A(q.r)))*20)
+            //L[V+1] = F((255 - (255 / A(q.r)))*60)
             L[V+3] = Y; // Setting this way above the max of 255. 2 bytes is 2 bytes.
         }
         //}
