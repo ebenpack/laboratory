@@ -11,7 +11,11 @@
     <body>
         <div class="main" style="position:relative;">
             <canvas id="imagecanvas" style="display:none; background-color:black;" width='600' height='240'></canvas>
+            <canvas id="buffercanvas" style="display:none; background-color:black;" width='600' height='240'></canvas>
             <div id="dropzone" class="dropzone">Drop image here</div>
+            <div id="controls" style="display:none; margin-top: 20px;">
+                <input id="quality" type="range" name="quality" min="0" max="1000" value="1000"><label for="quality">Quality</label>
+            </div>
         </div>
         <script src="js/init.js"></script>
         <script src="js/events.js"></script>

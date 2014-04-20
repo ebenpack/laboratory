@@ -1,9 +1,16 @@
-var glitch = glitch || {};
-glitch = (function(module) {
+var colorsep = colorsep || {};
+colorsep = (function(module) {
     module.canvas = document.getElementById('imagecanvas');
+    module.buffer_canvas = document.getElementById('buffercanvas');
     module.ctx = module.canvas.getContext('2d');
+    module.buffer_ctx = module.buffer_canvas.getContext('2d');
+    module.controls = document.getElementById('controls');
     module.height = 0;
     module.width = 0;
+    module.x_offset = 0;
+    module.y_offset = 0;
+    module.original_image;
+    module.current_image;
     module.imagedata;
     module.red = [];
     module.green = [];
@@ -17,6 +24,8 @@ glitch = (function(module) {
         module.width = img.width;
         module.canvas.width = module.width;
         module.canvas.height = module.height;
+        module.buffer_canvas.width = module.width;
+        module.buffer_canvas.height = module.height;
         module.ctx.drawImage(img, 0, 0);
         module.imagedata = module.ctx.getImageData(0, 0, module.width, module.height);
         for (var x = 0; x < module.width; x++) {
@@ -32,4 +41,4 @@ glitch = (function(module) {
         }
     };
     return module;
-})(glitch);
+})(colorsep);

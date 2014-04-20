@@ -1,6 +1,6 @@
-var glitch = glitch || {};
+var colorsep = colorsep || {};
 
-glitch = (function(module) {
+colorsep = (function(module) {
     
     return module;
-})(glitch);
+})(colorsep);
