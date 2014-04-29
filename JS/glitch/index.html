@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Glitch</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+    <body>
+        <div class="main" style="position:relative;">
+            <canvas id="imagecanvas" style="display:none; background-color:black; position:relative;" width='600' height='240'></canvas>
+            <canvas id="glitchcanvas" style="display:none; background-color:white; position:relative;" width='600' height='240'></canvas>
+            <canvas id="buffercanvas" style="display:none; background-color:black;" width='600' height='240'></canvas>
+            <div id="dropzone" class="dropzone">Drop image here</div>
+            <div id="controls" style="display:none; margin-top: 20px;">
+                <input id="scale" type="range" name="scale" min="5" max="25" value="5"><label for="scale">Scale</label>
+            </div>
+            <img src="taco_man.jpg" alt="" style="height: 50px; width: auto;">
+            <img src="haggar.jpg" alt="" style="height: 50px; width: auto;">
+        </div>
+        <script src="js/init.js"></script>
+        <script src="js/draw.js"></script>
+        <script src="js/events.js"></script>
+        <script src="js/main.js"></script>
+    </body>
+</html>
