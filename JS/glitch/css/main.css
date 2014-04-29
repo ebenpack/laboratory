@@ -98,6 +98,9 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+* {
+	box-sizing: border-box;
+}
 
 .main {
     margin: 20px;

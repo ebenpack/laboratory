@@ -44,7 +44,7 @@ glitch = (function(module) {
         var y_scale = module.height / module.scale;
         glitch_ctx.beginPath();
         glitch_ctx.rect(x + 1, y + 1, x_scale - 1, y_scale - 1);
-        glitch_ctx.fillStyle = 'yellow';
+        glitch_ctx.fillStyle = "rgba(32, 45, 21, 0.5)";
         glitch_ctx.fill();
     }
 

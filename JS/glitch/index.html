@@ -11,11 +11,14 @@
     <body>
         <div class="main" style="position:relative;">
             <canvas id="imagecanvas" style="display:none; background-color:black; position:relative;" width='600' height='240'></canvas>
-            <canvas id="glitchcanvas" style="display:none; background-color:white; position:relative;" width='600' height='240'></canvas>
+            <canvas id="glitchcanvas" style="display:none; position:absolute; top:0; left:0;" width='600' height='240'></canvas>
             <canvas id="buffercanvas" style="display:none; background-color:black;" width='600' height='240'></canvas>
             <div id="dropzone" class="dropzone">Drop image here</div>
             <div id="controls" style="display:none; margin-top: 20px;">
                 <input id="scale" type="range" name="scale" min="5" max="25" value="5"><label for="scale">Scale</label>
+            </div>
+            <div class="instructions">
+                <p style="width: 400px; margin-top: 10px; padding: 10px; border: 1px solid black; border-radius: 10px;">Drag and drop an image to begin. Scroll over a region to apply glitch. Square size can be changed with the scale slider.</p>
             </div>
         </div>
         <script src="js/init.js"></script>

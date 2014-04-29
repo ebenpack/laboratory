@@ -65,10 +65,11 @@ glitch = (function(module) {
     function mousemove_handler(e) {
         var coords = cell_coords(this, e);
         if (coords.x !== cell_x || coords.y !== cell_y) {
+            // Highlight square
             module.draw_grid(module.scale);
+            module.draw_square(coords.x, coords.y);
         }
-        // Highlight square
-        module.draw_square(coords.x, coords.y);
+        // Update coordinates
         cell_x = coords.x;
         cell_y = coords.y;
 
