@@ -56,8 +56,10 @@ glitch = (function(module) {
 
     module.draw_fragment = function(jpg, x, y, width, height) {
         var img = new Image();
+		img.onload = function(){
+            module.ctx.drawImage(img, x, y, width, height);
+        };
         img.src = jpg;
-        module.ctx.drawImage(img, x, y, width, height);
     }
 
     module.clear_square = function(x, y) {
