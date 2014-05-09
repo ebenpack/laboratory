@@ -8,7 +8,6 @@ snow = (function(module){
     module.animation_id;
     module.block_size;
     module.snow_array = [];
-    module.wind_array = []; // Nodes in a lattice gas automata;
     module.maximum_particles; // 'Suggested' maximum number of particles. Not necessarily a hard limit.
     module.density;
     module.speed;

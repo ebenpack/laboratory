@@ -35,8 +35,6 @@ snow = (function(module){
 
         // Draw and schedule another frame
         module.draw();
-        module.update_wind();
-        module.draw_wind();
         module.animation_id = requestAnimationFrame(module.update);
     };
 
