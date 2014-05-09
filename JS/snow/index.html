@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html
+<html>
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,7 +9,12 @@
         <link rel="stylesheet" href="css/main.css">
     </head>
     <body>
-        <canvas id="snow" style="background-color: black;" width='600' height='400'></canvas>
+        <canvas id="snowcanvas" style="background-color: black; position: relative;" width='600' height='400'></canvas>
+        <canvas id="windcanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;" width='600' height='400'></canvas>
+        <script src="js/init.js"></script>
+        <script src="js/wind.js"></script>
+        <script src="js/draw.js"></script>
+        <script src="js/events.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>
