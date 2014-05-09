@@ -27,7 +27,6 @@ snow = (function(module){
         module.speed = (100 / settings.speed) || 0.2;
         module.block_size = settings.block_size || 10;
         module.maximum_particles = settings.maximum_particles || 1000;
-        module.init_wind();
         initialize_snow();
     };
 
