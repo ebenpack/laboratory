@@ -50,9 +50,9 @@ boltzmann = (function (module) {
          * @struct
          */
         function LatticeNode() {
-            this.distribution = [0,0,0,0,0,0,0,0,0]; // Individual density distributions for 
+            this.distribution = new Float64Array(9); // Individual density distributions for 
             // each of the nine possible discrete velocities of a node.
-            this.stream = [0,0,0,0,0,0,0,0,0]; // Used to temporarily hold streamed values
+            this.stream = new Float64Array(9); // Used to temporarily hold streamed values
             this.density = 0; // Macroscopic density of a node.
             this.ux = 0; // X component of macroscopic velocity of a node.
             this.uy = 0; // Y component of macroscopic velocity of a node.
@@ -90,8 +90,10 @@ boltzmann = (function (module) {
                         node.ux = ux;
                         node.uy = uy;
                         var eq = equilibrium(ux, uy, rho);
-                        node.distribution = eq.slice(0);
-                        node.stream = eq.slice(0);
+                        for (var i=0;i<9;i++){
+                            node.distribution[i] = eq[i];
+                            node.stream[i] = eq[i];
+                        }
                     }
                 }
             }
@@ -271,15 +273,17 @@ boltzmann = (function (module) {
                         var uxuy2 = 2 * ux * uy;
                         var u2 = ux2 + uy2;
                         var u215 = 1.5 * u2;
+                        var one9thrho = one9th * rho;
+                        var one36thrho = one36th * rho;
                         d[0] = d[0] + (omega * ((four9ths * rho * (1 - u215)) - d[0]));
-                        d[1] = d[1] + (omega * ((one9th * rho * (1 + ux3 + 4.5*ux2 - u215)) - d[1]));
-                        d[2] = d[2] + (omega * ((one9th * rho * (1 - uy3 + 4.5*uy2 - u215)) - d[2]));
-                        d[3] = d[3] + (omega * ((one9th * rho * (1 - ux3 + 4.5*ux2 - u215)) - d[3]));
-                        d[4] = d[4] + (omega * ((one9th * rho * (1 + uy3 + 4.5*uy2 - u215)) - d[4]));
-                        d[5] = d[5] + (omega * ((one36th * rho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215)) - d[5]));
-                        d[6] = d[6] + (omega * ((one36th * rho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215)) - d[6]));
-                        d[7] = d[7] + (omega * ((one36th * rho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215)) - d[7]));
-                        d[8] = d[8] + (omega * ((one36th * rho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215)) - d[8]));
+                        d[1] = d[1] + (omega * ((one9thrho * (1 + ux3 + 4.5*ux2 - u215)) - d[1]));
+                        d[2] = d[2] + (omega * ((one9thrho * (1 - uy3 + 4.5*uy2 - u215)) - d[2]));
+                        d[3] = d[3] + (omega * ((one9thrho * (1 - ux3 + 4.5*ux2 - u215)) - d[3]));
+                        d[4] = d[4] + (omega * ((one9thrho * (1 + uy3 + 4.5*uy2 - u215)) - d[4]));
+                        d[5] = d[5] + (omega * ((one36thrho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215)) - d[5]));
+                        d[6] = d[6] + (omega * ((one36thrho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215)) - d[6]));
+                        d[7] = d[7] + (omega * ((one36thrho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215)) - d[7]));
+                        d[8] = d[8] + (omega * ((one36thrho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215)) - d[8]));
                     }
                 }
             }

@@ -1,0 +1,18 @@
+{
+  "name": "boltzmann",
+  "version": "0.0.1",
+  "description": "Lattice Boltzmann fluid simulation",
+  "main": "boltzmann.js",
+  "scripts": {
+    "minify": "gulp compile",
+    "test": "gulp test"
+  },
+  "author": "Eben Packwood",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.8.5",
+    "gulp-closure-compiler": "^0.2.1",
+    "gulp-jsdoc": "^0.1.4",
+    "gulp-jshint": "^1.6.1"
+  }
+}
