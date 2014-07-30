@@ -12,12 +12,25 @@
             vertices.push([(col*20)-160, 0, (row*(-20))]);
         }
     }
+    // Discrete lines
     // Add one fewer edge per row than vertices in row
-    var index = 0;
-    for (var row = 0; row < ROWS; row++){
-        for (var col = 1; col < COLS; col++){
-            var index = col + (row * COLS);
-            faces.push({"face": [index-1, index-1, index], "color": "green"});
+    // var index = 0;
+    // for (var row = 0; row < ROWS; row++){
+    //     for (var col = 1; col < COLS; col++){
+    //         var index = col + (row * COLS);
+    //         faces.push({"face": [index-1, index-1, index], "color": "green"});
+    //     }
+    // }
+
+    // Fully connected mesh
+    for (var row = 0; row < ROWS-1; row++){
+        for (var col = 0; col < COLS-1; col++){
+            var a = col + (row * COLS);
+            var b = (col + 1) + (row * COLS);
+            var d = (col +1)+ ((row+1) * COLS);
+            var c = col + ((row +1)* COLS);
+            faces.push({"face": [a, c, d], "color": "green"});
+            faces.push({"face": [a, d, b], "color": "green"});
         }
     }
     var mesh = Mesh.fromJSON({
