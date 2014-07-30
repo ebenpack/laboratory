@@ -5,17 +5,23 @@
     var vertices = [];
     var faces = [];
     var ROWS = 20;
-    var COLS = 16
+    var COLS = 16;
+    // Build mesh
     for (var row = 0; row < ROWS; row++){
         for (var col = 0; col < COLS; col++){
-            vertices.push([(col*10)-80, 0, (row*(-10))]);
-            var i = vertices.length;
-            faces.push({"face": [i-1, i-1, i], "color": "green"});
+            vertices.push([(col*20)-160, 0, (row*(-20))]);
         }
-        vertices.push([(col*10)-80, 0, (row*(-10))]); // push one extra
+    }
+    // Add one fewer edge per row than vertices in row
+    var index = 0;
+    for (var row = 0; row < ROWS; row++){
+        for (var col = 1; col < COLS; col++){
+            var index = col + (row * COLS);
+            faces.push({"face": [index-1, index-1, index], "color": "green"});
+        }
     }
     var mesh = Mesh.fromJSON({
-        "name": "fft",
+        "name": "vu",
         "vertices": vertices,
         "faces": faces
     });
@@ -73,35 +79,36 @@
         source.connect(analyser);
         analyser.connect(audioctx.destination);
 
-        analyser.fftSize = 32;
+        analyser.fftSize = 128;
         bufferLength = analyser.frequencyBinCount;
         dataArray = new Uint8Array(bufferLength);
 
         analyser.getByteTimeDomainData(dataArray);
         update();
     }, false);
-    var WIDTH = canvas.width;
-    var HEIGHT = canvas.height;
+
     var last_update = new Date();
     function draw() {
         var current_time = new Date();
-        // Shift everything back a row.
+        // Shift everything back one row.
         if (current_time - last_update > 100){
-            for (var row = ROWS - 2; row >= 0; row--){
-                for (var col = 0; col <= COLS; col++){
-                    var i = (row*17) + col;
-                    var i2 = ((row+1)*17) + col;
+            // Take rows from back to front,
+            // otherwise we would overwrite rows we haven't copied over yet.
+            for (var row = ROWS - 1; row >= 1; row--){
+                for (var col = 0; col < COLS; col++){
+                    var i = col + ((row - 1) * COLS);
+                    var i2 = col + (row * COLS);
                     mesh.vertices[i2].y = mesh.vertices[i].y
                 }
             }
             last_update = current_time;
         }
+
         analyser.getByteFrequencyData(dataArray);
 
         var barHeight;
-
-        for(var i = 0; i < bufferLength; i++) {
-            barHeight = dataArray[i]/4;
+        for(var i = 0; i < COLS; i++) {
+            barHeight = dataArray[i]/2;
             mesh.vertices[i].y = -barHeight;
         }
 
