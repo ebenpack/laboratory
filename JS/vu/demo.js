@@ -81,15 +81,14 @@
     scene.toggleBackfaceCulling();
 
     var audio_node = document.getElementById('audio');
-    audio_node.autoplay = true;
     var audioctx = new (window.AudioContext || window.webkitAudioContext)();
     var analyser = audioctx.createAnalyser();
 
     var canvas = document.getElementById('canvas');
     var canvas_ctx = canvas.getContext('2d');
     var dataArray, bufferLength;
-    audio_node.addEventListener('canplay', function(e) {
-        
+    window.addEventListener('load', function(e) {
+        audio_node.autoplay = true;
         var source = audioctx.createMediaElementSource(audio_node);
         source.connect(analyser);
         analyser.connect(audioctx.destination);
