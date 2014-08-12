@@ -1,225 +1,262 @@
-function gameoflife(id, speed) {
-    var canvas = document.getElementById(id);
-    var board = [];
-    var block_size = 15;
-    var debug = true;
-    var play = false;
-    var intervalID;
-    var mouse = {'x':0,'y':0}
-
-    function Cell(x,y, alive) {
-        // A single cell on the board.
-        this.x = x; // X coordinate on canvas
-        this.y = y; // Y coordinate on canvas
-        this.alive = alive;
-    }
-
-    function init_board() {
-        // Initializes a two-dimensional array of dead Cells.
-        var x_size = Math.floor(canvas.width / block_size);
-        var y_size = Math.floor(canvas.height / block_size);
-        var new_board = [];
-        for (var i = 0; i < x_size; i++) {
-            var xpos = i * block_size;
-            new_board[i] = [];
-            for (var j = 0; j < y_size; j++) {
-                var ypos = j * block_size;
-                var new_cell = new Cell(
-                    xpos, // X position
-                    ypos, // Y position
-                    0      // All cells are dead, initially.
-                    );
-                new_board[i][j] = new_cell;
-            }
-        }
-        board = new_board;
-        draw_board();
-    }
-
-    function update_board() {
-        var board_width = board.length;
-        var board_height = board[0].length;
-        var new_board = [];
-        // For each cell on the board.
-        for (var x = 0; x < board_width; x++) {
-            new_board[x] = [];
-            for (var y = 0; y < board_height; y++) {
-                var old_cell = board[x][y];
-                var neighbours = 0;
-                // Count neighbours
-                for (var i = -1; i <= 1; i++) {
-                    for (var j = -1; j <= 1; j++) {
-                        var newx = x + i;
-                        var newy = y + j;
-                        if (i === 0 && j === 0) {
-                            neighbours += 0;
-                        } else {
-                            if (newx < 0) {
-                                newx = board_width + newx;
-                            }
-                            if (newy < 0){
-                                newy = board_height + newy;
-                            }
-                            newx = newx % board_width;
-                            newy = newy % board_height;
-                            neighbours += board[newx][newy].alive;
-                        }
-                    }
-                }
-                // Apply rules for life and death.
-                if (old_cell.alive === 1) {
-                    if (neighbours === 2 || neighbours === 3) {
-                        new_board[x][y] = new Cell(old_cell.x, old_cell.y, 1);
-                    } else {
-                        new_board[x][y] = new Cell(old_cell.x, old_cell.y, 0);
-                    }
-                } else {
-                    if (neighbours === 3) {
-                        new_board[x][y] = new Cell(old_cell.x, old_cell.y, 1);
-                    } else {
-                        new_board[x][y] = new Cell(old_cell.x, old_cell.y, 0);
-                    }
-                }
-            }
-        }
-        board = new_board;
-    }
-
-    function reset_board() {
-        if (play) {
-            clearInterval(intervalID);
-            play = false;
-            document.getElementById("start").innerHTML = "Start";
-        }
-        init_board();
-    }
-
-    function run_game() {
-        if (!play) {
-            intervalID = window.setInterval(function(){update_board();}, (500 - (speed / 0.75)));
-            this.innerHTML = "Pause";
-        } else {
-            clearInterval(intervalID);
-            this.innerHTML = "Start";
-        }
-        // Toggle play state.
-        play = !play;
-    }
-
-    function draw_board() {
-        if (canvas.getContext){
-            var ctx = canvas.getContext('2d');
-            // Reset canvas and redraw
-            canvas.width = canvas.width;
-            var row_length = board.length;
-            var col_length = board[0].length;
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = "grey";
-            ctx.lineWidth = 0.4;
-            for (var i = 0; i < row_length; i++) {
-                // Draw grid lines
-                ctx.beginPath();
-                ctx.moveTo(0, i * block_size);
-                ctx.lineTo(canvas.width, i * block_size);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(i * block_size, 0);
-                ctx.lineTo(i * block_size, canvas.height);
-                ctx.stroke();
-                for (var j = 0; j < col_length; j++) {
-                    var cell = board[i][j];
-                    // Draw if alive
-                    if (cell.alive === 1) {
-                        ctx.fillStyle = "black";
-                        ctx.beginPath();
-                        ctx.rect(cell.x,cell.y,block_size,block_size);
-                        ctx.fill();
-                        ctx.closePath();
-                    } else if (!play && mouse.x === cell.x && mouse.y === cell.y) {
-                        ctx.fillStyle = "grey";
-                        ctx.beginPath();
-                        ctx.rect(mouse.x,mouse.y,block_size,block_size);
-                        ctx.fill();
-                        ctx.closePath();
-                    }
-                }
-            }
-        }
-    }
-
-    var button_handlers = function() {
-        document.getElementById("start").addEventListener("click", run_game, false);
-
-        document.getElementById("reset").addEventListener("click", reset_board, false);
-
-        //document.getElementById("wrap").addEventListener('click', wraparound, false);
-    }();
-
-    var slider_handler = function() {
-        function update_speed(e) {
-            clearInterval(intervalID);
-            intervalID = window.setInterval(function(){update_board();}, (1000 - speed * 8.5));
-            speed = parseInt(this.value, 10);
-        }
-        var speed_slider = document.getElementById('speed');
-        speed_slider.addEventListener("input", update_speed);
-        speed_slider.addEventListener("input", update_speed);
-    }();
-
-
-
-    var mouse_handler = function() {
-
-        var mousedownListener = function(e) {
-            var board_width = board.length;
-            var board_height = board[0].length;
-            var xpos = e.pageX - this.offsetLeft;
-            var ypos = e.pageY - this.offsetTop;
-
-            var board_x = Math.round(xpos / block_size);
-            var board_y = Math.round(ypos / block_size);
-            if (board_x >= board_width) {
-                board_x = board_width - 1;
-            }
-            if (board_y >= board_height) {
-                board_y = board_height - 1;
-            }
-            if (board_x < 0) {
-                board_x = 0;
-            }
-            if (board_y < 0) {
-                board_y = 0;
-            }
-            var cell = board[board_x][board_y];
-            // On click, toggle cell life and redraw canvas.
-            cell.alive = (cell.alive + 1) % 2;
-            if (!play) {
-                draw_board();
-            }
-        };
-        var moveListener = function(e) {
-            if (!play) {
-                var board_width = board.length;
-                var board_height = board[0].length;
-                var xpos = e.pageX - this.offsetLeft;
-                var ypos = e.pageY - this.offsetTop;
-                var board_x = Math.round(xpos / block_size) * block_size;
-                var board_y = Math.round(ypos / block_size) * block_size;
-                mouse.x = board_x;
-                mouse.y = board_y;
-            }
-        };
-        canvas.addEventListener('mousedown', mousedownListener);
-        canvas.addEventListener('mousemove', moveListener);
-    }();
-    
-    init_board();
-    window.setInterval(function(){draw_board();}, 100);
+function GameOfLife(canvas_id, speed){
+    this.canvas = document.getElementById(canvas_id);
+    this.ctx = this.canvas.getContext('2d');
+    this.speed = speed;
+    this.last_updated = new Date();
+    this.board = [];
+    this.next_board = [];
+    this.block_size = 15;
+    this.play = false;
+    this.intervalID;
+    this.mouse = {'x':0,'y':0};
+    this.initialize();
 }
 
-var init = function() {
-    var id = 'gol';
-    window.onload = function(){
-        gameoflife(id, 10);
+function Cell(x,y, alive) {
+    // A single cell on the board.
+    this.x = x; // X coordinate on canvas
+    this.y = y; // Y coordinate on canvas
+    this.alive = alive;
+}
+
+GameOfLife.prototype.initialize = function(){
+    // Add controls
+    this.controls = document.createElement('div');
+    this.start = document.createElement('button');
+    this.reset = document.createElement('button');
+    this.speedlabel = document.createElement('label');
+    this.speedbutton = document.createElement('input');
+    this.speedbutton.type = 'range';
+    this.speedbutton.min = 0;
+    this.speedbutton.max = 100;
+    this.speedbutton.value = this.speed;
+    this.speedlabel.appendChild(this.speedbutton);
+    this.start.textContent = "Start"
+    this.reset.textContent = "Reset"
+    this.speedlabel.textContent = "Speed"
+    this.controls.appendChild(this.start);
+    this.controls.appendChild(this.reset);
+    this.controls.appendChild(this.speedbutton);
+    this.canvas.parentNode.appendChild(this.controls);
+
+    // Set up context
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeStyle = "grey";
+    this.ctx.lineWidth = 0.4;
+
+    // Register event listeners
+    this.register_events();
+
+    // Initialize board and draw board once, and start animation loop
+    this.init_board();
+    this.draw_board();
+    this.update();
+}
+
+GameOfLife.prototype.init_board = function() {
+    // Initializes a two-dimensional array of dead Cells.
+    var x_size = Math.floor(this.canvas.width / this.block_size);
+    var y_size = Math.floor(this.canvas.height / this.block_size);
+    this.board.length = 0;
+    this.next_board.length = 0;
+    for (var i = 0; i < x_size; i++) {
+        var xpos = i * this.block_size;
+        this.board[i] = [];
+        this.next_board[i] = [];
+        for (var j = 0; j < y_size; j++) {
+            var ypos = j * this.block_size;
+            this.board[i][j] = new Cell(xpos, ypos, 0);
+            this.next_board[i][j] = new Cell(xpos, ypos, 0);
+        }
+    }
+}
+
+GameOfLife.prototype.update_board = function() {
+    var board_width = this.board.length;
+    var board_height = this.board[0].length;
+    // For each cell on the board.
+    for (var x = 0; x < board_width; x++) {
+        for (var y = 0; y < board_height; y++) {
+            var old_cell = this.board[x][y];
+            var neighbours = 0;
+            // Count neighbours
+            for (var i = -1; i <= 1; i++) {
+                for (var j = -1; j <= 1; j++) {
+                    var newx = x + i;
+                    var newy = y + j;
+                    // Wraparound logic
+                    if (newx < 0) {
+                        newx += board_width;
+                    }
+                    if (newy < 0){
+                        newy += board_height;
+                    }
+                    newx = newx % board_width;
+                    newy = newy % board_height;
+                    neighbours += this.board[newx][newy].alive;
+                }
+            }
+            // A cell can't be a neighbor to itself, so subtract one from neighbors
+            // if cell was alive last generation.
+            if (old_cell.alive){
+                neighbours -= 1;
+            }
+            // Apply rules for life and death.
+            if (old_cell.alive) {
+                if (neighbours === 2 || neighbours === 3) {
+                    this.next_board[x][y].alive = 1;
+                } else {
+                    this.next_board[x][y].alive = 0;
+                }
+            } else {
+                if (neighbours === 3) {
+                    this.next_board[x][y].alive = 1;
+                } else {
+                    this.next_board[x][y].alive = 0;
+                }
+            }
+        }
+    }
+    for (var x = 0; x < board_width; x++) {
+        for (var y = 0; y < board_height; y++) {
+            this.board[x][y].alive = this.next_board[x][y].alive;
+        }
+    }
+}
+
+GameOfLife.prototype.reset_board = function() {
+    if (this.play) {
+        this.play = false;
+        this.start.textContent = "Start";
+    }
+    this.init_board();
+    this.draw_board();
+}
+
+GameOfLife.prototype.play_pause = function() {
+    if (!this.play) {
+        this.start.textContent = "Pause";
+    } else {
+        this.start.textContent = "Start";
+    }
+    // Toggle play state.
+    this.play = !this.play;
+}
+
+GameOfLife.prototype.draw_board = function() {
+    // Reset canvas and redraw
+    var width = this.canvas.width;
+    var height = this.canvas.height;
+    var block_size = this.block_size;
+    var ctx = this.ctx;
+    ctx.clearRect(0, 0, width, height);
+    var row_length = this.board.length;
+    var col_length = this.board[0].length;
+    for (var i = 0; i < row_length; i++) {
+        // Draw grid lines
+        ctx.beginPath();
+        ctx.moveTo(0, i * block_size);
+        ctx.lineTo(width, i * block_size);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.moveTo(i * block_size, 0);
+        ctx.lineTo(i * block_size, height);
+        ctx.stroke();
+        ctx.closePath();
+        for (var j = 0; j < col_length; j++) {
+            var cell = this.board[i][j];
+            // Draw if alive
+            if (cell.alive === 1) {
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.rect(cell.x,cell.y,block_size,block_size);
+                ctx.fill();
+                ctx.closePath();
+            } else if (!this.play && this.mouse.x === cell.x && this.mouse.y === cell.y) {
+                ctx.fillStyle = "grey";
+                ctx.beginPath();
+                ctx.rect(this.mouse.x,this.mouse.y,block_size,block_size);
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+    }
+}
+
+GameOfLife.prototype.register_events = function(){
+    var that = this;
+    this.start.addEventListener("click", this.play_pause.bind(this), false);
+    this.reset.addEventListener("click", this.reset_board.bind(this), false);
+
+    function update_speed(e) {
+        that.speed = parseInt(this.value, 10);
+    }
+    this.speedbutton.addEventListener("input", update_speed);
+
+    var mousedownListener = function(e) {
+        var board_width = that.board.length;
+        var board_height = that.board[0].length;
+        var xpos = e.offsetX ? e.offsetX : e.layerX;
+        var ypos = e.offsetY ? e.offsetY : e.layerY;
+
+        var board_x = Math.floor(xpos / that.block_size);
+        var board_y = Math.floor(ypos / that.block_size);
+        if (board_x >= board_width) {
+            board_x = board_width - 1;
+        }
+        if (board_y >= board_height) {
+            board_y = board_height - 1;
+        }
+        if (board_x < 0) {
+            board_x = 0;
+        }
+        if (board_y < 0) {
+            board_y = 0;
+        }
+        var cell = that.board[board_x][board_y];
+        // On click, toggle cell life and redraw canvas.
+        cell.alive = (cell.alive + 1) % 2;
+        if (!that.play) {
+            that.draw_board();
+        }
     };
-}();
+    var moveListener = function(e) {
+        var board_width = that.board.length;
+        var board_height = that.board[0].length;
+        var xpos = e.offsetX ? e.offsetX : e.layerX;
+        var ypos = e.offsetY ? e.offsetY : e.layerY;
+        var board_y = Math.floor(ypos / that.block_size) * that.block_size;
+        var board_x = Math.floor(xpos / that.block_size) * that.block_size;
+        that.mouse.x = board_x;
+        that.mouse.y = board_y;
+        if (!that.play) {
+            that.draw_board();
+        }
+    };
+    this.canvas.addEventListener('mousedown', mousedownListener);
+    this.canvas.addEventListener('mousemove', moveListener);
+};
+
+GameOfLife.prototype.update = function(){
+    if (this.play){
+        var now = new Date();
+        if (now - this.last_updated > (1000 - this.speed*10)){
+            this.update_board();
+            this.draw_board();
+            this.last_updated = now;
+        }
+    }
+    window.requestAnimationFrame(this.update.bind(this));
+};
+
+    
+//     init_board();
+//     window.setInterval(function(){draw_board();}, 100);
+
+// var init = function() {
+//     var id = 'gol';
+//     window.onload = function(){
+//         gameoflife(id, 10);
+//     };
+// }();
