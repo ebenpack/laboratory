@@ -5,6 +5,7 @@ var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var closure = require('gulp-closure-compiler');
 var jsdoc = require('gulp-jsdoc');
+var concat = require('gulp-concat');
 
 // Lint
 gulp.task('lint', function() {
@@ -27,7 +28,7 @@ gulp.task('check', function(){
 });
 
 // Compress/minify
-gulp.task('compress', function(){
+gulp.task('compress', ['scripts'], function(){
     gulp.src('build/boltzmann.js')
         .pipe(closure({
             compilerPath: '/usr/share/java/closure-compiler/closure-compiler.jar',
@@ -40,6 +41,11 @@ gulp.task('compress', function(){
         .pipe(gulp.dest('build'));
 });
 
+gulp.task('scripts', function() {
+  gulp.src(['src/init.js', 'src/draw.js', 'src/events.js', 'src/boltzmann.js'])
+    .pipe(concat('boltzmann.js'))
+    .pipe(gulp.dest('./build/'))
+});
 
 // Build documentation
 gulp.task('docs', function() {

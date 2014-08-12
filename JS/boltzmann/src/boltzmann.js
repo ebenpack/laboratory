@@ -215,12 +215,14 @@ boltzmann = (function (module) {
                             var newy = move.y + y;
                             // Check if new node is in the lattice
                             if (newx >= 0 && newx < lattice_width && newy >= 0 && newy < lattice_height) {
+                                var new_node = lattice[newx][newy];
+                                var dist = node.distribution;
                                 // If destination node is barrier, bounce distribution back to 
                                 // originating node in opposite direction.
-                                if (lattice[newx][newy].barrier) {
-                                    lattice[x][y].stream[reflection[d]] = node.distribution[d];
+                                if (new_node.barrier) {
+                                    node.stream[reflection[d]] = dist[d];
                                 } else {
-                                    lattice[newx][newy].stream[d] = node.distribution[d];
+                                    new_node.stream[d] = dist[d];
                                 }
                             }
                         }
@@ -239,21 +241,13 @@ boltzmann = (function (module) {
                     var node = lattice[x][y];
                     if (!node.barrier) {
                         var d = node.distribution;
-                        for (var p = 0; p < 9; p++) {
-                            // Copy over values from streaming phase.
-                            // While cloning with slice() would be simpler here, it
-                            // seems to impose a bit of a performance penalty.
-                            // This step would also be more naturally performed within 
-                            // stream(), but that would require an extraneous full loop
-                            // through the lattice array.
-                            d[p] = node.stream[p];
-                        }
+                        var s = node.stream;
                         // Calculate macroscopic density (rho) and velocity (ux, uy)
                         // Thanks to Daniel V. Schroeder for this optimization
                         // http://physics.weber.edu/schroeder/fluids/
-                        var rho = d[0] + d[1] + d[2] + d[3] + d[4] + d[5] + d[6] + d[7] + d[8];
-                        var ux = (d[1] + d[5] + d[8] - d[3] - d[6] - d[7]) / rho;
-                        var uy = (d[4] + d[7] + d[8] - d[2] - d[5] - d[6]) / rho;
+                        var rho = s[0] + s[1] + s[2] + s[3] + s[4] + s[5] + s[6] + s[7] + s[8];
+                        var ux = (s[1] + s[5] + s[8] - s[3] - s[6] - s[7]) / rho;
+                        var uy = (s[4] + s[7] + s[8] - s[2] - s[5] - s[6]) / rho;
                         // Update values stored in node.
                         node.density = rho;
                         node.ux = ux;
@@ -275,15 +269,15 @@ boltzmann = (function (module) {
                         var u215 = 1.5 * u2;
                         var one9thrho = one9th * rho;
                         var one36thrho = one36th * rho;
-                        d[0] = d[0] + (omega * ((four9ths * rho * (1 - u215)) - d[0]));
-                        d[1] = d[1] + (omega * ((one9thrho * (1 + ux3 + 4.5*ux2 - u215)) - d[1]));
-                        d[2] = d[2] + (omega * ((one9thrho * (1 - uy3 + 4.5*uy2 - u215)) - d[2]));
-                        d[3] = d[3] + (omega * ((one9thrho * (1 - ux3 + 4.5*ux2 - u215)) - d[3]));
-                        d[4] = d[4] + (omega * ((one9thrho * (1 + uy3 + 4.5*uy2 - u215)) - d[4]));
-                        d[5] = d[5] + (omega * ((one36thrho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215)) - d[5]));
-                        d[6] = d[6] + (omega * ((one36thrho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215)) - d[6]));
-                        d[7] = d[7] + (omega * ((one36thrho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215)) - d[7]));
-                        d[8] = d[8] + (omega * ((one36thrho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215)) - d[8]));
+                        d[0] = s[0] + (omega * ((four9ths * rho * (1 - u215)) - s[0]));
+                        d[1] = s[1] + (omega * ((one9thrho * (1 + ux3 + 4.5*ux2 - u215)) - s[1]));
+                        d[2] = s[2] + (omega * ((one9thrho * (1 - uy3 + 4.5*uy2 - u215)) - s[2]));
+                        d[3] = s[3] + (omega * ((one9thrho * (1 - ux3 + 4.5*ux2 - u215)) - s[3]));
+                        d[4] = s[4] + (omega * ((one9thrho * (1 + uy3 + 4.5*uy2 - u215)) - s[4]));
+                        d[5] = s[5] + (omega * ((one36thrho * (1 + ux3 - uy3 + 4.5*(u2-uxuy2) - u215)) - s[5]));
+                        d[6] = s[6] + (omega * ((one36thrho * (1 - ux3 - uy3 + 4.5*(u2+uxuy2) - u215)) - s[6]));
+                        d[7] = s[7] + (omega * ((one36thrho * (1 - ux3 + uy3 + 4.5*(u2-uxuy2) - u215)) - s[7]));
+                        d[8] = s[8] + (omega * ((one36thrho * (1 + ux3 + uy3 + 4.5*(u2+uxuy2) - u215)) - s[8]));
                     }
                 }
             }
