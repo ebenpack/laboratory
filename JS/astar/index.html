@@ -10,9 +10,14 @@
     </head>
     <body>
         <div class="main" style="position:relative;">
-            <canvas id="map" style="background-color: black; position: absolute;" width='600' height='240'></canvas>
+            <canvas id="map" style="background-color: black; position: relative;" width='600' height='240'></canvas>
             <canvas id="particles" style="position: absolute; left: 0;" width='600' height='240'></canvas>
         </div>
         <script src="js/main.js"></script>
+        <script>
+            (function(){
+                var maze = new Maze("map", "particles");
+            })();
+        </script>
     </body>
 </html>
