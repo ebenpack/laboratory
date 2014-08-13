@@ -16,6 +16,28 @@ var Maze = (function(){
         this.path_queue = [];
         this.init();
     }
+    Maze.prototype.init_map = function(width, height, density) {
+        // Initialize and draw map.
+        // Density is a number from [1-10). Lower = sparser barriers,
+        // higher = denser barriers. 3 works fairly well
+        if (density > 9){
+            density = 9;
+        }
+        var map = this.map;
+        for(var x = 0; x < width; x++){
+            map[x] = [];
+            for(var y = 0; y < height; y++) {
+                if(Math.random() * 10 < density){
+                    map[x][y] = {'x' : x, 'y' : y, 'barrier' : true};
+                    this.mapctx.fillStyle = 'red';
+                } else{
+                    map[x][y] = {'x' : x, 'y' : y, 'barrier' : false};
+                    this.mapctx.fillStyle = 'black';
+                }
+                this.mapctx.fillRect(x * this.block_size, y * this.block_size, this.block_size, this.block_size);
+            }
+        }
+    };
     Maze.prototype.find_neighbors = function(x,y) {
         // Only return neighbors in cardinal directions
         // Particles can't navigate through barriers diagonally
@@ -31,26 +53,7 @@ var Maze = (function(){
             }
         }
         return neighbor_list;
-    };
-
-    Maze.prototype.init_map = function(width, height) {
-        // Initialize and draw map.
-        var map = this.map;
-        for(var x = 0; x < width; x++){
-            map[x] = [];
-            for(var y = 0; y < height; y++) {
-                if(Math.random() * 10 > 7){
-                    map[x][y] = {'x' : x, 'y' : y, 'barrier' : true};
-                    this.mapctx.fillStyle = 'red';
-                } else{
-                    map[x][y] = {'x' : x, 'y' : y, 'barrier' : false};
-                    this.mapctx.fillStyle = 'black';
-                }
-                this.mapctx.fillRect(x * this.block_size, y * this.block_size, this.block_size, this.block_size);
-            }
-        }
     }
-
     Maze.prototype.collides = function(x,y) {
         // If a particle at x,y collides with a barrier on the map, return true
         // Check all four corners to see if any corner is within a barrier
@@ -64,13 +67,11 @@ var Maze = (function(){
             }
         }
         return false;
-    }
-
+    };
     Maze.prototype.map_location = function(x,y) {
         // Returns map coordinates for a given x,y on the canvas
         return {'x': Math.floor(x/this.block_size), 'y': Math.floor(y/this.block_size)};
-    }
-
+    };
     Maze.prototype.init_particles = function(n) {
         // Add n particles to free (non-barrier) spaces on the map
         var added = 0;
@@ -83,15 +84,13 @@ var Maze = (function(){
                 added += 1;
             }
         }
-    }
-
+    };
     Maze.prototype.queue_path_updates = function() {
         // Queue all particles to find their path
         for (var i = 0; i < this.particles.length; i++) {
             this.path_queue.push(this.particles[i]);
         }
-    }
-
+    };
     Maze.prototype.update_particles = function() {
         // Update and move particles. If any particles remain
         // in the path queue, dequeue one and find its path
@@ -100,8 +99,8 @@ var Maze = (function(){
             var q = this.path_queue.shift();
             this.set_particle_path(q);
             // Loop through the queue and set the paths of any particles that are in the same area
-            // This prevents much duplication of effort. E.g. if there are 20 particles all in the same area,
-            // then we only need to find the path for one of them.
+            // This prevents much duplication of effort. E.g. if there are 20 particles all in
+            // the same area, then we only need to find the path for one of them.
             var remove = []; // Indices for particles in path_queue to be removed.
             var particle1 = this.map_location(q.x, q.y);
             for (var j = 0; j < this.path_queue.length; j++) {
@@ -117,7 +116,6 @@ var Maze = (function(){
             }
         }
     };
-
     Maze.prototype.draw_particles = function(){
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.beginPath();
@@ -130,7 +128,6 @@ var Maze = (function(){
         this.ctx.fill();
         this.ctx.closePath();
     };
-
     Maze.prototype.move_goal = function(e) {
         this.mouse.x = e.hasOwnProperty('offsetX') ? e.offsetX : e.layerX;
         this.mouse.y = e.hasOwnProperty('offsetY') ? e.offsetY : e.layerY;
@@ -140,7 +137,7 @@ var Maze = (function(){
     };
     Maze.prototype.init = function(){
         this.canvas.addEventListener('click', this.move_goal.bind(this));
-        this.init_map(this.map_width, this.map_height);
+        this.init_map(this.map_width, this.map_height, 3);
         this.init_particles(20);
         this.update();
     };
@@ -149,7 +146,6 @@ var Maze = (function(){
         this.draw_particles();
         window.requestAnimationFrame(this.update.bind(this));
     };
-
     Maze.prototype.update_particle = function(p) {
         // A particle's velocity doesn't change instantaneously. The angle
         // of its movement is nudged towards the angle towards its goal,
@@ -183,10 +179,9 @@ var Maze = (function(){
             p.x = newx;
             p.y = newy;
         } else if (this.collides(newy,newx)) {
-            // TODO: Bounce off, maybe?
-            
-            // Would need to know if impacted surface is horizontal or vertical
-            // in order to calculate new angle
+            // Bounce off. 
+            p.vel.x = -p.vel.x;
+            p.vel.y = -p.vel.y;
         }
     };
     Maze.prototype.set_particle_path = function(p) {
@@ -250,7 +245,7 @@ var Maze = (function(){
             }
         }
         if (isEmpty(to_visit)) {
-            this.path = [];
+            this.path.length = 0;
         }
     };
 
@@ -265,9 +260,10 @@ var Maze = (function(){
         this.inertia = random_range(0.05, 0.1);
     }
 
-        function to_str(node) {
+    function to_str(node) {
         return JSON.stringify([node.x,node.y]);
     }
+
     function calc_h(p0, p1){
         // Calculate H using Manhatten method.
         var d1 = Math.abs (p1.x - p0.x);
