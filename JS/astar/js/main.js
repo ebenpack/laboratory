@@ -95,7 +95,7 @@ var Maze = (function(){
         // Update and move particles. If any particles remain
         // in the path queue, dequeue one and find its path
         // Get the path for the first particle in the queue
-        if (this.path_queue.length > 1) {
+        if (this.path_queue.length > 0) {
             var q = this.path_queue.shift();
             this.set_particle_path(q);
             // Loop through the queue and set the paths of any particles that are in the same area
@@ -180,8 +180,8 @@ var Maze = (function(){
             p.y = newy;
         } else if (this.collides(newy,newx)) {
             // Bounce off. 
-            p.vel.x = -p.vel.x;
-            p.vel.y = -p.vel.y;
+            // p.vel.x = -p.vel.x;
+            // p.vel.y = -p.vel.y;
         }
     };
     Maze.prototype.set_particle_path = function(p) {
@@ -245,7 +245,7 @@ var Maze = (function(){
             }
         }
         if (isEmpty(to_visit)) {
-            this.path.length = 0;
+            p.path.length = 0;
         }
     };
 
@@ -257,7 +257,7 @@ var Maze = (function(){
         this.speed = random_range(1,2);
         this.path = [];
         this.destination = {'x':0, 'y':0}; // The current destination
-        this.inertia = random_range(0.05, 0.1);
+        this.inertia = random_range(0.1, 0.2);
     }
 
     function to_str(node) {
