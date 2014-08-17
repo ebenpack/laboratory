@@ -95,7 +95,6 @@
     else {
       canvas.parentNode.appendChild(ready);
     }
-    canvas.parentNode.appendChild(ready);
 
     /************************
     ***    Audio setup    ***
