@@ -130,7 +130,7 @@
 
     function decodeAudio(buffer){
         audioctx.decodeAudioData(buffer, function(buffer) {
-            canvas.removeEventListener('click', clicklistener)
+            canvas.removeEventListener('click', clicklistener);
             soundReady(buffer);
         }, onError);
     }
@@ -149,6 +149,7 @@
     function playSound(buffer) {
         if (played){
             audio_node.stop();
+            canvas.removeEventListener('click', clicklistener)
         } else {
             played = true;
             audio_node.start(0);
