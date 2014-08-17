@@ -13,7 +13,6 @@
         ***  Wireframe setup  ***
         *************************/
         var Mesh = wireframe.geometry.Mesh;
-        var Camera = wireframe.engine.Camera;
         var vertices = [];
         var faces = [];
 
@@ -45,7 +44,7 @@
         scene.camera.lookDown(0.2);
         scene.addMesh(mesh);
 
-        function moveCamera(E, H){
+        function moveCamera(e){
             if (scene.isKeyDown('w')) {
                 scene.camera.moveForward(3);
             }
@@ -99,12 +98,17 @@
             this.childNodes[0].textContent = "Audio loading...";
             this.style.color = 'red';
             this.childNodes[1].disabled = true;
-        }
+        };
         ready.ready = function(){
             this.childNodes[0].textContent = "Ready!";
             this.style.color = 'green';
             this.childNodes[1].disabled = false;
-        }
+        };
+        ready.error = function(){
+            this.childNodes[0].textContent = "Error! File type not supported";
+            this.style.color = 'red';
+            this.childNodes[1].disabled = true;
+        };
         ready.loading();
         if (canvas.nextSibling) {
           canvas.parentNode.insertBefore(ready, canvas.nextSibling);
@@ -119,9 +123,9 @@
 
         var audioctx = new (window.AudioContext || window.webkitAudioContext)();
         var analyser = audioctx.createAnalyser();
-        analyser.fftSize = 128;
+        analyser.fftSize = 64;
 
-        var dataArray = new Uint8Array(analyser.frequencyBinCount)
+        var dataArray = new Uint8Array(analyser.frequencyBinCount);
         var audio_node, javascript_node;
         // clicklistener function needs to be held onto so that the event
         // listener can be removed, when necessary.
@@ -140,7 +144,6 @@
         }
 
         function decodeAudio(buffer){
-            current_audio = buffer;
             audioctx.decodeAudioData(buffer, function(buffer) {
                 // Remove clicklistener to avoid adding multiple
                 // event listeners
@@ -154,15 +157,16 @@
             request.open('GET', url, true);
             request.responseType = 'arraybuffer';
             request.onload = function() {
-                decodeAudio(request.response)
-            }
+                current_audio = request.response;
+                decodeAudio(request.response);
+            };
             request.send();
         }
 
         // Keep track of where in the audio track we are.
         var playtime = 0;
         var time_started;
-        function playAudio(buffer){
+        function playAudio(){
             playing = true;
             time_started = new Date();
             audio_node.start(0, playtime);
@@ -175,7 +179,7 @@
             // Since buffersource is one-time use, we need
             // to reinitialize if we want to play again after pausing
             initAudio();
-            decodeAudio(current_audio);
+            decodeAudio();
         }
 
         function soundReady(buffer){
@@ -187,27 +191,27 @@
                 } else {
                     this.textContent = "Stop";
                     audio_node.buffer = buffer;
-                    playAudio(buffer);
+                    playAudio();
                 }
-            }
+            };
             start_button.addEventListener('click', clicklistener);
         }
 
         function onError(e) {
-            console.log(e);
+            ready.error();
         }
 
         function fileDrop(e){
             e.preventDefault();
-            played = false;
+            playtime = 0;
             ready.loading();
             var files = e.dataTransfer.files;
             var reader = new FileReader();
         
             reader.onload = function(e) {
-                var data = e.target.result;
-                decodeAudio(data);
-            }
+                current_audio = e.target.result;
+                decodeAudio(e.target.result);
+            };
             reader.readAsArrayBuffer(files[0]);
             
         }
@@ -228,7 +232,7 @@
                     for (var col = 0; col < COLS; col++){
                         var i = col + ((row - 1) * COLS);
                         var i2 = col + (row * COLS);
-                        mesh.vertices[i2].y = mesh.vertices[i].y
+                        mesh.vertices[i2].y = mesh.vertices[i].y;
                     }
                 }
                 last_update = current_time;
@@ -254,7 +258,7 @@
         // Start off with default audio file.
         initAudio();
         XHRLoadSound("../../audio/piano-sonata-no13.ogg");
-        window.requestAnimationFrame(update)
+        window.requestAnimationFrame(update);
     })();
 
 })();
