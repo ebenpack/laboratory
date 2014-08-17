@@ -1,30 +1,30 @@
 (function(){
 
-    /************************
-    ***  Wireframe setup  ***
-    *************************/
-    var Mesh = wireframe.geometry.Mesh;
+    // "Globals"
     var Scene = wireframe.engine.Scene;
-    var Camera = wireframe.engine.Camera;
-
     var scene = new Scene({canvas_id: 'canvas', width:600, height:400});
-    var canvas = document.getElementById('canvas');
-    var canvas_ctx = canvas.getContext('2d');
+    var mesh;
     var current_audio;
+    var ROWS = 20;
+    var COLS = 16;
 
     (function initializeScene(){
+        /************************
+        ***  Wireframe setup  ***
+        *************************/
+        var Mesh = wireframe.geometry.Mesh;
+        var Camera = wireframe.engine.Camera;
         var vertices = [];
         var faces = [];
-        var ROWS = 20;
-        var COLS = 16;
-        // Build mesh
+
+        // Build mesh vertices
         for (var row = 0; row < ROWS; row++){
             for (var col = 0; col < COLS; col++){
                 vertices.push([(col*20)-160, 0, (row*(-20))]);
             }
         }
 
-        // Build fully connected mesh
+        // Build mesh edges.
         for (var row = 0; row < ROWS-1; row++){
             for (var col = 0; col < COLS-1; col++){
                 var a = col + (row * COLS);
@@ -35,7 +35,7 @@
                 faces.push({"face": [a, d, b], "color": "green"});
             }
         }
-        var mesh = Mesh.fromJSON({
+        mesh = Mesh.fromJSON({
             "name": "vu",
             "vertices": vertices,
             "faces": faces
@@ -76,20 +76,25 @@
             if (scene.isKeyDown('e')) {
                 scene.camera.turnRight(0.02);
             }
-            scene._needs_update = true;
         }
+
         scene.addListener('keydown', moveCamera);
         scene.toggleBackfaceCulling();
     })();
 
     (function initializeAudio(){
-        // Indicates whether audio is loaded and ready to be played.
+        /************************
+        ***     DOM setup     ***
+        *************************/
+        var canvas = document.getElementById('canvas');
+
+        // ready indicates whether audio is loaded and ready to be played.
         var ready = document.createElement('div');
         ready.appendChild(document.createTextNode(""));
-        var start = document.createElement('button');
-        start.style.marginLeft = "10px";
-        start.appendChild(document.createTextNode("Start"));
-        ready.appendChild(start);
+        var start_button = document.createElement('button');
+        start_button.style.marginLeft = "10px";
+        start_button.appendChild(document.createTextNode("Start"));
+        ready.appendChild(start_button);
         ready.loading = function(){
             this.childNodes[0].textContent = "Audio loading...";
             this.style.color = 'red';
@@ -114,23 +119,18 @@
 
         var audioctx = new (window.AudioContext || window.webkitAudioContext)();
         var analyser = audioctx.createAnalyser();
+        analyser.fftSize = 128;
 
         var dataArray = new Uint8Array(analyser.frequencyBinCount)
-        var audio_node;
-        var analyser;
-        var javascript_node;
-        // clicklistener needs to be held onto so that the event
+        var audio_node, javascript_node;
+        // clicklistener function needs to be held onto so that the event
         // listener can be removed, when necessary.
         var clicklistener;
-
-        initAudio();
-        XHRLoadSound("../../audio/piano-sonata-no13.ogg");
+        var playing = false;
 
         function initAudio() {
             javascript_node = audioctx.createScriptProcessor(2048, 1, 1);
             javascript_node.connect(audioctx.destination);
-
-            analyser.fftSize = 128;
 
             audio_node = audioctx.createBufferSource();
             audio_node.connect(analyser);
@@ -142,7 +142,9 @@
         function decodeAudio(buffer){
             current_audio = buffer;
             audioctx.decodeAudioData(buffer, function(buffer) {
-                start.removeEventListener('click', clicklistener);
+                // Remove clicklistener to avoid adding multiple
+                // event listeners
+                start_button.removeEventListener('click', clicklistener);
                 soundReady(buffer);
             }, onError);
         }
@@ -157,15 +159,23 @@
             request.send();
         }
 
-        var playing = false;
+        // Keep track of where in the audio track we are.
+        var playtime = 0;
+        var time_started;
         function playAudio(buffer){
             playing = true;
-            audio_node.start(0);
+            time_started = new Date();
+            audio_node.start(0, playtime);
         }
         function pauseAudio(){
+            // Convert times from miliseconds to seconds
+            playtime = playtime + ((new Date() - time_started)/1000);
             playing = false;
             audio_node.stop();
-            // decodeAudio(current_audio);
+            // Since buffersource is one-time use, we need
+            // to reinitialize if we want to play again after pausing
+            initAudio();
+            decodeAudio(current_audio);
         }
 
         function soundReady(buffer){
@@ -173,7 +183,6 @@
             clicklistener = function(e){
                 if (playing){
                     this.textContent = "Start";
-                    // audio_node.buffer = buffer;
                     pauseAudio();
                 } else {
                     this.textContent = "Stop";
@@ -181,7 +190,7 @@
                     playAudio(buffer);
                 }
             }
-            start.addEventListener('click', clicklistener);
+            start_button.addEventListener('click', clicklistener);
         }
 
         function onError(e) {
@@ -191,6 +200,7 @@
         function fileDrop(e){
             e.preventDefault();
             played = false;
+            ready.loading();
             var files = e.dataTransfer.files;
             var reader = new FileReader();
         
@@ -202,6 +212,7 @@
             
         }
 
+        // Required for drag 'n' drop to work on canvas
         canvas.addEventListener("dragover", function (e) {
             e.preventDefault();
         }, false);
@@ -240,6 +251,9 @@
             window.requestAnimationFrame(update);
         }
 
+        // Start off with default audio file.
+        initAudio();
+        XHRLoadSound("../../audio/piano-sonata-no13.ogg");
         window.requestAnimationFrame(update)
     })();
 
