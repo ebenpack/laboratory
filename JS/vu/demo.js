@@ -1,4 +1,8 @@
 (function(){
+
+    /************************
+    ***  Wireframe setup  ***
+    *************************/
     var Mesh = wireframe.geometry.Mesh;
     var Scene = wireframe.engine.Scene;
     var Camera = wireframe.engine.Camera;
@@ -12,17 +16,8 @@
             vertices.push([(col*20)-160, 0, (row*(-20))]);
         }
     }
-    // Discrete lines
-    // Add one fewer edge per row than vertices in row
-    // var index = 0;
-    // for (var row = 0; row < ROWS; row++){
-    //     for (var col = 1; col < COLS; col++){
-    //         var index = col + (row * COLS);
-    //         faces.push({"face": [index-1, index-1, index], "color": "green"});
-    //     }
-    // }
 
-    // Fully connected mesh
+    // Build fully connected mesh
     for (var row = 0; row < ROWS-1; row++){
         for (var col = 0; col < COLS-1; col++){
             var a = col + (row * COLS);
@@ -80,30 +75,119 @@
     scene.addListener('keydown', moveCamera);
     scene.toggleBackfaceCulling();
 
-    var audio_node = document.getElementById('audio');
+    var canvas = document.getElementById('canvas');
+    var canvas_ctx = canvas.getContext('2d');
+
+    // Indicates whether audio is loaded and ready to be played.
+    var ready = document.createElement('div');
+    ready.loading = function(){
+        this.textContent = "Audio loading...";
+        this.style.color = 'red';
+    }
+    ready.ready = function(){
+        this.textContent = "Ready!";
+        this.style.color = 'green';
+    }
+    ready.loading();
+    if (canvas.nextSibling) {
+      canvas.parentNode.insertBefore(ready, canvas.nextSibling);
+    }
+    else {
+      canvas.parentNode.appendChild(ready);
+    }
+    canvas.parentNode.appendChild(ready);
+
+    /************************
+    ***    Audio setup    ***
+    *************************/
+
     var audioctx = new (window.AudioContext || window.webkitAudioContext)();
     var analyser = audioctx.createAnalyser();
 
-    var canvas = document.getElementById('canvas');
-    var canvas_ctx = canvas.getContext('2d');
-    var dataArray, bufferLength;
-    window.addEventListener('load', function(e) {
-        audio_node.autoplay = true;
-        var source = audioctx.createMediaElementSource(audio_node);
-        source.connect(analyser);
-        analyser.connect(audioctx.destination);
+    var dataArray = new Uint8Array(analyser.frequencyBinCount)
+    var audio_node;
+    var analyser;
+    var javascript_node;
+    // clicklistener needs to be held onto so that the event
+    // listener can be removed, when necessary.
+    var clicklistener;
+
+    initAudio();
+    XHRLoadSound("../../audio/piano-sonata-no13.ogg");
+
+    function initAudio() {
+        javascript_node = audioctx.createScriptProcessor(2048, 1, 1);
+        javascript_node.connect(audioctx.destination);
 
         analyser.fftSize = 128;
-        bufferLength = analyser.frequencyBinCount;
-        dataArray = new Uint8Array(bufferLength);
 
-        analyser.getByteTimeDomainData(dataArray);
-        audio_node.pause();
-        update();
+        audio_node = audioctx.createBufferSource();
+        audio_node.connect(analyser);
+        analyser.connect(javascript_node);
+
+        audio_node.connect(audioctx.destination);
+    }
+
+    function decodeAudio(buffer){
+        audioctx.decodeAudioData(buffer, function(buffer) {
+            canvas.removeEventListener('click', clicklistener)
+            soundReady(buffer);
+        }, onError);
+    }
+
+    function XHRLoadSound(url) {
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.responseType = 'arraybuffer';
+        request.onload = function() {
+            decodeAudio(request.response)
+        }
+        request.send();
+    }
+
+    var played = false;
+    function playSound(buffer) {
+        if (played){
+            audio_node.stop();
+        } else {
+            played = true;
+            audio_node.start(0);
+        }
+    }
+
+    function soundReady(buffer){
+        ready.ready();
+        clicklistener = function(){
+            audio_node.buffer = buffer;
+            playSound(buffer);
+        }
+        canvas.addEventListener('click', clicklistener);
+    }
+
+    function onError(e) {
+        console.log(e);
+    }
+
+    function fileDrop(e){
+        e.preventDefault();
+        played = false;
+        var files = e.dataTransfer.files;
+        var reader = new FileReader();
+    
+        reader.onload = function(e) {
+            var data = e.target.result;
+            decodeAudio(data);
+        }
+        reader.readAsArrayBuffer(files[0]);
+        
+    }
+
+    canvas.addEventListener("dragover", function (e) {
+        e.preventDefault();
     }, false);
-
-    var last_update = new Date();
-    function draw() {
+    canvas.addEventListener('drop', fileDrop);
+    
+    function draw(array) {
         var current_time = new Date();
         // Shift everything back one row.
         if (current_time - last_update > 100){
@@ -119,20 +203,23 @@
             last_update = current_time;
         }
 
-        analyser.getByteFrequencyData(dataArray);
-
         var barHeight;
         for(var i = 0; i < COLS; i++) {
-            barHeight = dataArray[i]/2;
+            barHeight = array[i]/2;
             mesh.vertices[i].y = -barHeight;
         }
 
         scene.renderScene();
     }
 
+    var last_update = new Date();
     function update(){
-        draw();
-        requestAnimationFrame(update);
+        analyser.getByteFrequencyData(dataArray);
+
+        draw(dataArray);
+        window.requestAnimationFrame(update);
     }
+
+    window.requestAnimationFrame(update)
 
 })();
