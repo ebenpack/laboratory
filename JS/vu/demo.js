@@ -4,7 +4,6 @@
     var Scene = wireframe.engine.Scene;
     var scene = new Scene({canvas_id: 'canvas', width:600, height:400});
     var mesh;
-    var current_audio;
     var ROWS = 20;
     var COLS = 16;
 
@@ -158,9 +157,6 @@
             request.responseType = 'arraybuffer';
             request.onload = function() {
                 playtime = 0;
-                // Need to deep copy the array buffer, as FF decodeAudioData
-                // seems to empty the buffer
-                current_audio = request.response.slice(0);
                 decodeAudio(request.response);
             };
             request.send();
@@ -211,9 +207,6 @@
             var reader = new FileReader();
         
             reader.onload = function(e) {
-                // Need to deep copy the array buffer, as FF decodeAudioData
-                // seems to empty the buffer
-                current_audio = e.target.result.slice(0);
                 decodeAudio(e.target.result);
             };
             reader.readAsArrayBuffer(files[0]);
