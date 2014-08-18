@@ -121,10 +121,9 @@
         *************************/
 
         var audioctx = new (window.AudioContext || window.webkitAudioContext)();
-        var analyser = audioctx.createAnalyser();
-        analyser.fftSize = 64;
+        var analyser;
 
-        var dataArray = new Uint8Array(analyser.frequencyBinCount);
+        var dataArray;
         var audio_node, javascript_node;
         // clicklistener function needs to be held onto so that the event
         // listener can be removed, when necessary.
@@ -134,7 +133,9 @@
         function initAudio() {
             javascript_node = audioctx.createScriptProcessor(2048, 1, 1);
             javascript_node.connect(audioctx.destination);
-
+            analyser = audioctx.createAnalyser();
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.fftSize = 64;
             audio_node = audioctx.createBufferSource();
             audio_node.connect(analyser);
             analyser.connect(javascript_node);
