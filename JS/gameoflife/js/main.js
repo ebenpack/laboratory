@@ -39,6 +39,9 @@ GameOfLife.prototype.initialize = function(){
     this.controls.appendChild(this.speedbutton);
     this.canvas.parentNode.appendChild(this.controls);
 
+    // Add pre-made shapes to canvas
+    this.addDefaults();
+
     // Set up context
     this.ctx.lineWidth = 2;
     this.ctx.strokeStyle = "grey";
@@ -51,6 +54,49 @@ GameOfLife.prototype.initialize = function(){
     this.init_board();
     this.draw_board();
     this.update();
+}
+
+GameOfLife.prototype._boardDump = function(){
+    // Return the contents of the current board.
+    // An array of all living cells is returned, where
+    // each living cell is represented by a two-element array
+    // of x, y coordinates.
+    // This is a mostly a utility function to make manual
+    // creation of pre-made board configurations easier.
+    var board = [];
+    for (var x = 0; x < this.board.length; x++){
+        for (var y = 0; y < this.board[y].length; y++){
+            if (this.board[x][y].alive){
+                board.push([x, y]);
+            }
+        }
+    }
+    return board;
+}
+
+GameOfLife.prototype.addDefaults = function(){
+    // Add select list of pre-made board configurations.
+    // TODO: Load these in from a JSON file
+    var glider = [[17,15],[18,13],[18,15],[19,14],[19,15]];
+    var pulsar = [[12,11],[12,12],[12,13],[12,17],[12,18],[12,19],[14,9],[14,14],[14,16],[14,21],[15,9],[15,14],[15,16],[15,21],[16,9],[16,14],[16,16],[16,21],[17,11],[17,12],[17,13],[17,17],[17,18],[17,19],[19,11],[19,12],[19,13],[19,17],[19,18],[19,19],[20,9],[20,14],[20,16],[20,21],[21,9],[21,14],[21,16],[21,21],[22,9],[22,14],[22,16],[22,21],[24,11],[24,12],[24,13],[24,17],[24,18],[24,19]];
+    var glider_gun = [[1,15],[1,16],[2,15],[2,16],[10,15],[10,16],[10,17],[11,14],[11,18],[12,13],[12,19],[13,13],[13,19],[14,16],[15,14],[15,18],[16,15],[16,16],[16,17],[17,16],[20,13],[20,14],[20,15],[21,13],[21,14],[21,15],[22,12],[22,16],[24,11],[24,12],[24,16],[24,17],[34,13],[34,14],[35,13],[35,14]];
+    var options = [['Glider', glider], ['Pulsar', pulsar], ['Glider Gun', glider_gun]];
+    var select = document.createElement('select');
+    var opt = document.createElement('option');
+    opt.label = 'Pre-made board configs';
+    select.appendChild(opt);
+    for (var i=0; i < options.length; i++){
+        opt = document.createElement('option');
+        opt.textContent = options[i][0];
+        select.appendChild(opt);
+    }
+    this.canvas.parentNode.appendChild(select);
+    select.addEventListener('change', (function(e){
+        var choice = e.target.selectedIndex - 1;
+        if (choice >= 0){
+            this.loadBoard(options[choice][1])
+        }
+    }).bind(this));
 }
 
 GameOfLife.prototype.init_board = function() {
@@ -133,7 +179,16 @@ GameOfLife.prototype.reset_board = function() {
     this.draw_board();
 }
 
-GameOfLife.prototype.play_pause = function() {
+GameOfLife.prototype.loadBoard = function(board){
+    this.reset_board();
+    for (var i = 0; i < board.length; i++){
+        var cell = board[i];
+        this.board[cell[0]][cell[1]].alive = 1;
+    }
+    this.draw_board();
+}
+
+GameOfLife.prototype.playPause = function() {
     if (!this.play) {
         this.start.textContent = "Pause";
     } else {
@@ -186,7 +241,7 @@ GameOfLife.prototype.draw_board = function() {
 
 GameOfLife.prototype.register_events = function(){
     var that = this;
-    this.start.addEventListener("click", this.play_pause.bind(this), false);
+    this.start.addEventListener("click", this.playPause.bind(this), false);
     this.reset.addEventListener("click", this.reset_board.bind(this), false);
 
     function update_speed(e) {
@@ -249,14 +304,3 @@ GameOfLife.prototype.update = function(){
     }
     window.requestAnimationFrame(this.update.bind(this));
 };
-
-    
-//     init_board();
-//     window.setInterval(function(){draw_board();}, 100);
-
-// var init = function() {
-//     var id = 'gol';
-//     window.onload = function(){
-//         gameoflife(id, 10);
-//     };
-// }();
