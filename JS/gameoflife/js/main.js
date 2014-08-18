@@ -77,13 +77,16 @@ GameOfLife.prototype._boardDump = function(){
 GameOfLife.prototype.addDefaults = function(){
     // Add select list of pre-made board configurations.
     // TODO: Load these in from a JSON file
+    var empty = [];
     var glider = [[17,15],[18,13],[18,15],[19,14],[19,15]];
     var pulsar = [[12,11],[12,12],[12,13],[12,17],[12,18],[12,19],[14,9],[14,14],[14,16],[14,21],[15,9],[15,14],[15,16],[15,21],[16,9],[16,14],[16,16],[16,21],[17,11],[17,12],[17,13],[17,17],[17,18],[17,19],[19,11],[19,12],[19,13],[19,17],[19,18],[19,19],[20,9],[20,14],[20,16],[20,21],[21,9],[21,14],[21,16],[21,21],[22,9],[22,14],[22,16],[22,21],[24,11],[24,12],[24,13],[24,17],[24,18],[24,19]];
     var glider_gun = [[1,15],[1,16],[2,15],[2,16],[10,15],[10,16],[10,17],[11,14],[11,18],[12,13],[12,19],[13,13],[13,19],[14,16],[15,14],[15,18],[16,15],[16,16],[16,17],[17,16],[20,13],[20,14],[20,15],[21,13],[21,14],[21,15],[22,12],[22,16],[24,11],[24,12],[24,16],[24,17],[34,13],[34,14],[35,13],[35,14]];
-    var options = [['Glider', glider], ['Pulsar', pulsar], ['Glider Gun', glider_gun]];
+    var options = [['Glider', glider], ['Pulsar', pulsar], ['Glider Gun', glider_gun],['Empty Board', empty]];
     var select = document.createElement('select');
     var opt = document.createElement('option');
-    opt.label = 'Pre-made board configs';
+    opt.textContent = 'Pre-made board configs';
+    opt.disabled = true;
+    opt.selected = true;
     select.appendChild(opt);
     for (var i=0; i < options.length; i++){
         opt = document.createElement('option');
