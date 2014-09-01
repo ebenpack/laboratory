@@ -4,6 +4,7 @@
     var Scene = wireframe.engine.Scene;
     var scene = new Scene({canvas_id: 'canvas', width:600, height:400});
     scene.toggleQuickDraw();
+    scene.ctx.strokeStyle = "green";
     var mesh;
     var ROWS = 20;
     var COLS = 16;
