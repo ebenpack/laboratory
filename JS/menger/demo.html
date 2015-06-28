@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Menger Sponge</title>
+    <style type="text/css">
+    .clearfix:before,
+    .clearfix:after {
+        content: " "; /* 1 */
+        display: table; /* 2 */
+    }
+    .clearfix:after {
+        clear: both;
+    }
+    .clearfix {
+        *zoom: 1;
+    }
+    </style>
+</head>
+<body>
+    <div style="float:left;">
+        <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
+
+    <div style="float:left; margin-left:20px">
+        <label style="display:block; margin:10px;">Depth: <input type="number" id="depth" min="1" max="4" value="3" /></label>
+        <label style="display:block; margin:10px;">Level: <input type="range" id="level" min="0" value="0" max="26" step="1"></label>
+        <div style="margin:10px;"><p>Block Count: <span id="block-count"></span></p></div>
+    </div>
+    <div class="clearfix" style="clear:both;margin-top:20px"><p>This is a quick Menger sponge cross-sectional viewer, built for the purpose of aiding a Minecraft build. At some point, this Minecraft structure may even be built. Just imagine what that might be like.</p></div>
+    <script type="text/javascript" src="js/menger.js"></script>
+</body>
+</html>
