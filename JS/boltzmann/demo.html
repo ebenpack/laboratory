@@ -43,9 +43,16 @@
             </div>
             <div id="debug"></div>
         </div>
-        <script src="src/init.js"></script>
-        <script src="src/draw.js"></script>
-        <script src="src/events.js"></script>
         <script src="src/boltzmann.js"></script>
+        <script>
+            boltzman({
+                boltzId: "boltzmann",
+                latticeWidth: 200,
+                latticeHeight: 80,
+                vectorcanvasId: "vectorcanvas",
+                particlecanvasId: "particlecanvas",
+                barriercanvasId: "barriercanvas",
+            });
+        </script>
     </body>
 </html>

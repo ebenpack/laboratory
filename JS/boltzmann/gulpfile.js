@@ -42,7 +42,7 @@ gulp.task('compress', ['scripts'], function(){
 });
 
 gulp.task('scripts', function() {
-  gulp.src(['src/init.js', 'src/draw.js', 'src/events.js', 'src/boltzmann.js'])
+  gulp.src(['src/boltzmann.js'])
     .pipe(concat('boltzmann.js'))
     .pipe(gulp.dest('./build/'))
 });
@@ -54,10 +54,10 @@ gulp.task('docs', function() {
 });
 
 gulp.task('watch', function() {
-    gulp.watch('src/**/*.{js,html}', ['lint', 'browserify']);
+    gulp.watch('src/**/*.{js,html}', ['lint']);
 });
 
 // Default Task
 gulp.task('default', ['lint', 'watch']);
 gulp.task('compile', ['compress']);
-gulp.task('check', ['lint', 'browserify', 'check']);
+gulp.task('check', ['lint', 'check']);
